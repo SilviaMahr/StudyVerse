@@ -57,12 +57,17 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
     - Zuerst neues Projekt erstellen: Linke Seitenleiste -> Projekte -> Create a new Project (oben)
     - Linke Seitenleiste: API Keys -> API-Schlüssel erstellen (rechts oben) -> Schlüssel benennen -> Projekt auswählen
 
-❗Je Projekt ein neues Gemini Projekt erstellen -> also für die DKE Dummy Projekte reicht eines, für unser Projekt dann aber ein eigenes erstellen - kann sonst ggf. zu Problemen führen! 
+❗Je Projekt ein neues Gemini Projekt erstellen -> also für die DKE Dummy Projekte eines und für unser Projekt dann auch ein eigenes erstellen - kann sonst ggf. zu Problemen führen! 
 
 Nun gibt es zwei unterschiedliche Verfahren: 
 1. Im DKE Dummy Projekt kann der API Key temporär per Terminaleingabe verknüpft werden: $Env:GEMINI_API_KEY="KEY_GOES_IN_HERE"
-2. Im StudyVerse Projekt ist es sinnvoll den Key als IntelliJ Umgebungsvariable zu speichern, muss sonst jedes Mal aufs Neue eingegeben werden. Step by Step Erklärung in Intellij: 
-   - Run -> Edit Configurations -> HIER KOMMT DANN NOCH DER REST, WENN ICH SOWEIT FERTIG BIN!
+2. Im StudyVerse Projekt ist es sinnvoll den Key als IntelliJ Umgebungsvariable zu speichern, muss sonst jedes Mal aufs Neue eingegeben werden.
+   Step by Step Erklärung in IntelliJ: 
+   - Run -> Edit Configurations
+   - Name z.B. beliebig auswählen z.B. rag 
+   - Environment variables: API KEY -> Es müsste initial Pythonbufferd=1 im Feld stehen -> Edit Button anklicken -> + -> Name z.B.: GEMINI_API_KEY, Value: Persönlicher Key 
+
+
   
 
     
