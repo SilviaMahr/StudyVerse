@@ -68,6 +68,7 @@ Nun gibt es zwei unterschiedliche Verfahren:
    - Environment variables: API KEY -> Es müsste initial Pythonbufferd=1 im Feld stehen -> Edit Button anklicken -> + -> Name z.B.: GEMINI_API_KEY, Value: Persönlicher Key 
 
 
+
   
 
     
