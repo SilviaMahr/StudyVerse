@@ -1,4 +1,6 @@
-# 🐍 PYTHON SETUP GUIDE
+# PROJECT SETUP GUIDE 
+
+## 🐍 Python Setup 
 
 Dieser kurze Leitfaden dient der Vereinheitlichung unserer Python-Umgebung für das Projekt.  
 Zudem sollen zeitfressende Konfigurationsprobleme umgangen werden.
@@ -14,7 +16,7 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
   https://www.python.org/ftp/python/3.12.0/python-3.12.0-macos11.pkg
 
 
-## Weitere Schritte: 
+## ➡️ Weitere Schritte: 
 - **Setzen der PATH-Variable:**  
   Python macht das „automatisch“ – **Wichtig:**  
   Bevor die Installation gestartet wird, gibt es unten die Möglichkeit *„Add Python 3.12.0 to PATH“* anzuklicken.  
@@ -25,14 +27,14 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
   ```bash
   python --version
 
-- **IntelliJ Integration**:  
+- 🧩 **IntelliJ Integration**:  
   IntelliJ Ultimate (gratis über die Uni erhältlich) beinhaltet ein Python-Plugin.  
 
   Navigiere zu:  
   `File` → `Settings` → `Plugins`  
   Gib in der Suchleiste **Python** ein → **Python** auswählen (NICHT *Python Community Edition*) → installieren.
 
-  **Virtual Environment erstellen (VENV)** Da ich hier leider Probleme hatte, führe ich euch noch einen Workaround an, der für mich gut geklappt hat:
+- 📦 **Virtual Environment erstellen (VENV)** Da ich hier leider Probleme hatte, führe ich euch noch einen Workaround an, der für mich gut geklappt hat:
   - ```bash
     C:\Users\marle\AppData\Local\Programs\Python\Python312\python.exe -m venv .venv
 ❗An euren individuellen Speicherort anpassen.
@@ -47,7 +49,24 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
     pip install -r requirements.txt
  ℹ️ Python Pakete für rag.py und llm-agent.py
 
-- **Google Gemini API**
+## 🔎 Google Gemini API
+  - 🗝️ **API KEY**
+    - Jeder muss einen Individuellen API Key generiern - folgend der Link zu Google AI Studios 
+    - https://aistudio.google.com/
+    - Mit eigenem Google-Konto anmelden
+    - Zuerst neues Projekt erstellen: Linke Seitenleiste -> Projekte -> Create a new Project (oben)
+    - Linke Seitenleiste: API Keys -> API-Schlüssel erstellen (rechts oben) -> Schlüssel benennen -> Projekt auswählen
+
+❗Je Projekt ein neues Gemini Projekt erstellen -> also für die DKE Dummy Projekte reicht eines, für unser Projekt dann aber ein eigenes erstellen - kann sonst ggf. zu Problemen führen! 
+
+Nun gibt es zwei unterschiedliche Verfahren: 
+1. Im DKE Dummy Projekt kann der API Key temporär per Terminaleingabe verknüpft werden: $Env:GEMINI_API_KEY="KEY_GOES_IN_HERE"
+2. Im StudyVerse Projekt ist es sinnvoll den Key als IntelliJ Umgebungsvariable zu speichern, muss sonst jedes Mal aufs Neue eingegeben werden. Step by Step Erklärung in Intellij: 
+   - Run -> Edit Configurations -> HIER KOMMT DANN NOCH DER REST, WENN ICH SOWEIT FERTIG BIN!
+  
+
+    
+ 
 
 
 
