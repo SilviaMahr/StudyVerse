@@ -1,7 +1,6 @@
 # Konzept  
 
-## WHY  
-Problemstellung  
+## WHY - Problemstellung    
 Studierende haben oft Schwierigkeiten, ihr Semester oder das Studium optimal zu planen: Sie wissen nicht genau, welche Lehrveranstaltungen im kommenden Semester sinnvoll sind.  
 
 Voraussetzungsketten (z. B. ALGO → SOFT1 → SOFT2 → PR SE) sind im Studienhandbuch zwar dokumentiert, aber schwer überschaubar.
@@ -9,8 +8,7 @@ Der Studienfortschritt (bereits absolvierte Kurse) wird selten automatisch berü
 
 Der Study Planner soll Studierende bei der individuellen Semesterplanung unterstützen, indem er basierend auf bisherigen Leistungen, ECTS-Zielvorgaben und Curriculumsdaten ein ideales Semester vorschlägt.  
 
-## WHAT
-Ziel des Systems
+## WHAT - Ziel des Systems  
 Der Study Planner soll automatisch ein Semester mit passenden LVAs zusammenstellen.
 Er berücksichtigt dabei:
 - Die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
@@ -43,8 +41,7 @@ Gesamtumfang ≤ 24 ECTS
 Optional: Priorisierung nach Studienfortschritt oder Semesterempfehlung
 Optional: Liste mit Not-To-Do´s
 
-## HOW  
-Systemarchitektur / Technologystack  
+## HOW - Systemarchitektur / Technologystack    
 Backend Python, Frontend Angular
 //TODO: muss noch finalisiert werden, jeder recherchiert seinen Part
 
