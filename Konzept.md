@@ -42,8 +42,9 @@ Optional: Priorisierung nach Studienfortschritt oder Semesterempfehlung
 Optional: Liste mit Not-To-Do´s
 
 ## HOW - Systemarchitektur / Technologystack    
-Backend Python, Frontend Angular
+Backend Python, Frontend Angular, Datenbank: ?? 
 //TODO: muss noch finalisiert werden, jeder recherchiert seinen Part
+
 
 ## Evaluierungsmethodik
 //TODO: Silvia
