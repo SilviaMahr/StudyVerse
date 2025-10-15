@@ -1,5 +1,5 @@
-# JKUStudyAssist (RAG)
-Beantwortet Fragen zur JKU, Studienrichtungen oder Kursen beantworten.   
+# StudyVerse (RAG)
+Beantwortet Fragen zur JKU, Studienrichtungen oder Kursen.   
 Kontext: JKU-Webseite, Studienhandbuch, Curricula, …  
 
 1. User Interface (z.B. Für Webinterface mit Chateingabe) --> Johanna  
