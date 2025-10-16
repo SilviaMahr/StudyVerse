@@ -52,17 +52,17 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - Backend: 
   - Python
   - Langchain
-Frontend:
+- Frontend:
   - Angular
   - HTTP Client 
-ETL-Pipeline:
+- ETL-Pipeline:
   - Loader ???
   - Chunker: RecursiveCharacterTextSplitter von Langchain ???? 
   - Preprocessor ??
   - Embedder: Google Generative AI Embeddings 
-LLM
+- LLM
   - Gemini 
-Datenbank: 
+- Datenbank: 
     1. Postgres SQL (für Memory): 
         - Nutzerdaten inkl. Authentication 
         - Absolvierte LVAs je Nutzer
