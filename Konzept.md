@@ -20,6 +20,8 @@ Optional: Empfehlungen für alternative LVAs, wenn kein ideales Semester möglic
 Optional: Vermeidung - LVAs die basierend auf dem Kursverlauf noch nicht ratsam sind
 Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft1 noch nicht absolviert hast, ist Soft2, obwohl im Idealtypischen Studienplan sinnvoll, in deinem Plan noch nicht inkludiert."
 
+Scope: Fokus auf Bachelor Wirtschaftsinformatik 
+
 ### Benutzerinteraktion (LLM-Dialog)
 User Prompt:
 „Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren.“
@@ -43,8 +45,29 @@ Optional: Liste mit Not-To-Do´s
 
 ## HOW - Systemarchitektur / Technologystack    
 Backend Python, Frontend Angular, Datenbank: ?? 
-//TODO: muss noch finalisiert werden, jeder recherchiert seinen Part
+//TODO: muss noch finalisiert werden, jeder recherchiert seinen Part -> Klare Part-Abgrenzung sehr schwierig! 
+Habe mal einen kollektiven Generalvorschlag untenstehend -> Jene Punkte mit ? gehören noch von den jeweiligen
+zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werden! 
 
+- Backend: 
+  - Python
+  - Langchain
+Frontend:
+  - Angular
+  - HTTP Client 
+ETL-Pipeline:
+  - Loader ???
+  - Chunker: RecursiveCharacterTextSplitter von Langchain ???? 
+  - Preprocessor ??
+  - Embedder: Google Generative AI Embeddings 
+LLM
+  - Gemini 
+Datenbank: 
+    1. Postgres SQL (für Memory): 
+        - Nutzerdaten inkl. Authentication 
+        - Absolvierte LVAs je Nutzer
+    2. Vektordatenbank
+        - TBA -> zB Chroma - keine Tiefe Recherche dazu betrieben -> Offenes TODO
 
 ## Evaluierungsmethodik
 //TODO: Silvia

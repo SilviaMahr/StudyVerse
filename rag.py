@@ -1,9 +1,9 @@
-# This will me the main file - code follows here
+# This will be the main file - code follows here
 
-#DUMMYCODE! TESTIN ONLY - AI GENERATED
+
 import os
 import google.generativeai as genai
-
+#DUMMYCODE! TESTING ONLY - AI GENERATED
 # API-Key aus Umgebungsvariable
 api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
