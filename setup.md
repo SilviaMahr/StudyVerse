@@ -51,7 +51,7 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
 ❗An dieser Stelle habe ich das empfohlene Update von pip 23.2.1 auf 25.2 vorgenommen -> Wenn das bei euch nötigt ist wird der cmd Befehl im IDE Terminal angezeigt
   - ```bash
     pip install -r requirements.txt
-  Du musst dich aber im richtigen Ordner befinden, wo die .txt-Datei liegt.
+  Du musst dich aber im richtigen Ordner befinden, wo die .txt-Datei liegt.  
  ℹ️ Python Pakete für unsere Applikation -> wsl. wachsendes Doc. 
 
 ## 🔎 Google Gemini API
