@@ -45,29 +45,29 @@ Optional: Liste mit Not-To-Do´s
 
 ## HOW - Systemarchitektur / Technologystack    
 Backend Python, Frontend Angular, Datenbank: ?? 
-//TODO: muss noch finalisiert werden, jeder recherchiert seinen Part -> Klare Part-Abgrenzung sehr schwierig! 
-Habe mal einen kollektiven Generalvorschlag untenstehend -> Jene Punkte mit ? gehören noch von den jeweiligen
+⚠️ //TODO: muss noch finalisiert werden, jeder recherchiert seinen Part -> Klare Part-Abgrenzung sehr schwierig! 
+Habe mal einen kollektiven Generalvorschlag untenstehend -> Jene Punkte mit ? und ⚠️ gehören noch von den jeweiligen
 zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werden! 
 
 - Backend: 
-  - Python
+  - Python -> ⚠️Flask oder FastAPI um Angular Anbindung zu ermöglichen (Angular + Python nicht rein lokal möglich) daher Entscheidung für Flask oder Fast API treffen! 
   - Langchain
 - Frontend:
   - Angular
   - HTTP Client 
 - ETL-Pipeline:
-  - Loader ???
-  - Chunker: RecursiveCharacterTextSplitter von Langchain ???? 
-  - Preprocessor ??
+  - Loader ???⚠️
+  - Chunker: RecursiveCharacterTextSplitter von Langchain ???? ⚠️
+  - Preprocessor ??⚠️
   - Embedder: Google Generative AI Embeddings 
 - LLM
   - Gemini 
 - Datenbank: 
-    1. Postgres SQL (für Memory): 
+    1. Postgres SQL (für Memory): ?? ⚠️
         - Nutzerdaten inkl. Authentication 
         - Absolvierte LVAs je Nutzer
-    2. Vektordatenbank
-        - TBA -> zB Chroma - keine Tiefe Recherche dazu betrieben -> Offenes TODO
+    2. Vektordatenbank⚠️
+        - TBA -> zB Chroma - keine Tiefe Recherche dazu betrieben -> Offenes TODO⚠️
 
 ## Evaluierungsmethodik
-//TODO: Silvia
+//TODO: Silvia⚠️
