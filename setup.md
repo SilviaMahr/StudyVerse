@@ -65,7 +65,8 @@ Nun gibt es zwei unterschiedliche Verfahren:
    Step by Step Erklärung in IntelliJ: 
    - Run -> Edit Configurations
    - Name z.B. beliebig auswählen z.B. rag 
-   - Environment variables: API KEY -> Es müsste initial Pythonbufferd=1 im Feld stehen -> Edit Button anklicken -> + -> Name z.B.: GEMINI_API_KEY, Value: Persönlicher Key 
+   - Environment variables: API KEY -> Es müsste initial Pythonbufferd=1 im Feld stehen -> Edit Button anklicken -> + -> Name z.B.: GEMINI_API_KEY, Value: Persönlicher Key
+   - ❗Evtl. ist es auch sinnvoll am lokalen PC eine Umgebungsvariable mit GEMINI_API_KEY (muss exakt so heißen) + Value = persönlicher Schlüssel zu setzen (ich hatte heute beim Neustart nämlich Probleme, seit Setzen des Path am lokalen PC funktioniert es aber. 
 
 
 
