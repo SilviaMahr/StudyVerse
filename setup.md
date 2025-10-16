@@ -38,15 +38,20 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
   - ```bash
     C:\Users\marle\AppData\Local\Programs\Python\Python312\python.exe -m venv .venv
 ❗An euren individuellen Speicherort anpassen.
-
   - ```bash
     .venv\Scripts\Activate.ps1
+  Falls die Script-Datei nicht startet, kann das an den Execution-Policies liegen
+  Befehl unten erlaubt eigene Skripte und signierte Skripte aus dem Internet, blockiert aber nicht signierte Skripte von Drittanbietern.
+  - ```bash
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+  Nach erfolgreicher Aktivierung sollte (.venv) vor deinem Cursor im Terminal erscheinen.
   - ```bash
     python --version
     pip list
 ❗An dieser Stelle habe ich das empfohlene Update von pip 23.2.1 auf 25.2 vorgenommen -> Wenn das bei euch nötigt ist wird der cmd Befehl im IDE Terminal angezeigt
   - ```bash
     pip install -r requirements.txt
+  Du musst dich aber im richtigen Ordner befinden, wo die .txt-Datei liegt.
  ℹ️ Python Pakete für unsere Applikation -> wsl. wachsendes Doc. 
 
 ## 🔎 Google Gemini API
