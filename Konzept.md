@@ -50,7 +50,7 @@ Habe mal einen kollektiven Generalvorschlag untenstehend -> Jene Punkte mit ? un
 zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werden! 
 
 - Backend: 
-  - Python -> ⚠️Flask oder FastAPI um Angular Anbindung zu ermöglichen (Angular + Python nicht rein lokal möglich) daher Entscheidung für Flask oder Fast API treffen! 
+  - Python -> ⚠️Flask oder FastAPI um Angular Anbindung zu ermöglichen (Angular + Python nicht rein lokal möglich) daher Entscheidung für Flask oder Fast API treffen! Würde aber Flask vorschlagen, da mit SQLite DB super verbindbar. 
   - Langchain
 - Frontend:
   - Angular
@@ -63,7 +63,7 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - LLM
   - Gemini 
 - Datenbank: 
-    1. Postgres SQL (für Memory): ?? ⚠️
+    1. Relationale DB: SQLite
         - Nutzerdaten inkl. Authentication 
         - Absolvierte LVAs je Nutzer
     2. Vektordatenbank⚠️
