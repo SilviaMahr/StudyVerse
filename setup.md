@@ -49,6 +49,10 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
     pip install -r requirements.txt
  ℹ️ Python Pakete für unsere Applikation -> wsl. wachsendes Doc. 
 
+# ⚠️ Achtung:
+**Google Gemini API: Ich habe einen Key momentan hard-gecoded! Hatte heute beim Starten und testen nämlich gleich wieder Probleme, trotz gesetzter Umgebungsvariable.
+Würde es beim hard-codierten Key belassen - würde für euch bedeuten, dass ich keinen eigenen Schlüssel braucht und das überspringen könnt!** 
+
 ## 🔎 Google Gemini API
   - 🗝️ **API KEY**
     - Jeder muss einen Individuellen API Key generiern - folgend der Link zu Google AI Studios 

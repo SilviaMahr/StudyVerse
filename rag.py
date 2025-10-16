@@ -6,7 +6,7 @@ import google.generativeai as genai
 
 # API-Key aus Umgebungsvariable
 api_key = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
+genai.configure(api_key="AIzaSyCkt2JC2QfSivEFtZ06jq8vJcKyrG4Zmn0")
 
 # Einfacher Thought-Action-Observation Loop
 while True:
