@@ -1,0 +1,220 @@
+/* === STUDYverse Stylesheet === */
+/* Enthält Tag- und Nachtmodus mit CSS-Variablen */
+
+/* === 1️⃣ Farbdefinitionen über Variablen === */
+:root {
+    /* Light Mode (Standard) */
+    --bg-color: white;
+    --text-color: black;
+    --sidebar-bg: #2A863C;
+    --chat-bg: #fdfdfd;
+    --input-bg: #2A863C;
+    --button-bg: #2A863C;
+    --button-hover-bg: #246f32;
+    --header-text: white;
+}
+
+/* === 2️⃣ Dark Mode überschreibt nur Variablen === */
+body.dark-mode {
+    --bg-color: #000000;
+    --text-color: #ffffff;
+    --sidebar-bg: #76365D;
+    --chat-bg: #111111;
+    --input-bg: #76365D;
+    --button-bg: #76365D;
+    --button-hover-bg: #5e2c4b;
+    --header-text: black;
+}
+
+/* === 3️⃣ Allgemeines Layout === */
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.layout {
+    margin-top: 100px; /* 👈 Höhe des Headers als Abstand nach unten */
+    height: calc(100vh - 150px);
+}
+
+/* === Header === */
+#HeaderJKU {
+    position: relative;
+    width: auto;
+    height: auto;
+}
+
+#HeaderBild {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.studyverse {
+    position: absolute;
+    top: 1vw;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 5vw;
+    font-family: 'Jomhuria', sans-serif;
+    color: var(--header-text);
+    z-index: 2;
+    margin: 0;
+    line-height: 1;
+    background-color: transparent;
+}
+
+.login-container {
+    position: relative;
+    max-width: 50%;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: transparent;
+    border-radius: 12px;
+}
+.login-maskottchen {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 100px;
+}
+
+.login-maskottchen img {
+    width: 100%;
+    height: auto;
+}
+
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: var(--text-color);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.login-form input {
+    width: 20%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.login-form button {
+    width: 20%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+#starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* hinter allem */
+    overflow: hidden;
+    background-color: var(--bg-color); /* passt sich dem Modus an */
+}
+.star {
+    position: absolute;
+    border-radius: 50%;
+    background-color: white;
+    opacity: 0.8;
+    animation: twinkle 2s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.2; }
+}
+
+#dayUniverse {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+body.dark-mode #dayUniverse {
+    display: none;
+}
+
+body.day-mode #starField {
+    display: none;
+}
+
+.planet {
+    position: absolute;
+    width: 60px;
+    height: auto;
+    animation: floatPlanet 12s infinite ease-in-out;
+    opacity: 0.9;
+    transition: transform 0.3s ease;
+}
+
+.planet:hover {
+    transform: scale(1.1);
+}
+
+@keyframes floatPlanet {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-15px); }
+    100% { transform: translateY(0); }
+}
+
+.mode-toggle-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 20px;
+    background-color: var(--sidebar-bg); /* passt sich dem Modus an */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+
+.mode-toggle {
+    display: flex;
+    gap: 20px;
+}
+
+.mode-icon {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.mode-icon:hover {
+    transform: scale(1.1);
+}

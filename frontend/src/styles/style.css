@@ -1,0 +1,285 @@
+/*Color presettings for day- and darkmode*/
+:root {
+    /* Light Mode (Standard) */
+    --bg-color: white;
+    --text-color: black;
+    --sidebar-bg: #2A863C;
+    --chat-bg: #fdfdfd;
+    --input-bg: #2A863C;
+    --button-bg: #2A863C;
+    --button-hover-bg: #246f32;
+    --header-text: white;
+}
+
+body.dark-mode {
+    --bg-color: #000000;
+    --text-color: #ffffff;
+    --sidebar-bg: #76365D;
+    --chat-bg: #111111;
+    --input-bg: #76365D;
+    --button-bg: #76365D;
+    --button-hover-bg: #5e2c4b;
+    --header-text: black;
+}
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.layout {
+    margin-top: 100px; /* 👈 Höhe des Headers als Abstand nach unten */
+    height: calc(100vh - 150px);
+}
+
+/* === Header === */
+#HeaderJKU {
+    position: relative;
+    width: auto;
+    height: auto;
+}
+
+#HeaderBild {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.studyverse {
+    position: absolute;
+    top: 1vw;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 5vw;
+    font-family: 'Jomhuria', sans-serif;
+    color: var(--header-text);
+    z-index: 2;
+    margin: 0;
+    line-height: 1;
+    background-color: transparent;
+}
+
+/* === Sidebar === */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 160px;
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    padding: 15px;
+    transition: width 0.3s ease, background-color 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+}
+
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin-bottom: 20px;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-family: 'Jomhuria', sans-serif;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Sidebar Collapsed */
+.sidebar.collapsed {
+    width: 5px;
+}
+
+.sidebar.collapsed ul,
+.sidebar.collapsed li,
+.sidebar.collapsed a {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .toggle-button {
+    justify-content: center;
+    padding-right: 0;
+}
+
+/* Close-Icon */
+.toggle-button {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 40px;
+    padding-right: 10px;
+    cursor: pointer;
+}
+
+.mode-toggle {
+    display: flex;
+    gap: 50px;
+    justify-content: center;
+    margin-top: auto;
+    padding-bottom: 20%;
+}
+
+.mode-icon {
+    width: 25%;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.mode-icon:hover {
+    transform: scale(1.1);
+}
+
+/* === Hauptbereich === */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    margin-left: 160px;
+    margin-top: 60px;
+    height: calc(100vh - 100px);
+    background-color: var(--bg-color);
+    transition: background-color 0.4s ease;
+}
+
+.Maskottchen img {
+    max-width: 60%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.main-content h2 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    transition: color 0.4s ease;
+}
+
+/* === chat === */
+.chat-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 15px;
+    background-color: var(--chat-bg);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.4s ease;
+}
+
+.chat-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.chat-history {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+/* === Eingabefeld + Button === */
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: none;
+    border-radius: 20px;
+    background-color: var(--input-bg);
+    color: white;
+    outline: none;
+    transition: background-color 0.4s ease;
+}
+
+.chat-input::placeholder {
+    color: white;
+    opacity: 0.7;
+}
+
+.chat-send {
+    background-color: var(--button-bg);
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease;
+}
+
+.chat-send:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.send-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.chat-history {
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.chat-history > *:not(.chat-background) {
+    position: relative;
+    z-index: 1;
+}
+
+.planet {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
