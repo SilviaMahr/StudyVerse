@@ -8,6 +8,10 @@ Der Studienfortschritt (bereits absolvierte Kurse) wird selten automatisch berü
 
 Der Study Planner soll Studierende bei der individuellen Semesterplanung unterstützen, indem er basierend auf bisherigen Leistungen, ECTS-Zielvorgaben und Curriculumsdaten ein ideales Semester vorschlägt.  
 
+Retrieval-Augmented Generation (RAG)-System ist hier die ideale Lösung, weil hier der Zugriff auf aktuelle und korrekte curriculare Daten essentiell ist, mit Halluzinationen würde das System sinnlos sein. Aktualität, Zuverlässigkeit, Wissenstransparenz und Kontrollierbarkeit sind Vorraussetzung. Durch das Einfügen der Constraints (bisher absolvierte Kurse, Voraussetzungskette, ECTS-Vorgabe) im Abfragekontext wird vom LLM eine gute Antwort generiert.   
+
+RAG verbindet die Verlässlichkeit und Spezifität der Studienordnung (durch den Retrieval-Teil) mit der Flexibilität, Personalisierungsfähigkeit und Kommunikationsstärke des LLMs (durch den Generation-Teil). Es ist die effektivste Methode, um eine individuelle, korrekte und gut begründete Semesterplanung zu erstellen.
+
 ## WHAT - Ziel des Systems  
 Der Study Planner soll automatisch für Studierende im Bachelorstudium Wirtschaftsinformatik ein Semester mit passenden LVAs zusammenstellen.
 Er berücksichtigt dabei:
