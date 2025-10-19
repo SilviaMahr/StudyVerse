@@ -1,4 +1,4 @@
-# Konzept  
+# Konzept STUDYverse 
 
 ## WHY - Problemstellung    
 Studierende haben oft Schwierigkeiten, ihr Semester oder das Studium optimal zu planen: Sie wissen nicht genau, welche Lehrveranstaltungen im kommenden Semester sinnvoll sind.  
@@ -13,6 +13,8 @@ Retrieval-Augmented Generation (RAG)-System ist hier die ideale Lösung, weil hi
 RAG verbindet die Verlässlichkeit und Spezifität der Studienordnung (durch den Retrieval-Teil) mit der Flexibilität, Personalisierungsfähigkeit und Kommunikationsstärke des LLMs (durch den Generation-Teil). Es ist die effektivste Methode, um eine individuelle, korrekte und gut begründete Semesterplanung zu erstellen.
 
 ## WHAT - Ziel des Systems  
+Scope: Bachelor Wirtschaftsinformatik  
+
 Der Study Planner soll automatisch für Studierende im Bachelorstudium Wirtschaftsinformatik ein Semester mit passenden LVAs zusammenstellen.
 Er berücksichtigt dabei:
 - Die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
@@ -24,7 +26,19 @@ Optional: Empfehlungen für alternative LVAs, wenn kein ideales Semester möglic
 Optional: Vermeidung - LVAs die basierend auf dem Kursverlauf noch nicht ratsam sind
 Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft1 noch nicht absolviert hast, ist Soft2, obwohl im Idealtypischen Studienplan sinnvoll, in deinem Plan noch nicht inkludiert."
 
-Scope: Bachelor Wirtschaftsinformatik  
+### Funktionen:
+#### ECTS-Zielvorgabe:   
+min - Eingabe für maximale ECTS-Anzahl
+NiceToHave - Schieberegler  
+#### Studienfortschritt:
+min - Erfassung und Speicherung der absolvierten LVAs, Memory Funktion für Folgeplanungen, Abänderungen möglich  
+NiceToHave - Importmöglichkeit der absolvieren Kurse vom .pdf "Ausfüllhilfe Prüfungsraster"  
+#### Planungslogik:
+min - Generierung eines gültigen Plans (Achtung WS/SS), der: 1. Die Voraussetzungsketten einhält. 2. Die Maximal-ECTS nicht überschreitet.  
+NiceToHave - Optimierung nach idealtypischem Studienplan (Priorisierung der Kurse).  
+#### Erklärung: 
+min - Klare Begründung, warum vorgeschlagene Kurse gewählt wurden und warum wichtige Kurse ausgeschlossen wurden (z.B. fehlende Voraussetzung).  
+NiceToHave - Empfehlungen für alternative LVAs (z.B. Wahlfächer), wenn der Pflichtplan nicht ideal gefüllt werden kann.  
 
 ### Benutzerinteraktion (LLM-Dialog)
 User Prompt:
