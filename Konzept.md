@@ -28,7 +28,7 @@ Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft
 
 ### Funktionen:
 #### ECTS-Zielvorgabe:   
-min - Eingabe für maximale ECTS-Anzahl
+min - Eingabe für maximale ECTS-Anzahl, Chat fragt nach, solange er die Information nicht hat
 NiceToHave - Schieberegler  
 #### Studienfortschritt:
 min - Erfassung und Speicherung der absolvierten LVAs, Memory Funktion für Folgeplanungen, Abänderungen möglich  
@@ -45,7 +45,8 @@ User Prompt:
 „Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren.“
 
 LLM Nachfrage:
-„Welche LVAs wurden bereits absolviert?“
+„Welche LVAs wurden bereits absolviert? Bitte ergänze wenn nötig in deinen Nutzerdaten.“
+„Welches ist das kommende Semester? Ist SS2026 korrekt?“
 
 Eingabe über Klick-Option oder Liste
 Speicherung im Memory, damit diese Information nur einmal eingegeben werden muss
@@ -53,7 +54,8 @@ Retrieval / Datenbankzugriffe:
 
 JKU Curriculum (Voraussetzungen & ECTS)
 Idealtypischer Studienplan
-Abgeschlossene LVAs des Nutzers
+Abgeschlossene LVAs des Nutzers   
+
 LLM Antwort:
 
 Liste der empfohlenen LVAs, deren Voraussetzungen erfüllt sind
