@@ -93,7 +93,7 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - Der Orchestrator erstellt den finalen Prompt (Benutzerkontext + abgerufene Dokumente) und sendet ihn an das Gemini LLM.
 - Gemini generiert den optimalen, begründeten Plan (Generation).
 - Das Backend formatiert die LLM-Antwort und sendet sie als JSON via HTTP zurück an das Frontend.
-- Das Frontend visualisiert den Plan.
+- Das Frontend visualisiert den Plan als Chatantwort.
 
 ## Evaluierungsmethodik
 //TODO: Silvia⚠️
