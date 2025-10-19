@@ -45,7 +45,7 @@ User Prompt:
 „Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren.“
 
 LLM Nachfrage:
-„Welche LVAs wurden bereits absolviert? Bitte ergänze wenn nötig in deinen Nutzerdaten.“
+„Welche LVAs wurden bereits absolviert? Bitte ergänze wenn nötig in deinen Nutzerdaten.  
 „Welches ist das kommende Semester? Ist SS2026 korrekt?“
 
 Eingabe über Klick-Option oder Liste
