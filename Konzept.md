@@ -81,11 +81,17 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - LLM
   - Gemini 
 - Datenbank: 
-    1. Relationale DB: SQLite
-        - Nutzerdaten inkl. Authentication 
-        - Absolvierte LVAs je Nutzer
-    2. Vektordatenbank⚠️
-        - TBA -> zB Chroma - keine Tiefe Recherche dazu betrieben -> Offenes TODO⚠️
+     -> Offenes TODO⚠️ zwischen Silvia+Marlene
+      
+### Architektur
+--> Offenes TODO⚠️ Silvia --> Kolleginnen: passt das so?
+- Frontend (Angular) sendet die Planungsanfrage (ECTS-Ziel, neue Kurse) via HTTP an den Backend-Server. Format json, REST API
+- Das Backend (Python) ruft die gespeicherten Kurse des Benutzers ab.
+- Der RAG-Orchestrator erstellt eine semantische Suchanfrage und sucht in der Neon Vektordatenbank nach den relevanten Modulbeschreibungen/Voraussetzungsketten (Retrieval).
+- Der Orchestrator erstellt den finalen Prompt (Benutzerkontext + abgerufene Dokumente) und sendet ihn an das Gemini LLM.
+- Gemini generiert den optimalen, begründeten Plan (Generation).
+- Das Backend formatiert die LLM-Antwort und sendet sie als JSON via HTTP zurück an das Frontend.
+- Das Frontend visualisiert den Plan.
 
 ## Evaluierungsmethodik
 //TODO: Silvia⚠️
