@@ -9,6 +9,8 @@
     --button-bg: #2A863C;
     --button-hover-bg: #246f32;
     --header-text: white;
+    --sidebar-width: 160px;
+    --sidebar-collapsed-width: 5px;
 }
 
 body.dark-mode {
@@ -30,9 +32,13 @@ body {
     transition: background-color 0.4s ease, color 0.4s ease;
 }
 
+body.sidebar-collapsed {
+    --sidebar-width: 5px;
+}
+
 .layout {
-    margin-top: 100px; /* 👈 Höhe des Headers als Abstand nach unten */
-    height: calc(100vh - 150px);
+    margin-top: 0;
+    height: 100vh;
 }
 
 /* === Header === */
@@ -51,7 +57,7 @@ body {
 .studyverse {
     position: absolute;
     top: 1vw;
-    left: 50%;
+    left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
     transform: translateX(-50%);
     font-size: 5vw;
     font-family: 'Jomhuria', sans-serif;
@@ -60,7 +66,13 @@ body {
     margin: 0;
     line-height: 1;
     background-color: transparent;
+    transition: left 0.3s ease;
 }
+
+body.sidebar-collapsed .studyverse {
+    left: calc(50% + (var(--sidebar-collapsed-width)/2));
+}
+
 
 /* === Sidebar === */
 .sidebar {
@@ -154,14 +166,35 @@ body {
 }
 
 /* === Hauptbereich === */
+.content-wrapper {
+    position:relative;
+    max-width: 500px;
+    width: 100%;
+    margin: 0 auto;
+}
+
 .main-content {
-    flex: 1;
-    padding: 20px;
-    margin-left: 160px;
-    margin-top: 60px;
-    height: calc(100vh - 100px);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: var(--bg-color);
     transition: background-color 0.4s ease;
+    overflow-y: auto;
+}
+
+body.empty-state {
+    overflow-y: hidden;
+}
+
+.main-content.empty {
+    min-height: auto;
+    height: auto;
+    overflow: hidden;
+}
+
+.main-content:not(.empty) {
+    overflow-y: auto;
 }
 
 .Maskottchen img {
@@ -173,15 +206,35 @@ body {
 
 .main-content h2 {
     text-align: center;
-    font-size: 22px;
+    font-size: 120%;
     margin-bottom: 10px;
     color: var(--text-color);
     transition: color 0.4s ease;
 }
 
+.main-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+    max-width: 500px;
+    width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    padding-top: 50px;
+}
+
+.main-content.sidebar-collapsed .main-inner {
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
+}
+
 /* === chat === */
 .chat-wrapper {
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: space-between;
     max-width: 500px;
@@ -213,30 +266,64 @@ body {
 
 /* === Eingabefeld + Button === */
 .chat-input-container {
+    position: fixed;
+    bottom: 20px;
+    left: calc(50% + (var(--sidebar-width)/2));
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    background-color: var(--input-bg);
+    border-radius: 30px;
+    justify-content: center;
+    padding: 8px 12px;
+    z-index: 10;
+    box-sizing: border-box;
+    transition: background-color 0.4s ease;
+}
+
+.main-content.sidebar-collapsed .chat-input-container {
+    left: calc(50% + (var(--sidebar-collapsed-width)/2));
 }
 
 .chat-input {
     flex: 1;
-    padding: 12px 16px;
-    font-size: 16px;
     border: none;
-    border-radius: 20px;
-    background-color: var(--input-bg);
+    background: transparent;
     color: white;
+    font-family: inherit;
+    font-size: 18px;
+    padding: 10px 12px;
+    resize: none;
     outline: none;
-    transition: background-color 0.4s ease;
+    overflow-y: auto;
+    line-height: 1.2;
+    max-height: calc(1.2em * 5); /*max 5 rows */
+    transition: none;
 }
 
 .chat-input::placeholder {
-    color: white;
-    opacity: 0.7;
+    color: rgba(255,255,255, 0.7);
 }
 
+.chat-input::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-input::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.chat-input::-webkit-scrollbar-thumb:hover{
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+
 .chat-send {
-    background-color: var(--button-bg);
+    background-color: transparent;
     border: none;
     border-radius: 50%;
     padding: 10px;
@@ -244,7 +331,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: background-color 0.2s ease;
 }
 
@@ -282,4 +368,46 @@ body {
     pointer-events: none;
     user-select: none;
 }
+
+@media screen and (max-height: 700px) {
+    .main-content {
+        padding-top: 20px;
+        padding-bottom: 120px;
+    }
+
+    .chat-input-container {
+        bottom: 10px;
+    }
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+#starfield,
+#dayUniverse {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Hintergrund hinter allem */
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+}
+
+.planet {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
 

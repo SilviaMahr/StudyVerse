@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>STUDYverse - Dein Studienplaner</title>
     <link rel="stylesheet" href="../src/styles/style.css">
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>-->
 </head>
 <body>
 <header id="HeaderJKU">
@@ -28,6 +29,12 @@
                         Chats durchsuchen
                     </a>
                 </li>
+                <li>
+                    <a href="#">
+                        <img src="../assets/helpIcon.png" class="sidebar-icon" alt="In Chat suchen">
+                        Hilfe
+                    </a>
+                </li>
             </ul>
             <div class="mode-toggle">
                 <img src="../assets/sunFull.png" alt="Day Mode" id="lightModeBtn" class="mode-icon">
@@ -36,15 +43,17 @@
         </aside>
 
         <main class="main-content">
-            <div class="main-inner">
-                <div class="Maskottchen">
-                    <img src="../assets/UNI.png" alt="Maskottchen UNI">
-                </div>
-                <h2>Hallo! Was kann ich heute für dich tun?</h2>
-                <div class="chat-wrapper">
-                    <div class="chat-history"></div>
+            <div class="content-wrapper">
+                <div class="main-inner">
+                    <div class="Maskottchen">
+                        <img src="../assets/UNI.png" alt="Maskottchen UNI">
+                    </div>
+                    <h2>Hallo! Was kann ich heute für dich tun?</h2>
+                    <div class="chat-wrapper">
+                        <div class="chat-history"></div>
+                    </div>
                     <div class="chat-input-container">
-                        <input type="text" placeholder="Stell eine Frage!" class="chat-input">
+                        <textarea placeholder="Stell eine Frage!" class="chat-input" rows="1"></textarea>
                         <button class="chat-send">
                             <img src="../assets/sendIcon.png" alt="Senden" class="send-icon">
                         </button>
@@ -55,5 +64,7 @@
     </div>
 <script src="../src/scripts/modeSwitch.js"></script>
 <script src="../src/scripts/sidebar.js"></script>
+<script src="../src/scripts/chatInputResize.js"></script>
+<script src="../src/scripts/emptyStateHandler.js"></script>
 </body>
 </html>

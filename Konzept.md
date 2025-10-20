@@ -1,15 +1,21 @@
-# Konzept  
+# Konzept STUDYverse 
 
 ## WHY - Problemstellung    
 Studierende haben oft Schwierigkeiten, ihr Semester oder das Studium optimal zu planen: Sie wissen nicht genau, welche Lehrveranstaltungen im kommenden Semester sinnvoll sind.  
 
 Voraussetzungsketten (z. B. ALGO → SOFT1 → SOFT2 → PR SE) sind im Studienhandbuch zwar dokumentiert, aber schwer überschaubar.
-Der Studienfortschritt (bereits absolvierte Kurse) wird selten automatisch berücksichtigt.  
+Der Studienfortschritt (bereits absolvierte Kurse) wird selten automatisch berücksichtigt. Viele Studierende arbeiten nebenher und/oder haben Betreuungspflichten und haben somit Ressourcen für unter 30 ECTS.  
 
 Der Study Planner soll Studierende bei der individuellen Semesterplanung unterstützen, indem er basierend auf bisherigen Leistungen, ECTS-Zielvorgaben und Curriculumsdaten ein ideales Semester vorschlägt.  
 
+Retrieval-Augmented Generation (RAG)-System ist hier die ideale Lösung, weil hier der Zugriff auf aktuelle und korrekte curriculare Daten essentiell ist, mit Halluzinationen würde das System sinnlos sein. Aktualität, Zuverlässigkeit, Wissenstransparenz und Kontrollierbarkeit sind Vorraussetzung. Durch das Einfügen der Constraints (bisher absolvierte Kurse, Voraussetzungskette, ECTS-Vorgabe) im Abfragekontext wird vom LLM eine gute Antwort generiert.   
+
+RAG verbindet die Verlässlichkeit und Spezifität der Studienordnung (durch den Retrieval-Teil) mit der Flexibilität, Personalisierungsfähigkeit und Kommunikationsstärke des LLMs (durch den Generation-Teil). Es ist die effektivste Methode, um eine individuelle, korrekte und gut begründete Semesterplanung zu erstellen.
+
 ## WHAT - Ziel des Systems  
-Der Study Planner soll automatisch ein Semester mit passenden LVAs zusammenstellen.
+Scope: Bachelor Wirtschaftsinformatik  
+
+Der Study Planner soll automatisch für Studierende im Bachelorstudium Wirtschaftsinformatik ein Semester mit passenden LVAs zusammenstellen.
 Er berücksichtigt dabei:
 - Die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
 - Bereits absolvierte LVAs (Ideal wäre mit Memory Funktion: Eine einmalige Eingabe je absolvierter LVA sollte ausreichend sein - für die nächste Semesterplanung sollen nicht ALLE absolvierten Kurse wieder ausgewählt werden müssen, sondern nur jene die noch nie abgegeben wurde - Redundanzvermeidung).
@@ -20,14 +26,27 @@ Optional: Empfehlungen für alternative LVAs, wenn kein ideales Semester möglic
 Optional: Vermeidung - LVAs die basierend auf dem Kursverlauf noch nicht ratsam sind
 Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft1 noch nicht absolviert hast, ist Soft2, obwohl im Idealtypischen Studienplan sinnvoll, in deinem Plan noch nicht inkludiert."
 
-Scope: Fokus auf Bachelor Wirtschaftsinformatik 
+### Funktionen:
+#### ECTS-Zielvorgabe:   
+min - Eingabe für maximale ECTS-Anzahl, Chat fragt nach, solange er die Information nicht hat
+NiceToHave - Schieberegler  
+#### Studienfortschritt:
+min - Erfassung und Speicherung der absolvierten LVAs, Memory Funktion für Folgeplanungen, Abänderungen möglich  
+NiceToHave - Importmöglichkeit der absolvieren Kurse vom .pdf "Ausfüllhilfe Prüfungsraster"  
+#### Planungslogik:
+min - Generierung eines gültigen Plans (Achtung WS/SS), der: 1. Die Voraussetzungsketten einhält. 2. Die Maximal-ECTS nicht überschreitet.  
+NiceToHave - Optimierung nach idealtypischem Studienplan (Priorisierung der Kurse).  
+#### Erklärung: 
+min - Klare Begründung, warum vorgeschlagene Kurse gewählt wurden und warum wichtige Kurse ausgeschlossen wurden (z.B. fehlende Voraussetzung).  
+NiceToHave - Empfehlungen für alternative LVAs (z.B. Wahlfächer), wenn der Pflichtplan nicht ideal gefüllt werden kann.  
 
 ### Benutzerinteraktion (LLM-Dialog)
 User Prompt:
 „Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren.“
 
 LLM Nachfrage:
-„Welche LVAs wurden bereits absolviert?“
+„Welche LVAs wurden bereits absolviert? Bitte ergänze wenn nötig in deinen Nutzerdaten.  
+„Welches ist das kommende Semester? Ist SS2026 korrekt?“
 
 Eingabe über Klick-Option oder Liste
 Speicherung im Memory, damit diese Information nur einmal eingegeben werden muss
@@ -35,7 +54,8 @@ Retrieval / Datenbankzugriffe:
 
 JKU Curriculum (Voraussetzungen & ECTS)
 Idealtypischer Studienplan
-Abgeschlossene LVAs des Nutzers
+Abgeschlossene LVAs des Nutzers   
+
 LLM Antwort:
 
 Liste der empfohlenen LVAs, deren Voraussetzungen erfüllt sind
@@ -56,29 +76,24 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
   - Angular
   - HTTP Client 
 - ETL-Pipeline:
-  - Loader: PyPDFLoader (für PDFs), UnstructuredURLLoader (für Webseiten)
-  - Chunker: RecursiveCharacterTextSplitter von Langchain
-  - Preprocessor: Multi-Representation Indexing (ref: https://www.youtube.com/watch?v=sVcwVQRHIc8&t=4472s)
-      Dokument → Split → mithilfe eines LLM die Splits überarbeiten und eine Proposition/Extraktion der Splits erzeugen → anschließend eine Zusammenfassung destillieren (eine Darstellung mit Schlüsselwörtern usw. des Dokuments), die für das Retrieval optimiert ist.
-      Schritte: Zusammenfassung aus dem VektorDB abrufen, das vollständige Dokument aus dem Dokumentenspeicher anhand der Zusammenfassung heraussuchen, damit das LLM die Antwort generieren kann – das LLM kann das gesamte Dokument verarbeiten, sodass kein erneutes Splitting notwendig ist.
+  - Loader ???⚠️
+  - Chunker: RecursiveCharacterTextSplitter von Langchain ???? ⚠️
+  - Preprocessor ??⚠️
   - Embedder: Google Generative AI Embeddings 
 - LLM
   - Gemini 
 - Datenbank: 
-    1. Relationale DB: SQLite
-        - Nutzerdaten inkl. Authentication 
-        - Absolvierte LVAs je Nutzer
-        - Concurrency Probleme: kein echtes Multi-user System 
-        - (multi-user: PostgreSQL eher geeignet)
-    2. Vektordatenbank: zB ChromaDB
-        - gut für Kleinprojekt, prototypisch (nicht Produktivumgebung)
-        - Python kompatibel mit Flask/FastAPI
-        - integrierbar mit LangChain
-        - open source, lokal
-        - einfach einzurichten (kein API-key notwendig)
-        - speichert Embeddings, unterstützt Retrieval
-        - MRI mit Chroma: mehrere Collections oder Embeddings nutzen (MultiVectorRetriever)
-        - ansonsten Qdrant
+     -> Offenes TODO⚠️ zwischen Silvia+Marlene
+      
+### Architektur
+--> Offenes TODO⚠️ Silvia --> Kolleginnen: passt das so?
+- Frontend (Angular) sendet die Planungsanfrage (ECTS-Ziel, neue Kurse) via HTTP an den Backend-Server. Format json, REST API
+- Das Backend (Python) ruft die gespeicherten Kurse des Benutzers ab. 
+- Der RAG-Orchestrator (LangChain) erstellt eine semantische Suchanfrage und sucht in der Neon Vektordatenbank nach den relevanten Modulbeschreibungen/Voraussetzungsketten (Retrieval).
+- Der Orchestrator erstellt den finalen Prompt (Benutzerkontext + abgerufene Dokumente) und sendet ihn an das Gemini LLM.
+- Gemini generiert den optimalen, begründeten Plan (Generation).
+- Das Backend formatiert die LLM-Antwort und sendet sie als JSON via HTTP zurück an das Frontend.
+- Das Frontend visualisiert den Plan als Chatantwort.
 
 ## Evaluierungsmethodik
 //TODO: Silvia⚠️
