@@ -175,7 +175,6 @@ body.sidebar-collapsed .studyverse {
 
 .main-content {
     position: relative;
-    min-height: calc(100vh - var(--header-height, 0px));
     display: flex;
     justify-content: center;
     align-items: center;
@@ -235,7 +234,6 @@ body.empty-state {
 
 /* === chat === */
 .chat-wrapper {
-    padding-bottom: 30px ;
     display: none;
     flex-direction: column;
     justify-content: space-between;
