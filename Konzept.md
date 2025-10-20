@@ -76,14 +76,30 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
   - Angular
   - HTTP Client 
 - ETL-Pipeline:
-  - Loader ???⚠️
-  - Chunker: RecursiveCharacterTextSplitter von Langchain ???? ⚠️
-  - Preprocessor ??⚠️
+  - Loader: PyPDFLoader (für PDFs), UnstructuredURLLoader (für Webseiten)
+  - Chunker: RecursiveCharacterTextSplitter von Langchain
+  - Preprocessor: Multi-Representation Indexing (ref: https://www.youtube.com/watch?v=sVcwVQRHIc8&t=4472s)
+      Dokument → Split → mithilfe eines LLM die Splits überarbeiten und eine Proposition/Extraktion der Splits erzeugen → anschließend eine Zusammenfassung destillieren (eine Darstellung mit Schlüsselwörtern usw. des Dokuments), die für das Retrieval optimiert ist.
+      Schritte: Zusammenfassung aus dem VektorDB abrufen, das vollständige Dokument aus dem Dokumentenspeicher anhand der Zusammenfassung heraussuchen, damit das LLM die Antwort generieren kann – das LLM kann das gesamte Dokument verarbeiten, sodass kein erneutes Splitting notwendig ist.
   - Embedder: Google Generative AI Embeddings 
 - LLM
   - Gemini 
 - Datenbank: 
      -> Offenes TODO⚠️ zwischen Silvia+Marlene
+  - 1. Relationale DB: SQLite
+        - Nutzerdaten inkl. Authentication 
+        - Absolvierte LVAs je Nutzer
+        - Concurrency Probleme: kein echtes Multi-user System 
+        - (multi-user: PostgreSQL eher geeignet)
+    2. Vektordatenbank: zB ChromaDB
+        - gut für Kleinprojekt, prototypisch (nicht Produktivumgebung)
+        - Python kompatibel mit Flask/FastAPI
+        - integrierbar mit LangChain
+        - open source, lokal
+        - einfach einzurichten (kein API-key notwendig)
+        - speichert Embeddings, unterstützt Retrieval
+        - MRI mit Chroma: mehrere Collections oder Embeddings nutzen (MultiVectorRetriever)
+        - ansonsten Qdrant
       
 ### Architektur
 --> Offenes TODO⚠️ Silvia --> Kolleginnen: passt das so?
