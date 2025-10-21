@@ -27,17 +27,17 @@ Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft
 
 ### Funktionen:
 #### ECTS-Zielvorgabe:   
-min - Eingabe für maximale ECTS-Anzahl, Chat fragt nach, solange er die Information nicht hat
-NiceToHave - Schieberegler  
+Must have - Eingabe für maximale ECTS-Anzahl, Chat fragt nach, solange er die Information nicht hat   
+Nice to have - Schieberegler  
 #### Studienfortschritt:
-min - Erfassung und Speicherung der absolvierten LVAs, Memory Funktion für Folgeplanungen, Abänderungen möglich  
-NiceToHave - Importmöglichkeit der absolvieren Kurse vom .pdf "Ausfüllhilfe Prüfungsraster"  
+Must have - Erfassung und Speicherung der absolvierten LVAs, Memory Funktion für Folgeplanungen, Abänderungen möglich  
+Nice to have - Importmöglichkeit der absolvieren Kurse vom .pdf "Ausfüllhilfe Prüfungsraster"  
 #### Planungslogik:
-min - Generierung eines gültigen Plans (Achtung WS/SS), der: 1. Die Voraussetzungsketten einhält. 2. Die Maximal-ECTS nicht überschreitet.  
-NiceToHave - Optimierung nach idealtypischem Studienplan (Priorisierung der Kurse).  
+Must have - Generierung eines gültigen Plans (Achtung WS/SS), der: 1. Die Voraussetzungsketten einhält. 2. Die Maximal-ECTS nicht überschreitet.  
+Nice to have - Optimierung nach idealtypischem Studienplan (Priorisierung der Kurse).  
 #### Erklärung: 
-min - Klare Begründung, warum vorgeschlagene Kurse gewählt wurden und warum wichtige Kurse ausgeschlossen wurden (z.B. fehlende Voraussetzung).  
-NiceToHave - Empfehlungen für alternative LVAs (z.B. Wahlfächer), wenn der Pflichtplan nicht ideal gefüllt werden kann.  
+Must have - Klare Begründung, warum vorgeschlagene Kurse gewählt wurden und warum wichtige Kurse ausgeschlossen wurden (z.B. fehlende Voraussetzung).  
+Nice to have - Empfehlungen für alternative LVAs (z.B. Wahlfächer), wenn der Pflichtplan nicht ideal gefüllt werden kann.  
 
 ### Benutzerinteraktion (LLM-Dialog)
 User Prompt:
