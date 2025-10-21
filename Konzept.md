@@ -94,7 +94,7 @@ Login mit vorhandenen Userdaten.
 Login erfolgreich und richtige Daten sichtbar.
 - erste Planung
 "Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren."  
-Liste von LVAs (ECTS < 24): Alle vorgeschlagenen LVAs müssen im Wunschsemester stattfinden (Voraussetzungen erfüllt).  
+Liste von LVAs (ECTS <= 24): Alle vorgeschlagenen LVAs müssen im Wunschsemester stattfinden (Voraussetzungen erfüllt).  
 - Planung mit Constraints
 Es wurde SOFT1 als absolviert eingetragen. "Chat: Max 18 ECTS für das SS2026."   
 Soll SOFT2 enthalten (Voraussetzung SOFT1 erfüllt) und zB SE ausschließen (Voraussetzung SOFT2 noch nicht erfüllt).
@@ -107,12 +107,13 @@ Ziel ist es, die Trefferquote und Relevanz der abgerufenen curricularen Daten zu
 Methode: Manuelle Relevanzprüfung (Hit Rate/Precision)
 - Vorgehen: Eine Reihe von mind. 15 testrelevanten Abfragen (z.B. "Voraussetzungen für den Kurs SOFT2", "ECTS von ALGO") an den RAG-Orchestrator stellen.
 - Bewertung: Manuelle Prüfung der Top-3 abgerufenen Dokumenten-Chunks. Wurde die korrekte Modulbeschreibung oder Voraussetzungskette gefunden
-- Metrik: Hit Rate: Wurde das relevante Dokument gefunden? und Precision: Wie viele der Top-3 Dokumente sind wirklich relevant?).
+- Metrik: Hit Rate: Wurde das relevante Dokument gefunden? und Precision: Wie viele der Top-3 Dokumente sind wirklich relevant?.
 - Minimalanforderung: Eine Hit Rate @ 3 von mindestens 90 % für die kritischen Abfragen (Voraussetzungsketten, ECTS-Werte).
    
 ### 2. Generation-Komponente (LLM-Antwort)  
 Ziel ist es, die Korrektheit und Nützlichkeit des generierten Semesterplans zu messen.
-Methode: Manuelle/Experten-EvaluierungVorgehen: mind. 15 typische bis komplexe Planungsaufgaben mit verschiedenen absolvierten Kursen und ECTS-Zielen durchführen.
+Methode: Manuelle/Experten-Evaluierung  
+Vorgehen: mind. 15 typische bis komplexe Planungsaufgaben mit verschiedenen absolvierten Kursen und ECTS-Zielen durchführen.
 - Bewertung: Ein Experte (jemand mit Curriculum-Kenntnis) bewertet jede LLM-Antwort anhand folgender Kriterien:  
 Faktische Korrektheit (Must-Have): Wurden alle Voraussetzungsketten beachtet? Wurde die Max-ECTS-Vorgabe eingehalten?
 Vollständigkeit/Relevanz (Nice-to-Have): Wurde der Plan optimal nach dem idealtypischen Studienplan gefüllt?  
