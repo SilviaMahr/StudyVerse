@@ -85,21 +85,7 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - LLM
   - Gemini 
 - Datenbank: 
-     -> Offenes TODO⚠️ zwischen Silvia+Marlene
-  - 1. Relationale DB: SQLite
-        - Nutzerdaten inkl. Authentication 
-        - Absolvierte LVAs je Nutzer
-        - Concurrency Probleme: kein echtes Multi-user System 
-        - (multi-user: PostgreSQL eher geeignet)
-    2. Vektordatenbank: zB ChromaDB
-        - gut für Kleinprojekt, prototypisch (nicht Produktivumgebung)
-        - Python kompatibel mit Flask/FastAPI
-        - integrierbar mit LangChain
-        - open source, lokal
-        - einfach einzurichten (kein API-key notwendig)
-        - speichert Embeddings, unterstützt Retrieval
-        - MRI mit Chroma: mehrere Collections oder Embeddings nutzen (MultiVectorRetriever)
-        - ansonsten Qdrant
+     Neon DB, Tests bei allen Teammitgliedern erfolgreich.  Entscheidung für eine einzige DB, auch für Nutzerdaten aufgrund der Größe des Projektes.
       
 ### Architektur
 --> Offenes TODO⚠️ Silvia --> Kolleginnen: passt das so?
