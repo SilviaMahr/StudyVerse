@@ -89,9 +89,6 @@ Optional: Liste mit Not-To-Do´s
 - Das Frontend visualisiert den Plan als Chatantwort.
 
 ## Evaluierungsmethodik
-- Login  
-Login mit vorhandenen Userdaten.  
-Login erfolgreich und richtige Daten sichtbar.
 - erste Planung
 "Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren."  
 Liste von LVAs (ECTS <= 24): Alle vorgeschlagenen LVAs müssen im Wunschsemester stattfinden (Voraussetzungen erfüllt).  
