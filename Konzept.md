@@ -94,10 +94,10 @@ Login mit vorhandenen Userdaten.
 Login erfolgreich und richtige Daten sichtbar.
 - erste Planung
 "Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren."  
-Liste von LVAs (ECTS $\le 24$): Alle vorgeschlagenen LVAs müssen freie Plätze haben (Voraussetzungen erfüllt).  
+Liste von LVAs (ECTS < 24): Alle vorgeschlagenen LVAs müssen im Wunschsemester stattfinden (Voraussetzungen erfüllt).  
 - Planung mit Constraints
-Es wurde ALGO als absolviert eingetragen. "Chat: Max 18 ECTS für das SS2026."   
-Muss SOFT1 enthalten (Voraussetzung ALGO erfüllt) und SOFT2 ausschließen (Voraussetzung SOFT1 noch nicht erfüllt).
+Es wurde SOFT1 als absolviert eingetragen. "Chat: Max 18 ECTS für das SS2026."   
+Soll SOFT2 enthalten (Voraussetzung SOFT1 erfüllt) und zB SE ausschließen (Voraussetzung SOFT2 noch nicht erfüllt).
 - Erklärung
 (Nach der Planung) "Warum wurde SOFT2 nicht vorgeschlagen?"   
 "SOFT2 wurde nicht vorgeschlagen, da die Voraussetzung SOFT1 noch nicht absolviert wurde."
