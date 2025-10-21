@@ -18,8 +18,7 @@ Scope: Bachelor Wirtschaftsinformatik
 Der Study Planner soll automatisch für Studierende im Bachelorstudium Wirtschaftsinformatik ein Semester mit passenden LVAs zusammenstellen.
 Er berücksichtigt dabei:
 - Die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
-- Bereits absolvierte LVAs (Ideal wäre mit Memory Funktion: Eine einmalige Eingabe je absolvierter LVA sollte ausreichend sein - für die nächste Semesterplanung sollen nicht ALLE absolvierten Kurse wieder ausgewählt werden müssen, sondern nur jene die noch nie abgegeben wurde - Redundanzvermeidung).
-- Voraussetzungsketten laut Curriculum (Oft im Studienhandbuch zu finden)
+- Bereits absolvierte LVAs
 - Berücksichtigung Idealtypischer Studienplan
 
 Optional: Empfehlungen für alternative LVAs, wenn kein ideales Semester möglich ist
