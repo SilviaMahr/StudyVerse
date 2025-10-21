@@ -89,7 +89,7 @@ Optional: Liste mit Not-To-Do´s
 - Das Frontend visualisiert den Plan als Chatantwort.
 
 ## Evaluierungsmethodik
-- Login
+- Login  
 Login mit vorhandenen Userdaten.  
 Login erfolgreich und richtige Daten sichtbar.
 - erste Planung
