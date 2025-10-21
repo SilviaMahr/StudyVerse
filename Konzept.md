@@ -71,9 +71,7 @@ Optional: Liste mit Not-To-Do´s
 - ETL-Pipeline:
   - Loader: PyPDFLoader (für PDFs), UnstructuredURLLoader (für Webseiten)
   - Chunker: RecursiveCharacterTextSplitter von Langchain
-  - Preprocessor: Multi-Representation Indexing (ref: https://www.youtube.com/watch?v=sVcwVQRHIc8&t=4472s)
-      Dokument → Split → mithilfe eines LLM die Splits überarbeiten und eine Proposition/Extraktion der Splits erzeugen → anschließend eine Zusammenfassung destillieren (eine Darstellung mit Schlüsselwörtern usw. des Dokuments), die für das Retrieval optimiert ist.
-      Schritte: Zusammenfassung aus dem VektorDB abrufen, das vollständige Dokument aus dem Dokumentenspeicher anhand der Zusammenfassung heraussuchen, damit das LLM die Antwort generieren kann – das LLM kann das gesamte Dokument verarbeiten, sodass kein erneutes Splitting notwendig ist.
+  - Preprocessor: Multi-Representation Indexing 
   - Embedder: Google Generative AI Embeddings 
 - LLM
   - Gemini 
