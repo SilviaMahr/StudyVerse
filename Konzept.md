@@ -47,9 +47,7 @@ LLM Nachfrage:
 „Welche LVAs wurden bereits absolviert? Bitte ergänze wenn nötig in deinen Nutzerdaten.  
 „Welches ist das kommende Semester? Ist SS2026 korrekt?“
 
-Eingabe über Klick-Option oder Liste
-Speicherung im Memory, damit diese Information nur einmal eingegeben werden muss
-Retrieval / Datenbankzugriffe:
+Retrieval / Datenbankzugriffe:  
 
 JKU Curriculum (Voraussetzungen & ECTS)
 Idealtypischer Studienplan
