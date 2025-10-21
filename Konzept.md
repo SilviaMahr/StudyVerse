@@ -98,4 +98,41 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - Das Frontend visualisiert den Plan als Chatantwort.
 
 ## Evaluierungsmethodik
-//TODO: Silvia⚠️
+- Login
+Login mit vorhandenen Userdaten.  
+Login erfolgreich und richtige Daten sichtbar.
+- erste Planung
+"Stelle mir mein kommendes Semester zusammen. Ich möchte max. 24 ECTS absolvieren."  
+Liste von LVAs (ECTS $\le 24$): Alle vorgeschlagenen LVAs müssen freie Plätze haben (Voraussetzungen erfüllt).  
+- Planung mit Constraints
+Es wurde ALGO als absolviert eingetragen. "Chat: Max 18 ECTS für das SS2026."   
+Muss SOFT1 enthalten (Voraussetzung ALGO erfüllt) und SOFT2 ausschließen (Voraussetzung SOFT1 noch nicht erfüllt).
+- Erklärung
+(Nach der Planung) "Warum wurde SOFT2 nicht vorgeschlagen?"   
+"SOFT2 wurde nicht vorgeschlagen, da die Voraussetzung SOFT1 noch nicht absolviert wurde."
+
+### 1. Retrieval-Komponente (Vektordatenbank & Embeddings)
+Ziel ist es, die Trefferquote und Relevanz der abgerufenen curricularen Daten zu messen.
+Methode: Manuelle Relevanzprüfung (Hit Rate/Precision)
+- Vorgehen: Eine Reihe von mind. 15 testrelevanten Abfragen (z.B. "Voraussetzungen für den Kurs SOFT2", "ECTS von ALGO") an den RAG-Orchestrator stellen.
+- Bewertung: Manuelle Prüfung der Top-3 abgerufenen Dokumenten-Chunks. Wurde die korrekte Modulbeschreibung oder Voraussetzungskette gefunden
+- Metrik: Hit Rate: Wurde das relevante Dokument gefunden? und Precision: Wie viele der Top-3 Dokumente sind wirklich relevant?).
+- Minimalanforderung: Eine Hit Rate @ 3 von mindestens 90 % für die kritischen Abfragen (Voraussetzungsketten, ECTS-Werte).
+   
+### 2. Generation-Komponente (LLM-Antwort)  
+Ziel ist es, die Korrektheit und Nützlichkeit des generierten Semesterplans zu messen.
+Methode: Manuelle/Experten-EvaluierungVorgehen: mind. 15 typische bis komplexe Planungsaufgaben mit verschiedenen absolvierten Kursen und ECTS-Zielen durchführen.
+- Bewertung: Ein Experte (jemand mit Curriculum-Kenntnis) bewertet jede LLM-Antwort anhand folgender Kriterien:  
+Faktische Korrektheit (Must-Have): Wurden alle Voraussetzungsketten beachtet? Wurde die Max-ECTS-Vorgabe eingehalten?
+Vollständigkeit/Relevanz (Nice-to-Have): Wurde der Plan optimal nach dem idealtypischen Studienplan gefüllt?  
+Begründungsqualität: Ist die Erklärung für die Kurswahl (oder Nicht-Wahl) klar und korrekt?  
+- Minimalanforderung: 100 % faktische Korrektheit (Kriterium 1).  
+Methode: LLM-basierte Ähnlichkeit (GPT-Similarity)  
+Vorgehen: Die generierte Antwort des STUDYverse-LLM mit einer idealen, manuell erstellten Referenz-Antwort vergleichen.
+Metrik: Nutzung eines externen, leistungsstarken LLM (z.B. GPT-4) zur Berechnung der semantischen Ähnlichkeit (Similarity-Score) zwischen der generierten und der idealen Antwort. Dies hilft bei der schnellen Überprüfung der Konsistenz in der Erklärung und der Priorisierung.
+- Minimalanforderung: Ein durchschnittlicher Similarity-Score > 0,8 für die Begründungstexte.
+
+### 3. Speicherung des Studienfortschritts (Memory-Funktion)  
+Die Memory-Funktion zur Speicherung der absolvierten LVAs wird durch einfache Integrationstests geprüft.
+Testfall: User gibt erstmals 5 absolvierte Kurse ein. User fragt im nächsten Chat nach der Planung.
+Erwartung: Das System fragt nutzt die gespeicherten Daten und plant absolvierte Kurse nicht, Voraussetzungsketten stimmen.
