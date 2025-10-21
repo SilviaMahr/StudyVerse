@@ -61,13 +61,9 @@ Optional: Priorisierung nach Studienfortschritt oder Semesterempfehlung
 Optional: Liste mit Not-To-Do´s
 
 ## HOW - Systemarchitektur / Technologystack    
-Backend Python, Frontend Angular, Datenbank: ?? 
-⚠️ //TODO: muss noch finalisiert werden, jeder recherchiert seinen Part -> Klare Part-Abgrenzung sehr schwierig! 
-Habe mal einen kollektiven Generalvorschlag untenstehend -> Jene Punkte mit ? und ⚠️ gehören noch von den jeweiligen
-zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werden! 
-
-- Backend: 
-  - Python -> ⚠️Flask oder FastAPI um Angular Anbindung zu ermöglichen (Angular + Python nicht rein lokal möglich) daher Entscheidung für Flask oder Fast API treffen! Würde aber Flask vorschlagen, da mit SQLite DB super verbindbar. 
+- Backend:  
+  - Python
+  - FastAPI  
   - Langchain
 - Frontend:
   - Angular
@@ -82,10 +78,10 @@ zuständigen Personen selbst recherchiert. Änderungen dürfen vorgenommen werde
 - LLM
   - Gemini 
 - Datenbank: 
-     Neon DB, Tests bei allen Teammitgliedern erfolgreich.  Entscheidung für eine einzige DB, auch für Nutzerdaten aufgrund der Größe des Projektes.
+     Neon DB, Tests bei allen Teammitgliedern erfolgreich.
+  Entscheidung für eine einzige DB, auch für Nutzerdaten aufgrund der Größe des Projektes.
       
 ### Architektur
---> Offenes TODO⚠️ Silvia --> Kolleginnen: passt das so?
 - Frontend (Angular) sendet die Planungsanfrage (ECTS-Ziel, neue Kurse) via HTTP an den Backend-Server. Format json, REST API
 - Das Backend (Python) ruft die gespeicherten Kurse des Benutzers ab. 
 - Der RAG-Orchestrator (LangChain) erstellt eine semantische Suchanfrage und sucht in der Neon Vektordatenbank nach den relevanten Modulbeschreibungen/Voraussetzungsketten (Retrieval).
