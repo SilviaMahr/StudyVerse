@@ -1,6 +1,5 @@
 # This will be the main file - code follows here
 
-
 import os
 import google.generativeai as genai
 #DUMMYCODE! TESTING ONLY - AI GENERATED
