@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 
-conn = sqlite3.connect('studyverse.db')
+conn = sqlite3.connect('../studyverse.db')
 cursor = conn.cursor()
 
 cursor.execute('''
