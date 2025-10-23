@@ -19,7 +19,7 @@ Der Study Planner soll automatisch für Studierende im Bachelorstudium Wirtschaf
 Er berücksichtigt dabei:
 - die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
 - bereits absolvierte LVAs
-- Vorraussetzungsketten (kein DKE Projekt vor SOFT2)
+- Voraussetzungsketten (kein DKE Projekt vor SOFT2)
 
 Optional: Empfehlungen für alternative LVAs, wenn kein ideales Semester möglich ist
 Optional: Anlehnung an Idealtypischen Studienplan - LVAs die basierend auf dem Kursverlauf noch nicht ratsam sind, werden vermieden
@@ -28,7 +28,6 @@ Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft
 ### Funktionen:
 #### ECTS-Zielvorgabe:   
 Must have - Eingabe für maximale ECTS-Anzahl, Chat fragt nach, solange er die Information nicht hat   
-Nice to have - Schieberegler  
 #### Studienfortschritt:
 Must have - Erfassung und Speicherung der absolvierten LVAs, Memory Funktion für Folgeplanungen, Abänderungen möglich  
 Nice to have - Importmöglichkeit der absolvieren Kurse vom .pdf "Ausfüllhilfe Prüfungsraster"  
@@ -99,15 +98,15 @@ Soll SOFT2 enthalten (Voraussetzung SOFT1 erfüllt) und zB SE ausschließen (Vor
 (Nach der Planung) "Warum wurde SOFT2 nicht vorgeschlagen?"   
 "SOFT2 wurde nicht vorgeschlagen, da die Voraussetzung SOFT1 noch nicht absolviert wurde."
 
-### 1. Retrieval-Komponente (Vektordatenbank & Embeddings)
+### a. Retrieval-Komponente (Vektordatenbank & Embeddings)
 Ziel ist es, die Trefferquote und Relevanz der abgerufenen curricularen Daten zu messen.
 Methode: Manuelle Relevanzprüfung (Hit Rate/Precision)
 - Vorgehen: Eine Reihe von mind. 15 testrelevanten Abfragen (z.B. "Voraussetzungen für den Kurs SOFT2", "ECTS von ALGO") an den RAG-Orchestrator stellen.
 - Bewertung: Manuelle Prüfung der Top-3 abgerufenen Dokumenten-Chunks. Wurde die korrekte Modulbeschreibung oder Voraussetzungskette gefunden
 - Metrik: Hit Rate: Wurde das relevante Dokument gefunden? und Precision: Wie viele der Top-3 Dokumente sind wirklich relevant?.
-- Minimalanforderung: Eine Hit Rate @ 3 von mindestens 90 % für die kritischen Abfragen (Voraussetzungsketten, ECTS-Werte).
+- Minimalanforderung: Eine Hit Rate von mindestens 90 % für die kritischen Abfragen (Voraussetzungsketten, ECTS-Werte).
    
-### 2. Generation-Komponente (LLM-Antwort)  
+### b. Generation-Komponente (LLM-Antwort)  
 Ziel ist es, die Korrektheit und Nützlichkeit des generierten Semesterplans zu messen.
 Methode: Manuelle/Experten-Evaluierung  
 Vorgehen: mind. 15 typische bis komplexe Planungsaufgaben mit verschiedenen absolvierten Kursen und ECTS-Zielen durchführen.
@@ -121,7 +120,7 @@ Vorgehen: Die generierte Antwort des STUDYverse-LLM mit einer idealen, manuell e
 Metrik: Nutzung eines externen, leistungsstarken LLM (z.B. GPT-4) zur Berechnung der semantischen Ähnlichkeit (Similarity-Score) zwischen der generierten und der idealen Antwort. Dies hilft bei der schnellen Überprüfung der Konsistenz in der Erklärung und der Priorisierung.
 - Minimalanforderung: Ein durchschnittlicher Similarity-Score > 0,8 für die Begründungstexte.
 
-### 3. Speicherung des Studienfortschritts (Memory-Funktion)  
+### c. Speicherung des Studienfortschritts (Memory-Funktion)  
 Die Memory-Funktion zur Speicherung der absolvierten LVAs wird durch einfache Integrationstests geprüft.
 Testfall: User gibt erstmals 5 absolvierte Kurse ein. User fragt im nächsten Chat nach der Planung.
 Erwartung: Das System fragt nutzt die gespeicherten Daten und plant absolvierte Kurse nicht, Voraussetzungsketten stimmen.
