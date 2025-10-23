@@ -4,7 +4,7 @@
 Studierende haben oft Schwierigkeiten, ihr Semester oder das Studium optimal zu planen: Sie wissen nicht genau, welche Lehrveranstaltungen im kommenden Semester sinnvoll sind.  
 
 Voraussetzungsketten (z. B. SOFT1 → SOFT2 → PR SE) sind im Studienhandbuch zwar dokumentiert, aber schwer überschaubar.
-Der Studienfortschritt (bereits absolvierte Kurse) wird selten automatisch berücksichtigt. Viele Studierende arbeiten nebenher und/oder haben Betreuungspflichten und haben somit Ressourcen für unter 30 ECTS.  
+Der Studienfortschritt (bereits absolvierte Kurse) wird nicht berücksichtigt. Viele Studierende arbeiten nebenher und/oder haben Betreuungspflichten und haben somit Ressourcen für unter 30 ECTS.  
 
 Der STUDYverse soll Studierende bei der individuellen Semesterplanung unterstützen, indem er basierend auf bisherigen Leistungen, ECTS-Zielvorgaben und Curriculumsdaten ein ideales Semester vorschlägt.  
 
@@ -17,12 +17,12 @@ Scope: Bachelor Wirtschaftsinformatik
 
 Der Study Planner soll automatisch für Studierende im Bachelorstudium Wirtschaftsinformatik ein Semester mit passenden LVAs zusammenstellen.
 Er berücksichtigt dabei:
-- Die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
-- Bereits absolvierte LVAs
-- Berücksichtigung Idealtypischer Studienplan
+- die gewünschte Anzahl an ECTS (z. B. max. 24 ECTS)
+- bereits absolvierte LVAs
+- Vorraussetzungsketten (kein DKE Projekt vor SOFT2)
 
 Optional: Empfehlungen für alternative LVAs, wenn kein ideales Semester möglich ist
-Optional: Vermeidung - LVAs die basierend auf dem Kursverlauf noch nicht ratsam sind
+Optional: Anlehnung an Idealtypischen Studienplan - LVAs die basierend auf dem Kursverlauf noch nicht ratsam sind, werden vermieden
 Optional: Erklärung warum bestimmte LVAs nicht gewählt wurden z.B. "Da du Soft1 noch nicht absolviert hast, ist Soft2, obwohl im Idealtypischen Studienplan sinnvoll, in deinem Plan noch nicht inkludiert."
 
 ### Funktionen:
