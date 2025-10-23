@@ -5,7 +5,7 @@ studyverse@gmx.at
 
 We also have a gmx.at Address now (same pw) just in case.
 
-There are 4 Users on the DB now:  
+There are 4 Users in the Table Users
 - silvia@study.at
 - johanna@study.at
 - sabiha@study.at
