@@ -55,6 +55,24 @@ def test_neon_connection(db_url):
                     print("⚠️ Die Tabelle 'lvas' ist leer oder existiert nicht.")
                 # ---------------------------
 
+                # --- 4. TEST: DATENABRUF ---
+                print("\n📖 **4. Test: Abruf der User**")
+
+                # Führt die Abfrage aus
+                cur.execute("SELECT id, email FROM users;")
+                users_records = cur.fetchall()
+
+                if users_records:
+                    print("ID | EMail ")
+                    print("---|---")
+                    for record in users_records:
+                        # Formatiert die Ausgabe sauber
+                        print(f"{record[0]:2} | {record[1]:50} ")
+                    print(f"\n✅ Datenabruf erfolgreich. {len(users_records)} Datensätze angezeigt.")
+                else:
+                    print("⚠️ Die Tabelle 'users' ist leer oder existiert nicht.")
+                # ---------------------------
+
                 print(f"⏰ Datenbank-Zeit erfolgreich abgerufen: {db_time}")
                 print("---")
                 print("🥳 **VERBINDUNG ERFOLGREICH!**")
