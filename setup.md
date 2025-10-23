@@ -73,15 +73,7 @@ Nun gibt es zwei unterschiedliche Verfahren:
    - Environment variables: API KEY -> Es müsste initial Pythonbufferd=1 im Feld stehen -> Edit Button anklicken -> + -> Name z.B.: GEMINI_API_KEY, Value: Persönlicher Key
    - ❗Evtl. ist es auch sinnvoll am lokalen PC eine Umgebungsvariable mit GEMINI_API_KEY (muss exakt so heißen) + Value = persönlicher Schlüssel zu setzen (ich hatte heute beim Neustart nämlich Probleme, seit Setzen des Path am lokalen PC funktioniert es aber. 
 
-
-
-  
-
-    
- 
-
-
-
-
- 
-  
+## Neon DB
+https://github.com/neondatabase/examples  
+```bash
+  pip install psycopg[binary]
