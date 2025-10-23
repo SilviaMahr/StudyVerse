@@ -76,6 +76,7 @@ Nun gibt es zwei unterschiedliche Verfahren:
    - ❗Evtl. ist es auch sinnvoll am lokalen PC eine Umgebungsvariable mit GEMINI_API_KEY (muss exakt so heißen) + Value = persönlicher Schlüssel zu setzen (ich hatte heute beim Neustart nämlich Probleme, seit Setzen des Path am lokalen PC funktioniert es aber. 
 
 ## Neon DB
+https://neon.com/ login studyVerse@gmx.at !studyVerse0
 https://github.com/neondatabase/examples  
 ```bash
   pip install psycopg[binary]
