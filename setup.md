@@ -52,6 +52,8 @@ Version 3.13 wäre grundsätzlich auch möglich, aber für unser kleines Projekt
   - ```bash
     pip install -r requirements.txt
   Du musst dich aber im richtigen Ordner befinden, wo die .txt-Datei liegt.  
+- ```bash
+    cd backend
  ℹ️ Python Pakete für unsere Applikation -> wsl. wachsendes Doc. 
 
 ## 🔎 Google Gemini API
