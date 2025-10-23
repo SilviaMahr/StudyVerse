@@ -23,6 +23,7 @@ pyasn1_modules==0.4.2
 pydantic==2.11.10
 pydantic_core==2.33.2
 pyparsing==3.2.5
+psycopg==3.2.10 #silvia
 requests==2.32.5
 rsa==4.9.1
 tqdm==4.67.1
