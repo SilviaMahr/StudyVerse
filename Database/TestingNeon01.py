@@ -2,8 +2,7 @@ import psycopg
 import os
 
 # ⚠️ FÜGEN SIE IHREN VOLLSTÄNDIGEN CONNECTION STRING HIER EIN
-# Kopiert den Wert aus Ihrer .env-Datei/dem Prompt:
-DB_URL = "postgresql://neondb_owner:npg_YhvGT94fHawr@ep-small-moon-a9ze45dg-pooler.gwc.azure.neon.tech/neondb?sslmode=require&channel_binding=require"
+DB_URL = "postgresql://neondb_owner:npg_Hv7VAhfpR1dc@ep-patient-mode-a9dvojnm-pooler.gwc.azure.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 
 def test_neon_connection(db_url):
