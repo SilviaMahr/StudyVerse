@@ -80,7 +80,7 @@ https://neon.com/ login studyVerse@gmx.at !studyVerse0
 Examples: https://github.com/neondatabase/examples  
 
 
-# Angular/Frontend SET UP GUIDE
+# 🌐 Angular/Frontend SET UP GUIDE
 Following steps must be performed in order to run the angular frontend:
 
 - install node.js ( v20.19.0 or newer) https://angular.dev/reference/versions
@@ -112,3 +112,15 @@ After a successful build, start server:
 ng serve
 ```
 Open the application on localhost (you find the link in the terminal).
+
+# 🔧 Fast API Backend Setup
+
+Requirements Text updaten 
+```
+pip install -r requirements.txt
+```
+Backend starten
+```
+uvicorn backend.app.main:app --reload
+```
+Swagger UI öffnen: http://localhost:8000/docs 
