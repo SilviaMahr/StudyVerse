@@ -115,12 +115,12 @@ Open the application on localhost (you find the link in the terminal).
 
 # 🔧 Fast API Backend Setup
 
-Requirements Text updaten 
+update requirements.txt 
 ```
 pip install -r requirements.txt
 ```
-Backend starten
+start backend with the following command 
 ```
 uvicorn backend.app.main:app --reload
 ```
-Swagger UI öffnen: http://localhost:8000/docs 
+Open Swagger UI: http://localhost:8000/docs 
