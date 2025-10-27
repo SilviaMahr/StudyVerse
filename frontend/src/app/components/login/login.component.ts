@@ -1,8 +1,14 @@
 import { Component, OnInit, ElementRef, ViewChild, Renderer2, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common'; // Wichtig für SSR!
+import {CommonModule, isPlatformBrowser} from '@angular/common';
+import { HeaderComponent} from '../header/header.component';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
+  imports : [
+    CommonModule,
+    HeaderComponent
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
