@@ -1,6 +1,3 @@
-<app-header></app-header>
-<div id="starfield" #starContainer></div>
-<div id="dayUniverse" #planetContainer></div>
 <main class="main-content">
   <div class="main-inner">
     <div class="login-container">
@@ -11,8 +8,8 @@
 
     <div class="form-wrapper">
     <div class="login-box">
-      <h2>Bitte melde dich an, um Studyverse zu verwenden</h2>
-      <form class="login-form">
+      <h2>Bitte melde dich an, um STUDYverse zu verwenden</h2>
+      <form class="login-form" (ngSubmit)="onLogin()">
         <input type="text" placeholder="E-Mail-Adresse" required>
         <input type="password" placeholder="Passwort" required>
         <button type="submit">Anmelden</button>
@@ -20,13 +17,16 @@
     </div>
     </div>
   </div>
+
+
   <div class="mode-toggle-container">
     <div class="mode-toggle">
       <img src="assets/sunFull.png"
            alt="helles Erscheinungsbild"
            id="lightModeBtn"
            class="mode-icon"
-           #lightModeIcon (click)="setLightMode()">
+           #lightModeIcon
+           (click)="setLightMode()">
       <img src="assets/moonEmpty.png"
            alt="dunkles Erscheinungsbild"
            id="darkModeBtn"
