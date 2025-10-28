@@ -52,7 +52,6 @@ export class LoginComponent implements OnInit{
   }
 
   private updateModeIcons(isDarkMode: boolean): void {
-    // Stellt sicher, dass die Refs existieren (wichtig bei globaler Komponente)
     if (!this.lightModeBtnRef || !this.darkModeBtnRef) return;
 
     const assetPath = 'assets/';

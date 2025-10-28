@@ -1,0 +1,49 @@
+<div class="layout">
+  <aside class="sidebar" id="sidebar" #sidebar>
+    <div class="toggle-button" (click)="toggleSidebar()">
+      <img id ="toggleIcon"
+           alt="Sidebar schließen"
+           src="assets/closeSidebarIcon.png"
+           class= "sidebar-icon"
+           #toggleIcon>
+    </div>
+    <ul>
+      <li>
+        <a href="#" (click) = $event.preventDefault()>
+          <img src="assets/addIcon.png"
+               alt="neue Planung hinzufügen"
+               class="sidebar-icon">
+          neue Planung
+        </a>
+      </li>
+    </ul>
+
+    <ul class="edit-profile">
+      <li>
+        <a href="#" (click) = $event.preventDefault()>
+          <img src="assets/penIcon.png"
+               alt="Profil bearbeiten"
+               class="sidebar-icon">
+          Profil bearbeiten
+        </a>
+      </li>
+    </ul>
+
+
+    <div class="mode-toggle">
+      <img src="assets/sunFull.png"
+           alt="Day Mode"
+           id="lightModeBtn"
+           class="mode-icon"
+           #lightModeIcon
+           (click)="toggleDarkMode()">
+      <img src="assets/moonEmpty.png"
+           alt="Night Mode"
+           id="nightModeBtn"
+           class="mode-icon"
+           #darkModeIcon
+           (click)="toggleLightMode()"
+      >
+    </div>
+  </aside>
+</div>
