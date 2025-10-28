@@ -115,6 +115,17 @@ Open the application on localhost (you find the link in the terminal).
 
 # 🔧 Fast API Backend Setup
 
+Erstelle ein File direkt im Projektverzeichnis (in IntelliJ Rechtsklick auf StudyVerse Folder -> new File -> nenne die Datei .env (der Punkt vor env ist wichtig).
+Dann befülle die .env File mit folgendem Inhalt:
+```
+# Neon-DB connection (PostgreSQL)
+DATABASE_URL=postgresql://neondb_owner:npg_Hv7VAhfpR1dc@ep-patient-mode-a9dvojnm-pooler.gwc.azure.neon.tech/neondb?sslmode=require
+
+# JWT Settings (JSON Web Token)
+JWT_SECRET="accessTokenAnything-271025-!;"
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
 update requirements.txt 
 ```
 pip install -r requirements.txt
