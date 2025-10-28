@@ -1,3 +1,6 @@
+# Authentification module -> used for helper functions for pw hashing, verification
+# and jwt-token creation.
+
 import os  #load db url
 import jwt # to create and verify jwt tokens
 from datetime import datetime, timedelta # for token expiration
