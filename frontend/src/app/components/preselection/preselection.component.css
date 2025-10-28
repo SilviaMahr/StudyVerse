@@ -1,0 +1,118 @@
+.preselection-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color:  var(--preselection-bg);
+  max-width: 450px;
+  margin: 2rem auto;
+  position: relative;
+  color: var(--text-color-inverse);
+}
+
+.preselection-container h2,
+.preselection-container p,
+.form-group label,
+.form-group legend,
+.checkbox-label {
+  color: var(--text-color-inverse);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: grey;
+}
+
+fieldset.form-group {
+  border: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.75rem;
+}
+
+fieldset.form-group legend {
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-bottom: 0.25rem;
+}
+
+.days-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: normal;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  accent-color: var(--preselection-accent-color);
+}
+/* --- Button Styling --- */
+.start-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+  background-color: var(--preselection-button-bg);
+  color: var(--preselection-button-text)
+}
+
+.start-button:hover {
+  background-color: var(--preselection-button-hover-bg)
+}
+
+.mascot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px;
+  height: auto;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  transition: filter 0.3s ease;
+}

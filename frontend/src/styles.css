@@ -11,17 +11,26 @@
   --header-text: white;
   --sidebar-width: 160px;
   --sidebar-collapsed-width: 5px;
+  --preselection-bg: #2A863C;
+  --preselection-text-color: white;
+  --preselection-button-bg: floralwhite;
+  --preselection-button-text: black;
+  --preselection-button-hover-bg: darkgrey;
+  --preselection-accent-color: grey;
+  --text-color-inverse: white;
 }
 
 body.dark-mode {
   --bg-color: #000000;
-  --text-color: #ffffff;
   --sidebar-bg: #76365D;
   --chat-bg: #111111;
   --input-bg: #76365D;
   --button-bg: #76365D;
   --button-hover-bg: #5e2c4b;
   --header-text: black;
+  --preselection-button-bg: #218838;
+  --preselection-button-text: white;--preselection-accent-color: lightgreen;
+  --preselection-button-hover-bg: green;
 }
 
 body.dark-mode #dayUniverse {
