@@ -1,0 +1,68 @@
+<form class="preselection-container" (ngSubmit)="onSubmit()">
+  <img src="assets/UNI.png" alt="Maskottchen" class="mascot">
+  <h2>Neue Planung starten</h2>
+  <p>Lass uns die Sache gemeinsam angehen und dein nächstes Semester planen!</p>
+
+  <div class="form-group">
+    <label for="semester">Start-Semester:</label>
+    <select id="semester" [(ngModel)]="selectedSemester" name="semester">
+      <option value="WS2025/26">Wintersemester 2025/26</option>
+      <option value="SS2026">Sommersemester 2026</option>
+      <option value="WS2026/27">Wintersemester 2026/27</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="ects">Max. ECTS pro Semester:</label>
+    <input
+      type="number"
+      id="ects"
+      [(ngModel)]="selectedECTS"
+      name="ects"
+      min="1"
+      max="60"
+      placeholder="z.B. 30">
+  </div>
+
+  <fieldset class="form-group">
+    <legend>An welchen Tagen möchtest du LVAs besuchen?</legend>
+    <div class="days-checkbox-group">
+
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="days.monday" name="monday" (change)="onDayChange()"> Mo
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="days.tuesday" name="tuesday" (change)="onDayChange()"> Di
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="days.wednesday" name="wednesday" (change)="onDayChange()"> Mi
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="days.thursday" name="thursday" (change)="onDayChange()"> Do
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="days.friday" name="friday" (change)="onDayChange()"> Fr
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox"
+               [(ngModel)]="days.noRestriction"
+               name="keineEinschraenkungen"
+               (change)="onNoRestrictionChange()"> keine Einschränkungen
+      </label>
+
+    </div>
+  </fieldset>
+
+  <div class="form-group">
+    <label for="preferredCourses">Gibt es Lehrveranstaltungen, die du unbedingt besuchen möchtest?</label>
+    <textarea
+      id="preferredCourses"
+      [(ngModel)]="preferredCourses"
+      name="preferredCourese"
+      rows="3"
+      placeholder="z.B. PR DKE, VL Software Engineering"></textarea>
+  </div>
+
+  <button type="submit" class="start-button">Planung starten</button>
+
+</form>
