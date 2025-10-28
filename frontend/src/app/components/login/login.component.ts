@@ -50,9 +50,7 @@ export class LoginComponent implements OnInit{
   setLightMode(): void {
     this.themeService.setLightMode();
   }
-
   private updateModeIcons(isDarkMode: boolean): void {
-    // Stellt sicher, dass die Refs existieren (wichtig bei globaler Komponente)
     if (!this.lightModeBtnRef || !this.darkModeBtnRef) return;
 
     const assetPath = 'assets/';
@@ -64,4 +62,5 @@ export class LoginComponent implements OnInit{
       this.darkModeBtnRef.nativeElement.src = assetPath + "moonEmpty.png";
     }
   }
+
 }
