@@ -28,6 +28,7 @@ body.dark-mode {
   --button-bg: #76365D;
   --button-hover-bg: #5e2c4b;
   --header-text: black;
+  --preselection-bg: #76365D;
   --preselection-button-bg: #218838;
   --preselection-button-text: white;--preselection-accent-color: lightgreen;
   --preselection-button-hover-bg: green;
