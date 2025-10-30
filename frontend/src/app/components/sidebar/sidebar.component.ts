@@ -2,11 +2,12 @@ import {Component, ElementRef, OnDestroy, OnInit, ViewChild, Renderer2, Inject, 
 import {CommonModule, isPlatformBrowser} from '@angular/common';
 import { ThemeService} from '../../../services/theme.service';
 import { Subscription} from 'rxjs';
+import {RouterLink} from '@angular/router';
 
 @Component( {
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })

@@ -1,0 +1,60 @@
+<div class="profile-container">
+
+  <div class="profile-header">
+    <img src="assets/UNI.png" alt="Maskottchen" class="mascot">
+
+    <h2>Profil bearbeiten</h2>
+    <p>Hier kannst du deine persönlichen Daten anpassen.</p>
+  </div>
+
+  <form (ngSubmit)="onSubmit()">
+
+    <div class="form-group">
+      <label for="username">Benutzername:</label>
+      <input
+        type="text"
+        id="username"
+        [(ngModel)]="userName"
+        name="username">
+    </div>
+
+    <div class="form-group">
+      <label for="degree">aktueller Studiengang</label>
+      <select id="degree" [(ngModel)]="selectedDegree" name="degree">
+        <option>Bachelor Wirtschaftsinformatik</option>
+      </select>
+    </div>
+
+    <div class="form-group hover-group">
+
+      <div class="label-wrapper">
+        <label class="hint-trigger">Bereits absolvierte LVAs</label>
+        <div class="form-hint">
+          Diese LVAs werden bei der zukünftigen Planung berücksichtigt.
+        </div>
+      </div>
+
+      <div class="secondary-button">
+        Absolvierte LVAs bearbeiten
+      </div>
+    </div>
+
+
+    <div class="form-group hover-group">
+
+      <div class="label-wrapper">
+        <label class="hint-trigger">Wunschwahlfächer</label>
+
+        <div class="form-hint">
+          Priorisierte Wahlfächer für deine Pläne.
+        </div>
+      </div>
+
+      <div class="secondary-button">
+        Wunschwahlfächer bearbeiten
+      </div>
+    </div>
+
+    <button type="submit" class="save-button">Änderungen speichern</button>
+  </form>
+</div>

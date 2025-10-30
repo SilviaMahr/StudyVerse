@@ -22,6 +22,7 @@
 
 body.dark-mode {
   --bg-color: #000000;
+  --text-color: white;
   --sidebar-bg: #76365D;
   --chat-bg: #111111;
   --input-bg: #76365D;
