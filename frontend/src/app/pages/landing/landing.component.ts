@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {SidebarComponent} from '../sidebar/sidebar.component';
-import {PreselectionComponent, PreselectionData} from '../preselection/preselection.component';
+import {SidebarComponent} from '../../components/sidebar/sidebar.component';
+import {PreselectionComponent, PreselectionData} from '../../components/preselection/preselection.component';
 
 @Component({
   selector: 'app-landing',

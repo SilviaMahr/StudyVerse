@@ -1,0 +1,128 @@
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--sidebar-bg);
+  border-radius: 8px;
+  background-color: var(--sidebar-bg);
+  max-width: 500px;
+  margin: 2rem auto;
+  position: relative;
+  color: white;
+  border-color: white;
+}
+
+.profile-header h2 {
+  margin-bottom: 0.25rem;
+}
+
+.profile-header p {
+  margin-top: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: white;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem;
+  border: 1px solid var(--input-bg);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  color: black;
+}
+
+.form-group input::placeholder {
+  color: grey;
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-color: grey;
+  position: absolute;
+  z-index: 100;
+  padding: 0.5rem 0.75rem;
+  visibility: hidden;
+  left: 20%;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.secondary-button {
+  padding: 0.75rem 1.5rem;
+  background-color: white;
+  color: black;
+  border: 1px solid var(--button-bg);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+
+.label-wrapper:hover .form-hint {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hover-group {
+  position: relative;
+}
+.secondary-button:hover {
+  background-color: var(--button-hover-bg);
+  color: white;
+}
+
+.save-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.5rem;
+  align-self: center;
+  background-color: var(--preselection-button-bg);
+  color: var(--preselection-button-text);
+}
+
+.save-button:hover {
+  background-color: var(--preselection-button-hover-bg);
+}
+
+.mascot {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 150px;
+  height: auto;
+  z-index: 10;
+  transform: translate(-30%, -30%);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  transition: filter 0.3s ease;
+}
