@@ -1,5 +1,4 @@
-# Aus DKE Bsp. Projekt übernommen 
-
+# --- Bestehende Pakete (beibehalten) ---
 annotated-types==0.7.0
 cachetools==6.2.0
 certifi==2025.10.5
@@ -23,7 +22,7 @@ pyasn1_modules==0.4.2
 pydantic==2.11.10
 pydantic_core==2.33.2
 pyparsing==3.2.5
-psycopg==3.2.10 #silvia
+psycopg==3.2.10  # silvia
 requests==2.32.5
 rsa==4.9.1
 tqdm==4.67.1
@@ -31,3 +30,11 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 uritemplate==4.2.0
 urllib3==2.5.0
+
+# packages for FastAPI + authentification + DB pool
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-dotenv==1.0.1
+passlib[bcrypt]==1.7.4
+pyjwt==2.9.0
+asyncpg==0.30.0
