@@ -19,6 +19,15 @@
     </div>
 
     <div class="form-group">
+      <label for="email">E-Mailadresse</label>
+      <input
+        type="text"
+        id="email"
+        [(ngModel)]="email"
+        name="email">
+    </div>
+
+    <div class="form-group">
       <label for="degree">aktueller Studiengang</label>
       <select id="degree" [(ngModel)]="selectedDegree" name="degree">
         <option>Bachelor Wirtschaftsinformatik</option>

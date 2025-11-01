@@ -14,7 +14,8 @@ import {FormsModule} from '@angular/forms';
 })
 
 export class ProfileEditComponent {
-  userName: string = 'Max Mustermann'; //TODO: load data
+  userName: string = 'Max'; //TODO: load data
+  email: string = 'max@study.at';
   selectedDegree: string = 'Bachelor Wirtschaftsinformatik';
   completedCoursesCount: string = ''; //TODO: replace when backend logic is implemented
   electiveWishlistCount: string = ''; //TODO: replace when backend logic is implemented
