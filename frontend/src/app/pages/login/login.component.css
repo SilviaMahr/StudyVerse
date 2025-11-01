@@ -13,14 +13,14 @@
   background-color: transparent;
   border-radius: 12px;
 }
-.login-mascott {
+.login-mascot {
   position: absolute;
   top: 10px;
   right: 200px;
   width: 100px;
 }
 
-.login-mascott img {
+.login-mascot img {
   width: 100%;
   height: auto;
 }
@@ -102,4 +102,17 @@
 .mode-icon:hover {
   transform: scale(1.1);
 }
+.login-message {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
 
+.login-message.success {
+  color: green;
+}
+
+.login-message.error {
+  color: red;
+}

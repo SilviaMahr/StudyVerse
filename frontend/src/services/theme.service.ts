@@ -9,18 +9,13 @@ export class ThemeService {
   private renderer: Renderer2;
   private _mode = new BehaviorSubject<'day' | 'dark'>('day');
 
-  /**
-   * Ein Observable, das Komponenten abonnieren können,
-   * um über Mode-Änderungen informiert zu werden.
-   */
   public mode$ = this._mode.asObservable();
 
   constructor(
     private rendererFactory: RendererFactory2,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Renderer2 kann nicht direkt in einen Service injiziert werden,
-    // also verwenden wir die Factory.
+
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.applyInitialMode();
   }

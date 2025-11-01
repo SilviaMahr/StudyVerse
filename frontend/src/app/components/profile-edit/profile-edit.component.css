@@ -15,6 +15,7 @@
 
 .profile-header h2 {
   margin-bottom: 0.25rem;
+  color: white;
 }
 
 .profile-header p {
@@ -30,11 +31,13 @@
 .label-wrapper {
   position: relative;
   display: inline-block;
+  text-align: left;
 }
 
 .form-group label {
   font-size: 0.85rem;
   color: white;
+  text-align: left;
 }
 
 .form-group input,
