@@ -1,9 +1,11 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild, ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import { Router } from '@angular/router';
 import {Subscription} from 'rxjs';
 import {ThemeService} from '../../../services/theme.service';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, NgForm} from '@angular/forms';
+import { APILoginService } from '../../../services/login/api.login.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -22,9 +24,16 @@ export class LoginComponent implements OnInit{
 
   private themeSubscription: Subscription | undefined;
 
+
+  loginMessage: string | null = null;
+  loginStatus: 'success' | 'error' | null = null;
+
   constructor(
     private router: Router,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private api: APILoginService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -33,14 +42,33 @@ export class LoginComponent implements OnInit{
     })
   }
 
-  ngOnDestroy(): void {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
-    }
-  }
+  onLogin(form: NgForm): void {
+    this.loginMessage = null;
+    this.loginStatus = null;
 
-  onLogin(): void {
-    this.router.navigate(['/landing']);
+    this.api.login(form.value.email, form.value.pw).subscribe({
+      next: (response) => {
+        this.loginMessage = 'Login erfolgreich! Du wirst weitergeleitet ...';
+        this.loginStatus = 'success';
+
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.router.navigate(['/landing']);
+        }, 1500);
+      },
+
+      error: (err: HttpErrorResponse) => {
+        this.loginStatus = 'error';
+        if (err.status === 401) {
+          this.loginMessage = 'E-Mail-Adresse oder Passwort ist falsch.';
+        } else {
+          this.loginMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+        }
+
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   setDarkMode(): void {

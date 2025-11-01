@@ -1,19 +1,36 @@
 <main class="main-content">
   <div class="main-inner">
     <div class="login-container">
-      <div class="login-mascott">
-        <img src="../../../assets/UNI.png" alt="Maskottchen UNI">
+      <div class="login-mascot">
+        <img src="assets/UNI.png" alt="Maskottchen UNI">
       </div>
     </div>
 
     <div class="form-wrapper">
     <div class="login-box">
       <h2>Bitte melde dich an, um STUDYverse zu verwenden</h2>
-      <form class="login-form" (ngSubmit)="onLogin()">
-        <input type="text" placeholder="E-Mail-Adresse" required>
-        <input type="password" placeholder="Passwort" required>
+      <form class="login-form" #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+        <input type="text"
+               placeholder="E-Mail-Adresse"
+               ngModel
+               name = "email"
+               required>
+        <input type="password"
+               placeholder="Passwort"
+               ngModel
+               name="pw"
+               required>
+
         <button type="submit">Anmelden</button>
       </form>
+      @if (loginMessage) {
+        <div class="login-message" [ngClass]="{
+        'success': loginStatus === 'success',
+        'error': loginStatus === 'error'
+      }">
+          {{ loginMessage }}
+        </div>
+      }
     </div>
     </div>
   </div>
@@ -21,13 +38,13 @@
 
   <div class="mode-toggle-container">
     <div class="mode-toggle">
-      <img src="../../../assets/sunFull.png"
+      <img src="assets/sunFull.png"
            alt="helles Erscheinungsbild"
            id="lightModeBtn"
            class="mode-icon"
            #lightModeIcon
            (click)="setLightMode()">
-      <img src="../../../assets/moonEmpty.png"
+      <img src="assets/moonEmpty.png"
            alt="dunkles Erscheinungsbild"
            id="darkModeBtn"
            class="mode-icon"

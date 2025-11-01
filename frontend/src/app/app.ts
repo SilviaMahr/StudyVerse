@@ -2,6 +2,7 @@ import {Component, Inject, OnInit, PLATFORM_ID, Renderer2, ViewChild, ElementRef
 import { RouterOutlet } from '@angular/router';
 import {HeaderComponent} from './components/header/header.component';
 import {CommonModule, isPlatformBrowser} from '@angular/common';
+import {APILoginService} from '../services/login/api.login.service';
 
 @Component({
   selector: 'app-root',
