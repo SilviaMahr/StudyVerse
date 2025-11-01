@@ -1,7 +1,6 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild, Renderer2, Inject, PLATFORM_ID} from '@angular/core';
 import {CommonModule, isPlatformBrowser} from '@angular/common';
 import { ThemeService} from '../../../services/theme.service';
-import { Subscription} from 'rxjs';
 import {RouterLink} from '@angular/router';
 
 @Component( {
@@ -12,48 +11,28 @@ import {RouterLink} from '@angular/router';
   styleUrls: ['./sidebar.component.css']
 })
 
-export class SidebarComponent implements OnInit, OnDestroy {
-  @ViewChild('lightModeIcon', {static: true}) lightModeBtnRef!: ElementRef<HTMLImageElement>;
-  @ViewChild('darkModeIcon', {static: true}) darkModeBtnRef!: ElementRef<HTMLImageElement>;
+export class SidebarComponent implements OnInit {
   @ViewChild('sidebar') sidebarRef!: ElementRef<HTMLElement>;
   @ViewChild('toggleIcon') toggleIconRef!: ElementRef<HTMLImageElement>;
 
-  isDarkMode = false;
   isCollapsed = false;
-  private themeSubscription: Subscription | undefined;
-
 
   constructor(
-    private themeService: ThemeService,
+    protected themeService: ThemeService,
     private renderer: Renderer2,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit() {
-     this.themeSubscription = this.themeService.mode$.subscribe(mode => {
-      this.isDarkMode = (mode === 'dark');
-
-      setTimeout(() => {
-        this.updateModeIcons(this.isDarkMode);
-      }, 0);
-    });
-
-    this.applyInitialSidebarState();
-  }
-
-  ngOnDestroy() {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
-    }
+    this.applyInitialSidebarState()
   }
 
   private applyInitialSidebarState(): void {
-    if (isPlatformBrowser(this.platformId)) {
+      if (isPlatformBrowser(this.platformId)) {
       const savedState = localStorage.getItem('sidebarCollapsed');
       this.isCollapsed = savedState === 'true';
 
       setTimeout(() => {
-
         if (this.isCollapsed) {
           this.renderer.addClass(this.sidebarRef.nativeElement, 'collapsed');
         } else {
@@ -70,19 +49,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   toggleLightMode (): void {
     this.themeService.setDarkMode();
-  }
-
-  private updateModeIcons(isDarkMode: boolean): void {
-    if (!this.lightModeBtnRef || !this.darkModeBtnRef) return;
-
-    const assetPath = 'assets/';
-    if (isDarkMode) {
-      this.lightModeBtnRef.nativeElement.src = assetPath + "sunEmpty.png";
-      this.darkModeBtnRef.nativeElement.src = assetPath + "moonFull.png";
-    } else {
-      this.lightModeBtnRef.nativeElement.src = assetPath + "sunFull.png";
-      this.darkModeBtnRef.nativeElement.src = assetPath + "moonEmpty.png";
-    }
   }
 
   toggleSidebar(): void {
@@ -107,7 +73,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private updateToggleIcon(): void {
-      // Sicherheitscheck, da toggleIconRef nicht 'static' ist
       if (!this.toggleIconRef) return;
 
     const assetPath = 'assets/';
