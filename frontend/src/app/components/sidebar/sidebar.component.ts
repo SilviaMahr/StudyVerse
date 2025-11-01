@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild, Renderer2, Inject, PLATFORM_ID} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild, Renderer2, Inject, PLATFORM_ID} from '@angular/core';
 import {CommonModule, isPlatformBrowser} from '@angular/common';
 import { ThemeService} from '../../../services/theme.service';
 import {RouterLink} from '@angular/router';
