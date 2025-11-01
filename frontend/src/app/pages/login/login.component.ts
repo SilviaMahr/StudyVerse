@@ -6,6 +6,7 @@ import {ThemeService} from '../../../services/theme.service';
 import {FormsModule, NgForm} from '@angular/forms';
 import { APILoginService } from '../../../services/login/api.login.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import {AuthService} from '../../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +33,7 @@ export class LoginComponent implements OnInit{
     private router: Router,
     private themeService: ThemeService,
     private api: APILoginService,
+    private authServie: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
   ) { }
@@ -47,9 +49,15 @@ export class LoginComponent implements OnInit{
     this.loginStatus = null;
 
     this.api.login(form.value.email, form.value.pw).subscribe({
-      next: (response) => {
-        this.loginMessage = 'Login erfolgreich! Du wirst weitergeleitet ...';
-        this.loginStatus = 'success';
+      next: (response: any) => {
+        console.log('Login erfolgreich', response);
+        if (response && response.access_token) {
+          this.authServie.saveToken(response.access_token);
+          this.router.navigate(['/landing']);
+        } else {
+          this.loginMessage = 'Login erfolgreich! Du wirst weitergeleitet ...';
+          this.loginStatus = 'success';
+        }
 
         this.cdr.detectChanges();
 
