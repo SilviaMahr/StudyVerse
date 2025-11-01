@@ -1,6 +1,6 @@
 import { Inject, Injectable, PLATFORM_ID, Renderer2, RendererFactory2 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +10,20 @@ export class ThemeService {
   private _mode = new BehaviorSubject<'day' | 'dark'>('day');
 
   public mode$ = this._mode.asObservable();
+
+  private assetPath = 'assets/';
+
+  public lightIconPath$ = this.mode$.pipe(
+    map(mode => mode === 'dark'
+      ? this.assetPath + "sunEmpty.png"
+      : this.assetPath + "sunFull.png")
+  );
+
+  public darkIconPath$ = this.mode$.pipe(
+    map(mode => mode === 'dark'
+      ? this.assetPath + "moonFull.png"
+      : this.assetPath + "moonEmpty.png")
+  );
 
   constructor(
     private rendererFactory: RendererFactory2,

@@ -31,14 +31,14 @@
 
 
     <div class="mode-toggle">
-      <img src="assets/sunFull.png"
-           alt="Day Mode"
+      <img [src]="themeService.lightIconPath$ | async"
+           alt="Helles Erscheinungsbild"
            id="lightModeBtn"
            class="mode-icon"
            #lightModeIcon
            (click)="toggleDarkMode()">
-      <img src="assets/moonEmpty.png"
-           alt="Night Mode"
+      <img [src]="themeService.darkIconPath$ | async"
+           alt="Dunkles Erscheinungsbild"
            id="nightModeBtn"
            class="mode-icon"
            #darkModeIcon

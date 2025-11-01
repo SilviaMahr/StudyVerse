@@ -38,13 +38,13 @@
 
   <div class="mode-toggle-container">
     <div class="mode-toggle">
-      <img src="assets/sunFull.png"
+      <img [src] = "themeService.lightIconPath$ | async"
            alt="helles Erscheinungsbild"
            id="lightModeBtn"
            class="mode-icon"
            #lightModeIcon
            (click)="setLightMode()">
-      <img src="assets/moonEmpty.png"
+      <img [src] ="themeService.darkIconPath$ | async"
            alt="dunkles Erscheinungsbild"
            id="darkModeBtn"
            class="mode-icon"
