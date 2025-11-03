@@ -1,22 +1,9 @@
 import { Component, Output, EventEmitter} from '@angular/core';
 import { CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import { PreselectionData, Weekdays} from '../../models/preselection.model';
+import {PreselectionService} from '../../../services/preselection.service';
 
-export interface PreselectionData {
-  semester: string;
-  ects: number;
-  selectedDays: string [];
-  preferredCourses: string;
-}
-
-export interface Weekdays {
-  monday: boolean;
-  tuesday: boolean;
-  wednesday: boolean;
-  thursday: boolean;
-  friday: boolean;
-  noRestriction: boolean;
-}
 
 @Component( {
   selector: 'app-preselection',
@@ -35,6 +22,8 @@ export class PreselectionComponent {
   selectedSemester: string = 'WS2025/26';
   selectedECTS: number = 30;
   preferredCourses: string = '';
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
 
   days: Weekdays = {
     monday: true,
@@ -45,8 +34,17 @@ export class PreselectionComponent {
     noRestriction: true
   };
 
-  constructor() {
+  constructor(private preselectionService: PreselectionService) {
     this.onDayChange();
+  }
+
+  public get isDaySelected(): boolean {
+    return this.days.monday ||
+      this.days.tuesday ||
+      this.days.wednesday ||
+      this.days.thursday ||
+      this.days.friday ||
+      this.days.noRestriction;
   }
 
   onDayChange(): void {
@@ -63,30 +61,61 @@ export class PreselectionComponent {
   }
 
   onSubmit(): void {
+    this.successMessage = null;
+    this.errorMessage = null;
+
+
     if (!this.selectedSemester) {
-      console.warn('Bitte Semester wählen ')
       return;
     }
-    if (this.selectedECTS > 40 || this.selectedECTS <= 0 ) {
-      console.warn('Bitte gib eine gültige Zahl ein, aber maximal 40.')
+    if (this.selectedECTS > 60 || this.selectedECTS <= 0) {
+      return;
+    }
+    if (!this.isDaySelected) {
       return;
     }
 
-    const selectedDays: string [] = Object.keys(this.days)
-      .filter(day => day !== 'noRestriction' && this.days[day as keyof Weekdays]);
-
-    if (selectedDays.length === 0 && !this.days.noRestriction) {
-      console.warn('Bitte wähle mindestens einen Tag aus.');
-      return;
-    }
+    this.successMessage = "Bitte habe einen Moment Geduld. Ich arbeite gerade an deiner Semesterplanung, das kann einen Moment dauern."
+    setTimeout(() => {
+      this.successMessage = "";
+    }, 5000);
 
     const data: PreselectionData = {
       semester: this.selectedSemester,
       ects: this.selectedECTS,
-      selectedDays: selectedDays,
+      selectedDays: this.getSelectedDaysArray(),
       preferredCourses: this.preferredCourses
     };
 
+    this.preselectionService.submitPreselection(data).subscribe({
+      next: (response) => {
+        console.log('Planung erfolgreich gesendet!', response);
+        this.successMessage = "Planung wurde erfolgfreich übermittelt";
+
+        setTimeout(() => {
+          this.successMessage = null;
+        }, 5000);
+      },
+
+      error: (error) => {
+        console.error('Fehler beim Senden der Planung: ', error);
+
+        this.successMessage = null;
+
+        if (error.status === 401) {
+          this.errorMessage = "Authentifizierung fehlgeschlagen. Bitte neu einloggen";
+        } else {
+          this.errorMessage = "Ein Fehler ist aufgetreten. Bitte versuche es später erneut";
+        }
+      }
+    });
+
     this.startPlanning.emit(data);
+  }
+
+  private getSelectedDaysArray(): string[] {
+    return Object.entries(this.days)
+      .filter(([key, value]) => value === true && key !== 'noRestriction')
+      .map(([key, value]) => key);
   }
 }

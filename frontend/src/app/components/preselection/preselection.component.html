@@ -1,16 +1,28 @@
-<form class="preselection-container" (ngSubmit)="onSubmit()">
+<form class="preselection-container" #preselectionForm="ngForm" (ngSubmit)="onSubmit()">
   <img src="assets/UNI.png" alt="Maskottchen" class="mascot">
   <h2>Neue Planung starten</h2>
   <p>Lass uns die Sache gemeinsam angehen und dein nächstes Semester planen!</p>
 
   <div class="form-group">
     <label for="semester">Semester für das geplant werden soll:</label>
-    <select id="semester" [(ngModel)]="selectedSemester" name="semester">
+
+    <select id="semester"
+            [(ngModel)]="selectedSemester"
+            name="semester"
+            required
+            #semesterModel="ngModel">
+      <option [ngValue]="null" disabled>Bitte auswählen...</option>
       <option value="WS2025/26">Wintersemester 2025/26</option>
       <option value="SS2026">Sommersemester 2026</option>
       <option value="WS2026/27">Wintersemester 2026/27</option>
     </select>
   </div>
+
+  @if (semesterModel.invalid && (semesterModel.dirty || semesterModel.touched)) {
+    <div class="validation-error">
+      Bitte wähle ein Semester aus.
+    </div>
+  }
 
   <div class="form-group">
     <label for="ects">Max. ECTS pro Semester:</label>
@@ -21,8 +33,26 @@
       name="ects"
       min="1"
       max="60"
-      placeholder="z.B. 30">
+      placeholder="z.B. 30"
+      required
+      #ectsModel="ngModel"
+
+      pattern="^\d+(\.5)?$">
   </div>
+
+  @if (ectsModel.invalid && (ectsModel.dirty || ectsModel.touched)) {
+    <div class="validation-error">
+      @if (ectsModel.errors?.['required']) {
+        Bitte gib die maximalen ECTS an.
+      }
+      @if (ectsModel.errors?.['min'] || ectsModel.errors?.['max']) {
+        Bitte gib einen Wert zwischen 1 und 60 an.
+      }
+      @if (ectsModel.errors?.['pattern']) {
+        Bitte gib nur ganze Zahlen oder 0,5er-Schritte ein (z.B. 25.5).
+      }
+    </div>
+  }
 
   <fieldset class="form-group">
     <legend>An welchen Tagen möchtest du LVAs besuchen?</legend>
@@ -50,6 +80,12 @@
                (change)="onNoRestrictionChange()"> keine Einschränkungen
       </label>
 
+      @if (!isDaySelected && preselectionForm.submitted) {
+        <div class="validation-error">
+          Bitte wähle mindestens einen Tag aus.
+        </div>
+      }
+
     </div>
   </fieldset>
 
@@ -63,6 +99,15 @@
       placeholder="z.B. PR DKE, VL Software Engineering"></textarea>
   </div>
 
-  <button type="submit" class="start-button">Planung starten</button>
+  @if (successMessage) {
+    <div class="success-message">
+      {{ successMessage }}
+    </div>
+  }
+
+  <button type="submit"
+          class="start-button"
+          [disabled]="!preselectionForm.valid || !isDaySelected">
+    Planung starten</button>
 
 </form>
