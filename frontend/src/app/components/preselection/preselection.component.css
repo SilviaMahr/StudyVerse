@@ -90,7 +90,6 @@ fieldset.form-group legend {
 /* --- Button Styling --- */
 .start-button {
   padding: 0.75rem 1.5rem;
-  border: none;
   border-radius: 4px;
   font-size: 1rem;
   font-weight: bold;
@@ -98,11 +97,25 @@ fieldset.form-group legend {
   transition: background-color 0.2s;
   margin-top: 1rem;
   background-color: var(--preselection-button-bg);
-  color: var(--preselection-button-text)
+  color: var(--preselection-button-text);
+  box-sizing: border-box;
+  border: 2px solid white;
 }
+
 
 .start-button:hover {
   background-color: var(--preselection-button-hover-bg)
+}
+
+.start-button:disabled {
+  background-color: grey;
+  color: white;
+  cursor: not-allowed;
+}
+
+.start-button:disabled:hover {
+  background-color: #cccccc;
+  color: #666666;
 }
 
 .mascot {
@@ -115,4 +128,37 @@ fieldset.form-group legend {
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
   transition: filter 0.3s ease;
+}
+
+.validation-error {
+  color: white;
+  background-color: indianred;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-top: 5px;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: #c93a40;
+  border-width: 2px;
+  background-color: indianred;
+}
+
+.success-message {
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+
+  margin-top: 1rem;
 }
