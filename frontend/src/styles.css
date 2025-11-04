@@ -408,3 +408,7 @@ html, body {
   pointer-events: none;
   user-select: none;
 }
+
+h3 {
+  color: white;
+}

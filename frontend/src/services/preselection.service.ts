@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 })
 export class PreselectionService {
 
-  private apiUrl = 'http://127.0.0.1:8000/api/start-planning';
+  private apiUrl = 'http://127.0.0.1:8000/plannings/new';
 
   constructor(
     private http: HttpClient,

@@ -2,6 +2,8 @@ import {Component, ElementRef, OnInit, ViewChild, Renderer2, Inject, PLATFORM_ID
 import {CommonModule, isPlatformBrowser} from '@angular/common';
 import { ThemeService} from '../../../services/theme.service';
 import {RouterLink} from '@angular/router';
+import {PlanningResponse} from '../../models/preselection.model';
+import {PlanningService} from '../../../services/planning.service';
 
 @Component( {
   selector: 'app-sidebar',
@@ -17,14 +19,21 @@ export class SidebarComponent implements OnInit {
 
   isCollapsed = false;
 
+  recentPlannings: PlanningResponse[] = [];
+  isLoading: boolean = true;
+  error: string | null = null;
+
+
   constructor(
     protected themeService: ThemeService,
     private renderer: Renderer2,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private planningService: PlanningService
   ) { }
 
   ngOnInit() {
-    this.applyInitialSidebarState()
+    this.applyInitialSidebarState();
+    this.loadRecentPlannings();
   }
 
   private applyInitialSidebarState(): void {
@@ -83,5 +92,23 @@ export class SidebarComponent implements OnInit {
       this.toggleIconRef.nativeElement.src = assetPath + 'closeSidebarIcon.png';
       this.toggleIconRef.nativeElement.alt = 'Sidebar schließen';
     }
+  }
+
+  loadRecentPlannings(): void {
+    this.isLoading = true;
+    this.error = null;
+
+    this.planningService.getRecentPlannings(5).subscribe({
+      next: (response) => {
+        this.recentPlannings = response.plannings;
+        this.isLoading = false;
+        console.log("Planungen geladen", this.recentPlannings);
+      },
+      error: (err) => {
+        console.error("Fehler beim Laden der Planungen", err);
+        this.error = "Planungen konnten nicht geladen werden.";
+        this.isLoading = false;
+      }
+    });
   }
 }

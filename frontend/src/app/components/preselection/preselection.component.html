@@ -1,4 +1,4 @@
-<form class="preselection-container" #preselectionForm="ngForm" (ngSubmit)="onSubmit()">
+<form class="preselection-container" #preselectionForm="ngForm" (ngSubmit)="onSubmit(preselectionForm)">
   <img src="assets/UNI.png" alt="Maskottchen" class="mascot">
   <h2>Neue Planung starten</h2>
   <p>Lass uns die Sache gemeinsam angehen und dein nächstes Semester planen!</p>
@@ -12,9 +12,9 @@
             required
             #semesterModel="ngModel">
       <option [ngValue]="null" disabled>Bitte auswählen...</option>
-      <option value="WS2025/26">Wintersemester 2025/26</option>
-      <option value="SS2026">Sommersemester 2026</option>
-      <option value="WS2026/27">Wintersemester 2026/27</option>
+      <option value="WS25">Wintersemester 2025/26</option>
+      <option value="SS26">Sommersemester 2026</option>
+      <option value="WS26">Wintersemester 2026/27</option>
     </select>
   </div>
 
