@@ -80,7 +80,7 @@ https://neon.com/ login studyVerse@gmx.at !studyVerse0
 Examples: https://github.com/neondatabase/examples  
 
 
-# Angular/Frontend SET UP GUIDE
+# 🌐 Angular/Frontend SET UP GUIDE
 Following steps must be performed in order to run the angular frontend:
 
 - install node.js ( v20.19.0 or newer) https://angular.dev/reference/versions
@@ -112,3 +112,26 @@ After a successful build, start server:
 ng serve
 ```
 Open the application on localhost (you find the link in the terminal).
+
+# 🔧 Fast API Backend Setup
+
+Erstelle ein File direkt im Projektverzeichnis (in IntelliJ Rechtsklick auf StudyVerse Folder -> new File -> nenne die Datei .env (der Punkt vor env ist wichtig).
+Dann befülle die .env File mit folgendem Inhalt:
+```
+# Neon-DB connection (PostgreSQL)
+DATABASE_URL=postgresql://neondb_owner:npg_Hv7VAhfpR1dc@ep-patient-mode-a9dvojnm-pooler.gwc.azure.neon.tech/neondb?sslmode=require
+
+# JWT Settings (JSON Web Token)
+JWT_SECRET="accessTokenAnything-271025-!;"
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+update requirements.txt 
+```
+pip install -r requirements.txt
+```
+start backend with the following command 
+```
+uvicorn backend.app.main:app --reload
+```
+Open Swagger UI: http://localhost:8000/docs 

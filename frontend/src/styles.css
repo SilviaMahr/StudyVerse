@@ -11,24 +11,41 @@
   --header-text: white;
   --sidebar-width: 160px;
   --sidebar-collapsed-width: 5px;
+  --preselection-bg: #2A863C;
+  --preselection-text-color: white;
+  --preselection-button-bg: floralwhite;
+  --preselection-button-text: black;
+  --preselection-button-hover-bg: darkgrey;
+  --preselection-accent-color: grey;
+  --text-color-inverse: white;
 }
 
 body.dark-mode {
   --bg-color: #000000;
-  --text-color: #ffffff;
+  --text-color: white;
   --sidebar-bg: #76365D;
   --chat-bg: #111111;
   --input-bg: #76365D;
   --button-bg: #76365D;
   --button-hover-bg: #5e2c4b;
   --header-text: black;
+  --preselection-bg: #76365D;
+  --preselection-button-bg: #218838;
+  --preselection-button-text: white;--preselection-accent-color: lightgreen;
+  --preselection-button-hover-bg: green;
 }
 
+body.dark-mode #dayUniverse {
+  display: none;
+}
+
+body.dark-mode #starfield {
+  display: block;
+}
 body {
   margin: 0;
   font-family: sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  background-color: var(--bg-color);color: var(--text-color);
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
@@ -39,34 +56,6 @@ body.sidebar-collapsed {
 .layout {
   margin-top: 0;
   height: 100vh;
-}
-
-/* === Header === */
-#HeaderJKU {
-  position: relative;
-  width: auto;
-  height: auto;
-}
-
-#HeaderBild {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.studyverse {
-  position: absolute;
-  top: 1vw;
-  left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
-  transform: translateX(-50%);
-  font-size: 5vw;
-  font-family: 'Jomhuria', sans-serif;
-  color: var(--header-text);
-  z-index: 2;
-  margin: 0;
-  line-height: 1;
-  background-color: transparent;
-  transition: left 0.3s ease;
 }
 
 body.sidebar-collapsed .studyverse {
@@ -178,7 +167,8 @@ body.sidebar-collapsed .studyverse {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--bg-color);
+  /*background-color: var(--bg-color); */
+  background-color: transparent;
   transition: background-color 0.4s ease;
   overflow-y: auto;
 }
@@ -197,7 +187,7 @@ body.empty-state {
   overflow-y: auto;
 }
 
-.Maskottchen img {
+.mascott img {
   max-width: 60%;
   height: auto;
   display: block;
@@ -224,7 +214,7 @@ body.empty-state {
   width: calc(100% - var(--sidebar-width));
   margin-left: var(--sidebar-width);
   transition: margin-left 0.3s ease, width 0.3s ease;
-  padding-top: 50px;
+  padding-top: 20px;
 }
 
 .main-content.sidebar-collapsed .main-inner {
@@ -384,6 +374,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  width: 100%;
   overflow-x: hidden;
 }
 
@@ -396,6 +387,14 @@ html, body {
   height: 100%;
   z-index: -1; /* Hintergrund hinter allem */
   pointer-events: none;
+}
+
+#starfield {
+  display: none;
+}
+
+#dayUniverse{
+  display: block;
 }
 
 .star {

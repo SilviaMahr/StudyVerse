@@ -1,6 +1,5 @@
 #this file is to define enpoints like controller -> here is the
-#acutal put/post/update/delete logic for authenticiation
-
+#acutal put/post/update/delete logic
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
@@ -12,7 +11,7 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-
+''' Register is nice to have - maybe include or otherwise delete later in MS4
 
 @router.post("/register")
 async def register(email: str, password: str):
@@ -24,7 +23,7 @@ async def register(email: str, password: str):
         hashed = hash_password(password)
         await conn.execute("INSERT INTO users (email, password) VALUES ($1, $2)", email, hashed)
     return {"message": "User registered successfully"}
-
+'''
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     pool = await init_db_pool()

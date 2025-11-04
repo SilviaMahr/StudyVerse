@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+#HeaderJKU {
+  position: relative;
+  width: 100%;
+  height: auto;
+  line-height: 0;
+}
+
+#HeaderImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.studyverse {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 5vw;
+  font-family: 'Jomhuria', sans-serif;
+  color: var(--header-text);
+  collapse: green;
+  z-index: 2;
+  margin: 0;
+  line-height: 1;
+  background-color: transparent;
+  transition: left 0.3s ease;
+  white-space: nowrap;
+}
+
+:host-context(body.sidebar-collapsed) .studyverse {
+  left: calc(50% + (var(--sidebar-collapsed-width)/2));
+}
