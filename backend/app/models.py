@@ -1,6 +1,6 @@
 # all modules (e.g. entities) go here
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List
 from enum import Enum
@@ -23,7 +23,7 @@ class PlanningBase(BaseModel):
 
 class PlanningCreate(PlanningBase):
     class PlanningCreate(BaseModel):
-        semester: str = Field(..., regex="^(SS|WS)\\d{2}$", description="Semester im Format SS26 oder WS25")
+        semester: str = Field(..., pattern="^(SS|WS)\\d{2}$", description="Semester im Format SS26 oder WS25")
         target_ects: int = Field(..., ge=1, le=60, description="Geplante ECTS-Punkte")
         preferred_days: List[DayOfWeek] = Field(default=[DayOfWeek.ANY], description="Bevorzugte Tage")
         mandatory_courses: Optional[str] = Field(None, description="Freitext für obligatorische LVAs")
@@ -32,7 +32,7 @@ class PlanningCreate(PlanningBase):
 class PlanningUpdate(BaseModel):
     #to enable editing exisiting plannings
     title: Optional[str] = None
-    semester: Optional[str] = Field(None, regex="^(SS|WS)\\d{2}$")
+    semester: Optional[str] = Field(None, pattern="^(SS|WS)\\d{2}$")
     target_ects: Optional[int] = Field(None, ge=1, le=60)
     preferred_days: Optional[List[DayOfWeek]] = None
     mandatory_courses: Optional[str] = None
