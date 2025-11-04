@@ -17,16 +17,13 @@ class DayOfWeek(str, Enum):
     THURSDAY = "Donnerstag"
     FRIDAY = "Freitag"
 
-class PlanningBase(BaseModel):
-    #base model for inheritance
-    title: str
 
-class PlanningCreate(PlanningBase):
-    class PlanningCreate(BaseModel):
-        semester: str = Field(..., pattern="^(SS|WS)\\d{2}$", description="Semester im Format SS26 oder WS25")
-        target_ects: int = Field(..., ge=1, le=60, description="Geplante ECTS-Punkte")
-        preferred_days: List[DayOfWeek] = Field(default=[DayOfWeek.ANY], description="Bevorzugte Tage")
-        mandatory_courses: Optional[str] = Field(None, description="Freitext für obligatorische LVAs")
+class PlanningCreate(BaseModel):
+    title: str = Field(..., description="Titel der Planning-Session")
+    semester: str = Field(..., pattern="^(SS|WS)\\d{2}$", description="Semester im Format SS26 oder WS25")
+    target_ects: int = Field(..., ge=1, le=60, description="Geplante ECTS-Punkte")
+    preferred_days: List[DayOfWeek] = Field(default=[DayOfWeek.ANY], description="Bevorzugte Tage")
+    mandatory_courses: Optional[str] = Field(None, description="Freitext für obligatorische LVAs")
 
 #Necessary??? Should it be possible to edit recent plannings?
 class PlanningUpdate(BaseModel):
@@ -49,13 +46,13 @@ class PlanningResponse(BaseModel):
     created_at: datetime
     last_modified: datetime
 
-class Config:
-    from_attributes = True
+    class Config:
+        from_attributes = True
 
 class RecentPlanningsResponse(BaseModel):
     #for side bar memory -> shows recent plannings
     #GET /plannings/recent in routes
-    plannings: list[PlanningResponse]
+    plannings: List[PlanningResponse]
     total: int
 
 # To start RAG

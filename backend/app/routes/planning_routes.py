@@ -111,9 +111,6 @@ async def create_new_planning(
     pool = await init_db_pool()
     now = datetime.utcnow()
 
-    #title should be automatically ects and semester
-    auto_title = f"{planning_data.semester} - {planning_data.target_ects} ECTS Plan"
-
     async with pool.acquire() as conn:
         # add new planning in DB
         row = await conn.fetchrow(
@@ -123,7 +120,7 @@ async def create_new_planning(
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id, title, semester, target_ects, preferred_days, mandatory_courses, created_at, last_modified
             """,
-            auto_title,
+            planning_data.title,
             user_email,
             planning_data.semester,
             planning_data.target_ects,
