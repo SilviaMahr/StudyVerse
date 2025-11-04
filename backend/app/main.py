@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware #needed for angular connection
 #package imports:
 from .routes import auth_routes
+from .routes import planning_routes
 from .db import init_db_pool, close_db_pool
 #lifespan event handler
 from contextlib import asynccontextmanager
@@ -34,7 +35,8 @@ app.add_middleware(
 )
 
 # register routes
-app.include_router(auth_routes.router, prefix="/auth", tags=["Authentication"])
+app.include_router(auth_routes.router)
+app.include_router(planning_routes.router)
 
 @app.get("/")
 async def root():

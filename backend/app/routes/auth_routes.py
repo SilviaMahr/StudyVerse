@@ -1,12 +1,18 @@
 #this file is to define enpoints like controller -> here is the
-#acutal put/post/update/delete logic
+#acutal put/post/update/delete logic for authenticiation
+
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from ..auth import verify_password, create_access_token, hash_password
 from ..db import init_db_pool
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"]
+)
+
+
 
 @router.post("/register")
 async def register(email: str, password: str):

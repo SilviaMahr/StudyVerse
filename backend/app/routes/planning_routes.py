@@ -9,8 +9,18 @@ from datetime import datetime
 from ..models import PlanningCreate, PlanningResponse, RecentPlanningsResponse, PlanningUpdate
 from ..db import init_db_pool
 from ..auth import JWT_SECRET, JWT_ALGORITHM
+from fastapi.security import OAuth2PasswordBearer
 
-router = APIRouter()
+
+#necessary for session management in every routes file
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+#all endpoints in this router need a valid token!
+router = APIRouter(
+    prefix="/plannings",
+    tags=["Plannings"],
+    dependencies=[Depends(oauth2_scheme)]
+)
 
 # ========== Helper Functions ==========
 
