@@ -6,7 +6,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from ..auth import verify_password, create_access_token, hash_password
 from ..db import init_db_pool
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"]
+)
+
 ''' Register is nice to have - maybe include or otherwise delete later in MS4
 
 @router.post("/register")
