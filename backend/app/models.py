@@ -19,7 +19,7 @@ class DayOfWeek(str, Enum):
 
 
 class PlanningCreate(BaseModel):
-    title: str = Field(..., description="Titel der Planning-Session")
+    title: Optional[str] = None #optional since auto generation
     semester: str = Field(..., pattern="^(SS|WS)\\d{2}$", description="Semester im Format SS26 oder WS25")
     target_ects: int = Field(..., ge=1, le=60, description="Geplante ECTS-Punkte")
     preferred_days: List[DayOfWeek] = Field(default=[DayOfWeek.ANY], description="Bevorzugte Tage")

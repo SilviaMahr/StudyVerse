@@ -111,6 +111,13 @@ async def create_new_planning(
     pool = await init_db_pool()
     now = datetime.utcnow()
 
+    # automatic title (semester and ects)
+    if planning_data.semester and planning_data.target_ects is not None:
+        title = f"{planning_data.semester} - {planning_data.target_ects} ECTS"
+    else:
+        # Fallback if somehow no data provided
+        title = f"Planning {now.strftime('%Y-%m-%d')}"
+
     async with pool.acquire() as conn:
         # add new planning in DB
         row = await conn.fetchrow(
@@ -120,7 +127,7 @@ async def create_new_planning(
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id, title, semester, target_ects, preferred_days, mandatory_courses, created_at, last_modified
             """,
-            planning_data.title,
+            title,
             user_email,
             planning_data.semester,
             planning_data.target_ects,
