@@ -1,12 +1,15 @@
 # Planning routes for sidebar
 # Endpoints for: Recent Plannings, New planning-session, planning-details
-#TODO extend when RAG can be implemented
+#TODO extension might be necessary after final rag implementation
 
 from fastapi import APIRouter, HTTPException, Depends, Header
 from typing import Optional
 import jwt
 from datetime import datetime
-from ..models import PlanningCreate, PlanningResponse, RecentPlanningsResponse, PlanningUpdate
+from ..models import (
+    PlanningCreate, PlanningResponse, RecentPlanningsResponse,
+    PlanningUpdate, RAGStartRequest, RAGStartResponse, DayOfWeek
+)
 from ..db import init_db_pool
 from ..auth import JWT_SECRET, JWT_ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
@@ -49,16 +52,12 @@ async def get_current_user_email(authorization: str = Header(None)) -> str:
 
 @router.get("/recent", response_model=RecentPlanningsResponse)
 async def get_recent_plannings(
-        limit: int = 10,
+        limit: int = 5,
         user_email: str = Depends(get_current_user_email)
 ):
     """
     Gibt die letzten Planning-Sessions des eingeloggten Users zurück.
-    Sortiert nach last_modified (neueste zuerst).
 
-    Parameters:
-    - limit: Maximale Anzahl der zurückgegebenen Plannings (default: 10)
-    - Authorization Header mit JWT-Token wird automatisch verarbeitet
     """
     pool = await init_db_pool()
 
@@ -66,7 +65,8 @@ async def get_recent_plannings(
         # Extract planning data from DB
         rows = await conn.fetch(
             """
-            SELECT id, title, user_email, created_at, last_modified
+            SELECT id, title, semester, target_ects, preferred_days,
+                   mandatory_courses, created_at, last_modified
             FROM plannings
             WHERE user_email = $1
             ORDER BY last_modified DESC
@@ -87,12 +87,15 @@ async def get_recent_plannings(
         PlanningResponse(
             id=row["id"],
             title=row["title"],
+            semester=row["semester"],
+            target_ects=row["target_ects"],
+            preferred_days=row["preferred_days"] or [],
+            mandatory_courses=row["mandatory_courses"],
             created_at=row["created_at"],
             last_modified=row["last_modified"]
         )
         for row in rows
     ]
-
     return RecentPlanningsResponse(plannings=plannings, total=total or 0)
 
 
@@ -104,24 +107,25 @@ async def create_new_planning(
     """
     Erstellt eine neue Planning-Session für den eingeloggten User.
 
-    Parameters:
-    - planning_data: JSON Body mit "title" der neuen Planning
-    - Authorization Header mit JWT-Token wird automatisch verarbeitet
     """
     pool = await init_db_pool()
-
     now = datetime.utcnow()
 
     async with pool.acquire() as conn:
         # add new planning in DB
         row = await conn.fetchrow(
             """
-            INSERT INTO plannings (title, user_email, created_at, last_modified)
-            VALUES ($1, $2, $3, $4)
-                RETURNING id, title, created_at, last_modified
+            INSERT INTO plannings
+            (title, user_email, semester, target_ects, preferred_days, mandatory_courses, created_at, last_modified)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                RETURNING id, title, semester, target_ects, preferred_days, mandatory_courses, created_at, last_modified
             """,
             planning_data.title,
             user_email,
+            planning_data.semester,
+            planning_data.target_ects,
+            planning_data.preferred_days,
+            planning_data.mandatory_courses,
             now,
             now
         )
@@ -129,6 +133,10 @@ async def create_new_planning(
     return PlanningResponse(
         id=row["id"],
         title=row["title"],
+        semester=row["semester"],
+        target_ects=row["target_ects"],
+        preferred_days=row["preferred_days"] or [],
+        mandatory_courses=row["mandatory_courses"],
         created_at=row["created_at"],
         last_modified=row["last_modified"]
     )
@@ -141,18 +149,14 @@ async def get_planning(
 ):
     """
     Gibt die Details einer bestimmten Planning zurück.
-    Nur der Besitzer kann auf seine Planning zugreifen.
-
-    Parameters:
-    - planning_id: ID der Planning
-    - Authorization Header mit JWT-Token wird automatisch verarbeitet
     """
     pool = await init_db_pool()
 
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
-            SELECT id, title, user_email, created_at, last_modified
+            SELECT id, title, semester, target_ects, preferred_days,
+                   mandatory_courses, created_at, last_modified
             FROM plannings
             WHERE id = $1 AND user_email = $2
             """,
@@ -169,63 +173,15 @@ async def get_planning(
     return PlanningResponse(
         id=row["id"],
         title=row["title"],
+        semester=row["semester"],
+        target_ects=row["target_ects"],
+        preferred_days=row["preferred_days"] or [],
+        mandatory_courses=row["mandatory_courses"],
         created_at=row["created_at"],
         last_modified=row["last_modified"]
     )
 
-
-@router.put("/{planning_id}/access")
-async def update_planning_access(
-        planning_id: int,
-        user_email: str = Depends(get_current_user_email)
-):
-    """
-    Aktualisiert die last_modified Zeit einer Planning.
-    Wird aufgerufen wenn User auf eine Planning zugreift.
-    Hilft dabei die Reihenfolge der "Recent Plannings" aktuell zu halten.
-
-    Parameters:
-    - planning_id: ID der Planning
-    - Authorization Header mit JWT-Token wird automatisch verarbeitet
-    """
-    pool = await init_db_pool()
-
-    now = datetime.utcnow()
-
-    async with pool.acquire() as conn:
-        # check if planning exists and access is allowd
-        #TODO check if recent plannings can be edited
-        exists = await conn.fetchval(
-            """
-            SELECT EXISTS(
-                SELECT 1 FROM plannings
-                WHERE id = $1 AND user_email = $2
-            )
-            """,
-            planning_id,
-            user_email
-        )
-
-        if not exists:
-            raise HTTPException(
-                status_code=404,
-                detail="Planning not found or you don't have access"
-            )
-
-        # if edited: update last_modified
-        await conn.execute(
-            """
-            UPDATE plannings
-            SET last_modified = $1
-            WHERE id = $2
-            """,
-            now,
-            planning_id
-        )
-
-    return {"status": "success", "message": "Planning access updated"}
-
-
+#todo check if planning update is wanted!
 @router.put("/{planning_id}", response_model=PlanningResponse)
 async def update_planning(
         planning_id: int,
@@ -233,19 +189,13 @@ async def update_planning(
         user_email: str = Depends(get_current_user_email)
 ):
     """
-    Aktualisiert eine Planning (z.B. Titel ändern).
-
-    Parameters:
-    - planning_id: ID der Planning
-    - planning_data: JSON Body mit zu aktualisierenden Feldern
-    - Authorization Header mit JWT-Token wird automatisch verarbeitet
+    Aktualisiert eine Planning.
     """
     pool = await init_db_pool()
-
     now = datetime.utcnow()
 
     async with pool.acquire() as conn:
-        # Check if planning exists and user can access
+        # Prüfe ob Planning existiert
         exists = await conn.fetchval(
             """
             SELECT EXISTS(
@@ -263,36 +213,105 @@ async def update_planning(
                 detail="Planning not found or you don't have access"
             )
 
-        # update planning
-        if planning_data.title is not None:
-            await conn.execute(
-                """
-                UPDATE plannings
-                SET title = $1, last_modified = $2
-                WHERE id = $3
-                """,
-                planning_data.title,
-                now,
-                planning_id
-            )
+        # Baue dynamisches UPDATE Statement
+        update_fields = []
+        params = []
+        param_count = 1
 
-        # retrieve updated planning
+        if planning_data.title is not None:
+            update_fields.append(f"title = ${param_count}")
+            params.append(planning_data.title)
+            param_count += 1
+
+        if planning_data.semester is not None:
+            update_fields.append(f"semester = ${param_count}")
+            params.append(planning_data.semester)
+            param_count += 1
+
+        if planning_data.target_ects is not None:
+            update_fields.append(f"target_ects = ${param_count}")
+            params.append(planning_data.target_ects)
+            param_count += 1
+
+        if planning_data.preferred_days is not None:
+            update_fields.append(f"preferred_days = ${param_count}")
+            params.append(planning_data.preferred_days)
+            param_count += 1
+
+        if planning_data.mandatory_courses is not None:
+            update_fields.append(f"mandatory_courses = ${param_count}")
+            params.append(planning_data.mandatory_courses)
+            param_count += 1
+
+        # Füge last_modified hinzu
+        update_fields.append(f"last_modified = ${param_count}")
+        params.append(now)
+        param_count += 1
+
+        # Füge WHERE-Bedingungen hinzu
+        params.append(planning_id)
+        where_clause = f"WHERE id = ${param_count}"
+
+        # Führe UPDATE aus
+        if update_fields:
+            query = f"UPDATE plannings SET {', '.join(update_fields)} {where_clause}"
+            await conn.execute(query, *params)
+
+        # Hole aktualisierte Planning
         row = await conn.fetchrow(
             """
-            SELECT id, title, created_at, last_modified
+            SELECT id, title, semester, target_ects, preferred_days,
+                   mandatory_courses, created_at, last_modified
             FROM plannings
             WHERE id = $1
             """,
             planning_id
         )
-
     return PlanningResponse(
         id=row["id"],
         title=row["title"],
+        semester=row["semester"],
+        target_ects=row["target_ects"],
+        preferred_days=row["preferred_days"] or [],
+        mandatory_courses=row["mandatory_courses"],
         created_at=row["created_at"],
         last_modified=row["last_modified"]
     )
 
+@router.put("/{planning_id}/access")
+async def update_planning_access(
+        planning_id: int,
+        user_email: str = Depends(get_current_user_email)
+):
+    """Aktualisiert last_modified beim Zugriff."""
+    pool = await init_db_pool()
+    now = datetime.utcnow()
+
+    async with pool.acquire() as conn:
+        exists = await conn.fetchval(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM plannings
+                WHERE id = $1 AND user_email = $2
+            )
+            """,
+            planning_id,
+            user_email
+        )
+
+        if not exists:
+            raise HTTPException(
+                status_code=404,
+                detail="Planning not found or you don't have access"
+            )
+
+        await conn.execute(
+            "UPDATE plannings SET last_modified = $1 WHERE id = $2",
+            now,
+            planning_id
+        )
+
+    return {"status": "success", "message": "Planning access updated"}
 
 @router.delete("/{planning_id}")
 async def delete_planning(
