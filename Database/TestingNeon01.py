@@ -41,15 +41,15 @@ def test_neon_connection(db_url):
                 print("\n📖 **3. Test: Abruf der ersten 10 LVA-Datensätze**")
 
                 # Führt die Abfrage aus
-                cur.execute("SELECT id, name, ects FROM lvas LIMIT 10;")
+                cur.execute("SELECT id, name, ects, hierarchielevel0 FROM lvas LIMIT 10;")
                 lva_records = cur.fetchall()
 
                 if lva_records:
-                    print("ID | LVA Name | ECTS")
+                    print("ID | LVA Name | ECTS | Pflicht?")
                     print("---|---|---")
                     for record in lva_records:
                         # Formatiert die Ausgabe sauber
-                        print(f"{record[0]:2} | {record[1]:45} | {record[2]}")
+                        print(f"{record[0]:2} | {record[1]:45} | {record[2]} | {record[3]}")
                     print(f"\n✅ Datenabruf erfolgreich. {len(lva_records)} Datensätze angezeigt.")
                 else:
                     print("⚠️ Die Tabelle 'lvas' ist leer oder existiert nicht.")
