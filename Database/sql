@@ -20,11 +20,12 @@ CREATE TABLE IF NOT EXISTS completed_lvas (
     FOREIGN KEY (lva_id) REFERENCES lvas(id)
 );
 
+
 -- LVAs einfügen
 INSERT INTO lvas (name, ects) VALUES
 ('VL Einführung in die Wirtschaftsinformatik', 3),
 ('UE Einführung in die Wirtschaftsinformatik', 3),
-('VL Algorithmen und Datenstrukturen', 3),
+('VL Algorithmen und Datenstrukturen', 3),new
 ('UE Algorithmen und Datenstrukturen', 3),
 ('VL Datenmodellierung', 3),
 ('UE Datenmodellierung', 3),
@@ -85,3 +86,74 @@ INSERT INTO users (email, password) VALUES
 ('johanna@study.at', '$2a$12$rXY7ZxqzsUQlCx.7WYtuiubSZMYpksQbVrS6qeBnqXY8W3TE6OjES'),
 ('sabiha@study.at', '$2a$12$rXY7ZxqzsUQlCx.7WYtuiubSZMYpksQbVrS6qeBnqXY8W3TE6OjES'),
 ('marlene@study.at', '$2a$12$rXY7ZxqzsUQlCx.7WYtuiubSZMYpksQbVrS6qeBnqXY8W3TE6OjES');
+
+
+CREATE TABLE lva_hierarchy (
+    id SERIAL PRIMARY KEY,
+    hierarchielevel0 TEXT,
+    hierarchielevel1 TEXT,
+    hierarchielevel2 TEXT,
+    type VARCHAR(5),
+    name TEXT,
+    ects INTEGER
+);
+
+
+INSERT INTO lva_hierarchy (hierarchielevel0, hierarchielevel1, hierarchielevel2, type, name, ects) VALUES
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Einführung in die Wirtschaftsinformatik', 'VL', 'VL Einführung in die Wirtschaftsinformatik', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Einführung in die Wirtschaftsinformatik', 'UE', 'UE Einführung in die Wirtschaftsinformatik', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Algorithmen und Datenstrukturen', 'VL', 'VL Algorithmen und Datenstrukturen', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Algorithmen und Datenstrukturen', 'UE', 'UE Algorithmen und Datenstrukturen', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Datenmodellierung', 'VL', 'VL Datenmodellierung', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Datenmodellierung', 'UE', 'UE Datenmodellierung', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Prozess- und Kommunikationsmodellierung', 'VL', 'VL Prozess- und Kommunikationsmodellierung', 3),
+('Pflichtfach', 'Grundlagen der Wirtschaftsinformatik', 'Prozess- und Kommunikationsmodellierung', 'UE', 'UE Prozess- und Kommunikationsmodellierung', 3),
+('Pflichtfach', 'Grundlagen der Betriebswirtschaftslehre', 'Grundlagen der Betriebswirtschaftslehre', 'KS', 'KS Grundlagen der Betriebswirtschaftslehre', 3),
+('Pflichtfach', 'Grundlagen der Betriebswirtschaftslehre', 'Grundlagen des integrierten Managements', 'KS', 'KS Grundlagen des integrierten Managements', 3),
+('Pflichtfach', 'Grundlagen der Betriebswirtschaftslehre', 'Grundlagen der Kostenrechnung', 'KS', 'KS Grundlagen der Kostenrechnung', 3),
+('Pflichtfach', 'Grundlagen der Betriebswirtschaftslehre', 'Buchhaltung nach UGB', 'KS', 'KS Buchhaltung nach UGB', 3),
+('Pflichtfach', 'Grundlagen der Betriebswirtschaftslehre', 'Einführung in Marketing', 'KS', 'KS Einführung in Marketing', 3),
+('Pflichtfach', 'Grundlagen der Betriebswirtschaftslehre', 'Grundlagen des Supply Chain Management', 'KS', 'KS Grundlagen des Supply Chain Management', 3),
+('Pflichtfach', 'Grundlagen der Informatik', 'Einführung in die Informatik', 'VL', 'VL Einführung in die Informatik', 3),
+('Pflichtfach', 'Grundlagen der Informatik', 'Operating Systems', 'VL', 'VL Operating Systems', 3),
+('Pflichtfach', 'Grundlagen der Informatik', 'Einführung in die Softwareentwicklung', 'VL', 'VL Einführung in die Softwareentwicklung', 3),
+('Pflichtfach', 'Grundlagen der Informatik', 'Einführung in die Softwareentwicklung', 'UE', 'UE Einführung in die Softwareentwicklung', 3),
+('Pflichtfach', 'Grundlagen der Informatik', 'Vertiefung Softwareentwicklung', 'VL', 'VL Vertiefung Softwareentwicklung', 3),
+('Pflichtfach', 'Grundlagen der Informatik', 'Vertiefung Softwareentwicklung', 'UE', 'UE Vertiefung Softwareentwicklung', 3),
+('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Mathematik und Logik', 'KV', 'KV Mathematik und Logik', 6),
+('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Formale Grundlagen der Wirtschaftsinformatik', 'VL', 'VL Formale Grundlagen der Wirtschaftsinformatik', 5),
+('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Formale Grundlagen der Wirtschaftsinformatik', 'UE', 'UE Formale Grundlagen der Wirtschaftsinformatik', 2),
+('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Statistik', 'KV', 'KV Statistik', 3),
+('Pflichtfach', 'Grundlagen des Rechts', 'Privatrecht für Wirtschaftsinformatik', 'KV', 'KV Privatrecht für Wirtschaftsinformatik', 5),
+('Pflichtfach', 'Grundlagen des Rechts', 'Öffentliches Recht für Wirtschaftsinformatik', 'KV', 'KV Öffentliches Recht für Wirtschaftsinformatik', 2),
+('Pflichtfach', 'Fachsprache Englisch', 'Kommunikative Fertigkeiten Englisch (B2)', 'KS', 'KS Kommunikative Fertigkeiten Englisch (B2)', 3),
+('Pflichtfach', 'Fachsprache Englisch', 'Fachsprache Englisch', 'SE', 'SE Fachsprache Englisch', 3),
+('Pflichtfach', 'Soziale und geschlechterspezifische Aspekte der IT', 'Soziale Auswirkungen der IT', 'KS', 'KS Soziale Auswirkungen der IT', 3),
+('Pflichtfach', 'Soziale und geschlechterspezifische Aspekte der IT', 'Einführung in IKT, Gesellschaft, Gender und Diversity', 'KS', 'KS Einführung in IKT, Gesellschaft, Gender und Diversity', 3),
+('Pflichtfach', 'Information Engineering', 'IT-Project Engineering & Management', 'VL', 'VL IT-Project Engineering & Management', 3),
+('Pflichtfach', 'Information Engineering', 'IT-Project Engineering & Management', 'UE', 'UE IT-Project Engineering & Management', 3),
+('Pflichtfach', 'Information Engineering', 'Informationsmanagement', 'VL', 'VL Informationsmanagement', 3),
+('Pflichtfach', 'Information Engineering', 'Informationsmanagement', 'UE', 'UE Informationsmanagement', 3),
+('Pflichtfach', 'Software Engineering', 'Software Engineering', 'VL', 'VL Software Engineering', 3),
+('Pflichtfach', 'Software Engineering', 'Software Engineering', 'UE', 'UE Software Engineering', 3),
+('Pflichtfach', 'Software Engineering', 'Software Engineering', 'PR', 'PR Software Engineering', 6),
+('Pflichtfach', 'Data & Knowledge Engineering', 'Data & Knowledge Engineering', 'VL', 'VL Data & Knowledge Engineering', 3),
+('Pflichtfach', 'Data & Knowledge Engineering', 'Data & Knowledge Engineering', 'UE', 'UE Data & Knowledge Engineering', 3),
+('Pflichtfach', 'Data & Knowledge Engineering', 'Data & Knowledge Engineering', 'PR', 'PR Data & Knowledge Engineering', 6),
+('Pflichtfach', 'Communications Engineering', 'Communications Engineering', 'VL', 'VL Communications Engineering', 3),
+('Pflichtfach', 'Communications Engineering', 'Communications Engineering', 'UE', 'UE Communications Engineering', 3),
+('Pflichtfach', 'Communications Engineering', 'Communications Engineering (Kompetenztraining)', 'KT', 'KT Communications Engineering (Kompetenztraining)', 3),
+('Pflichtfach', 'Communications Engineering', 'Anwendungen des Communications Engineering', 'SE', 'SE Anwendungen des Communications Engineering', 3),
+('Pflichtfach', 'IT Projekt', 'IT-Projekt Wirtschaftsinformatik', 'PJ', 'PJ IT-Projekt Wirtschaftsinformatik', 6),
+('Pflichtfach', 'Ausgewählte Aspekte der Wirtschaftsinformatik', 'Information Engineering', 'PS', 'PS Information Engineering', 3),
+('Pflichtfach', 'Ausgewählte Aspekte der Wirtschaftsinformatik', 'Software Engineering', 'PS', 'PS Software Engineering', 3),
+('Pflichtfach', 'Ausgewählte Aspekte der Wirtschaftsinformatik', 'Data & Knowledge Engineering', 'PS', 'PS Data & Knowledge Engineering', 3),
+('Pflichtfach', 'Ausgewählte Aspekte der Wirtschaftsinformatik', 'Communications Engineering', 'PS', 'PS Communications Engineering', 3),
+('Pflichtfach', 'Spezialisierungsfach Wirtschaftsinformatik (mit Bachelorarbeit)', 'Spezielle Wirtschaftsinformatik - Theorie und Praxis, inklusive Bachelorarbeit', 'PE', 'PE Spezielle Wirtschaftsinformatik - Theorie und Praxis, inklusive Bachelorarbeit', 12),
+('Wahlfach', 'Wahlfach Wirtschaftsinformatik1', 'Wahlfach Wirtschaftsinformatik1', 'Wa', 'Wahlfach Wirtschaftsinformatik1', 3),
+('Wahlfach', 'Wahlfach Wirtschaftsinformatik2', 'Wahlfach Wirtschaftsinformatik2', 'Wa', 'Wahlfach Wirtschaftsinformatik2', 3),
+('Wahlfach', 'Wahlfach Wirtschaftswissenschaften1', 'Wahlfach Wirtschaftswissenschaften1', 'Wa', 'Wahlfach Wirtschaftswissenschaften1', 3),
+('Wahlfach', 'Wahlfach Wirtschaftswissenschaften2', 'Wahlfach Wirtschaftswissenschaften2', 'Wa', 'Wahlfach Wirtschaftswissenschaften2', 3),
+('Wahlfach', 'Freie Studienleistungen1', 'Freie Studienleistungen1', 'Fr', 'Freie Studienleistungen1', 3),
+('Wahlfach', 'Freie Studienleistungen2', 'Freie Studienleistungen2', 'Fr', 'Freie Studienleistungen2', 3),
+('Wahlfach', 'Freie Studienleistungen3', 'Freie Studienleistungen3', 'Fr', 'Freie Studienleistungen3', 3);
