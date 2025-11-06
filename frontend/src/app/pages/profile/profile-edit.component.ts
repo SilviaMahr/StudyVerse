@@ -3,14 +3,15 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UserProfile, UserProfileUpdate} from '../../models/user-profile.model';
 import {ProfileService} from '../../../services/profile.service';
-import {throwError} from 'rxjs';
+import {RouterLink} from '@angular/router';
 
 @Component ({
   selector: 'app-profile-edit',
   standalone : true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl: './profile-edit.component.html',
   styleUrls: ['./profile-edit.component.css']

@@ -1,0 +1,103 @@
+<!-- Hauptcontainer, nutzt denselben Stil wie profile-container -->
+<div class="lva-container">
+
+  <!-- loading -->
+  @if (isLoading) {
+    <div class="loading-message">Lade LVA-Listen...</div>
+  }
+
+  <!-- error -->
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  <!-- success -->
+  @if (!isLoading && !error) {
+    <div class="lva-header">
+      <h2>Abgeschlossene LVAs verwalten</h2>
+      <p>Markiere alle Lehrveranstaltungen, die du bereits positiv absolviert hast.</p>
+    </div>
+
+    <!-- PFLICHTFÄCHER -->
+    <section class="lva-section">
+      <h3>Pflichtfächer</h3>
+
+      @for (module of pflichtfaecher; track module.module_name) {
+        <div class="module-container">
+          <details open> <!-- <details> macht es auf- und zuklappbar, 'open' ist Standard -->
+            <summary class="module-header">
+              <span>{{ module.module_name }}</span>
+              <span>{{ module.total_ects }} ECTS</span>
+            </summary>
+
+            <ul class="lva-list">
+              @for (lva of module.lvas; track lva.id) {
+                <li class="lva-item" [class.completed]="lva.is_completed">
+                  <label>
+                    <input
+                      type="checkbox"
+                      class="lva-checkbox"
+                      [(ngModel)]="lva.is_completed"> <!-- Two-Way-Binding -->
+
+                    <span class="lva-name">{{ lva.name }} ({{ lva.ects }} ECTS)</span>
+                    <span class="lva-type">{{ lva.type }}</span>
+                  </label>
+                </li>
+              }
+            </ul>
+          </details>
+        </div>
+      } @empty {
+        <p>Keine Pflichtfächer gefunden.</p>
+      }
+    </section>
+
+    <!-- WAHLFÄCHER (identische Struktur) -->
+    <section class="lva-section">
+      <h3>Wahlfächer</h3>
+
+      @for (module of wahlfaecher; track module.module_name) {
+        <div class="module-container">
+          <details open>
+            <summary class="module-header">
+              <span>{{ module.module_name }}</span>
+              <span>{{ module.total_ects }} ECTS</span>
+            </summary>
+
+            <ul class="lva-list">
+              @for (lva of module.lvas; track lva.id) {
+                <li class="lva-item" [class.completed]="lva.is_completed">
+                  <label>
+                    <input
+                      type="checkbox"
+                      class="lva-checkbox"
+                      [(ngModel)]="lva.is_completed">
+
+                    <span class="lva-name">{{ lva.name }} ({{ lva.ects }} ECTS)</span>
+                    <span class="lva-type">{{ lva.type }}</span>
+                  </label>
+                </li>
+              }
+            </ul>
+          </details>
+        </div>
+      } @empty {
+        <p>Keine Wahlfächer gefunden.</p>
+      }
+    </section>
+
+    <div class="save-section">
+      @if (successMessage) {
+        <div class="success-message">{{ successMessage }}</div>
+      }
+
+      <button class="save-button" (click)="onSave()" [disabled]="isSaving">
+        @if (isSaving) {
+          Speichere...
+        } @else {
+          Änderungen speichern
+        }
+      </button>
+    </div>
+  }
+</div>
