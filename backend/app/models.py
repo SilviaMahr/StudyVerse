@@ -70,3 +70,78 @@ class RAGStartResponse(BaseModel):
     planning_id: int
     message: str
     session_id: Optional[str] = None
+
+# Chat models
+#TODO: maybe changes necessry later in process
+# ========== Chat Models ==========
+
+class ChatMessage(BaseModel):
+    """Eine Chat-Nachricht"""
+    id: int
+    role: str  # 'user' oder 'assistant'
+    content: str
+    timestamp: datetime
+    metadata: Optional[dict] = None
+
+class ChatSendRequest(BaseModel):
+    """Request zum Senden einer Nachricht"""
+    message: str
+
+class ChatHistoryResponse(BaseModel):
+    """Response mit Chat-History"""
+    planning_id: int
+    messages: List[ChatMessage]
+    total: int
+
+# ========== Profile models ==========
+
+#user data
+class UserProfile(BaseModel):
+    id: int
+    username: Optional[str] = None
+    email: str
+    studiengang: str = "Bachelor Wirtschaftsinformatik"
+    #hard-coded - only one to be served right now
+
+#update profile if username or email changes.
+class UserProfileUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    studiengang: Optional[str] = None #optional - inculded for possible enhancement
+
+# ========== LVA models ==========
+
+#single lva
+class LVA(BaseModel):
+    id: int
+    hierarchielevel0: str  # Pflichtfach/Wahlfach
+    hierarchielevel1: str  # Modul
+    hierarchielevel2: str  # Kurs-Name
+    type: str              # VL, UE, PR, etc.
+    name: str              # Voller Name
+    ects: int
+    is_completed: bool = False  # completed by user?
+
+#module inkluding it´s lvas: zB Grundlagen der Informatik with
+# Einf. Inf, Operational Systems, Soft1 VL + UE
+class LVAModule(BaseModel):
+    module_name: str        # hierarchielevel1
+    lvas: List[LVA]
+    total_ects: int
+
+#hierarchie sends a liste of all modules with it´s courses
+class LVAHierarchy(BaseModel):
+    category: str           # Pflichtfach oder Wahlfach
+    modules: List[LVAModule]
+
+#response for client - deliveres entire lva-structure
+class PflichtfaecherResponse(BaseModel):
+    pflichtfaecher: List[LVAModule]
+
+#response for client - deliveres entire lva-structure
+class WahlfaecherResponse(BaseModel):
+    wahlfaecher: List[LVAModule]
+
+#client request -> sends updated completed_lva data
+class CompletedLVAsUpdate(BaseModel):
+    lva_ids: List[int]
