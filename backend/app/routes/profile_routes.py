@@ -5,8 +5,8 @@ from typing import List, Dict
 from collections import defaultdict
 from ..models import (
     UserProfile, UserProfileUpdate,
-    LVA, LVAModule, LVAHierarchyResponse,
-    CompletedLVAsUpdate, PflichtfaecherResponse, WahlfaecherResponse
+    LVA, LVAModule, CompletedLVAsUpdate,
+    PflichtfaecherResponse, WahlfaecherResponse
 )
 from ..db import init_db_pool
 from ..routes.planning_routes import get_current_user_email
