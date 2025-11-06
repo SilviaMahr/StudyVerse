@@ -56,11 +56,17 @@ class RecentPlanningsResponse(BaseModel):
     total: int
 
 # To start RAG
-#TODO maybe some editin necessary later when RAG is being implemented!
+#TODO: adapt if necessary as soon as RAG is ready for further implementation
+#starts a RAG session
 class RAGStartRequest(BaseModel):
     planning_id: int
+    user_query: Optional[str] = None
 
+#response model (contains all the data that the backend sends to the client when
+# interacting with the rag
+#TODO: adapt if necessary as soon as RAG is ready for further implementation
 class RAGStartResponse(BaseModel):
-    status: str
+    success: bool
+    planning_id: int
     message: str
     session_id: Optional[str] = None
