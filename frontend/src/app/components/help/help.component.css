@@ -1,0 +1,43 @@
+@import '../lva-management/lva-management.component.css';
+
+.help-container .mascot {
+  position: absolute;
+  left: -10%;
+  width: 150px;
+  height: auto;
+  z-index: 10;
+  transform: translate(-30%, -30%);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  transition: filter 0.3s ease;
+}
+
+.help-section {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 1rem 1.5rem;
+  color: white;
+}
+
+.help-section h3 {
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-left: 0;
+  align-self: auto;
+  width: auto;
+}
+
+.help-section p,
+.help-section li {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.help-section ul {
+  list-style: disc;
+  padding-left: 25px;
+  margin-top: 1rem;
+}
