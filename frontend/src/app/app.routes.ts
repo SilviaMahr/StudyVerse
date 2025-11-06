@@ -7,6 +7,7 @@ import { MainLayoutComponent} from './components/main-layout/main-layout.compone
 import {authGuard} from '../services/auth.guard';
 import {PlanningDetailComponent} from './components/planning-detail/planning-detail.component';
 import {LvaManagementComponent} from './components/lva-management/lva-management.component';
+import {HelpComponent} from './components/help/help.component';
 
 export const routes: Routes = [
   {
@@ -46,6 +47,11 @@ export const routes: Routes = [
       {
         path: 'lva-management',
         component: LvaManagementComponent
+      },
+
+      {
+        path: 'help',
+        component: HelpComponent
       }
     ]
   }
