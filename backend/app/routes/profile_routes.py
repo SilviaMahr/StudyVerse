@@ -6,7 +6,7 @@ from collections import defaultdict
 from ..models import (
     UserProfile, UserProfileUpdate,
     LVA, LVAModule, LVAHierarchyResponse,
-    CompletedLVAsUpdate
+    CompletedLVAsUpdate, PflichtfaecherResponse, WahlfaecherResponse
 )
 from ..db import init_db_pool
 from ..routes.planning_routes import get_current_user_email
@@ -129,7 +129,7 @@ async def update_my_profile(
     )
 
 
-@router.get("/pflichfächer", response_model=LVAHierarchyResponse)
+@router.get("/pflichfaecher", response_model=PflichtfaecherResponse)
 async def get_pflichtfaecher(user_email: str = Depends(get_current_user_email)):
     """
     Returns only Pflichtfächer hierarchy.
@@ -190,11 +190,11 @@ async def get_pflichtfaecher(user_email: str = Depends(get_current_user_email)):
             )
         )
 
-    return LVAHierarchyResponse(
+    return PflichtfaecherResponse(
         pflichtfaecher=pflichtfach_modules,
     )
 
-@router.get("/wahlfaecher", response_model=LVAHierarchyResponse)
+@router.get("/wahlfaecher", response_model=WahlfaecherResponse)
 async def get_wahlfaecher(user_email: str = Depends(get_current_user_email)):
     """
     Returns only Wahlfächer hierarchy.
@@ -255,7 +255,7 @@ async def get_wahlfaecher(user_email: str = Depends(get_current_user_email)):
             )
         )
 
-    return LVAHierarchyResponse(
+    return WahlfaecherResponse(
         wahlfaecher=wahlfach_modules
     )
 
