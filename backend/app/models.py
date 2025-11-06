@@ -111,7 +111,7 @@ class UserProfileUpdate(BaseModel):
 
 # ========== LVA models ==========
 
-#singel lva
+#single lva
 class LVA(BaseModel):
     id: int
     hierarchielevel0: str  # Pflichtfach/Wahlfach
