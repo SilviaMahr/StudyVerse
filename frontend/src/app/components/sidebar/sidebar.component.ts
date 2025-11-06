@@ -107,7 +107,7 @@ export class SidebarComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.planningService.getRecentPlannings(5).subscribe({
+    this.planningService.getRecentPlannings(10).subscribe({
       next: (response) => {
         this.recentPlannings = response.plannings;
         this.isLoading = false;
