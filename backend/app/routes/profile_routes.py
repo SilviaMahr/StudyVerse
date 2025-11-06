@@ -149,7 +149,7 @@ async def get_pflichtfaecher(user_email: str = Depends(get_current_user_email)):
             """
             SELECT id, hierarchielevel0, hierarchielevel1, hierarchielevel2,
                    type, name, ects
-            FROM lva_hierarchy
+            FROM lvas
             WHERE hierarchielevel0 = 'Pflichtfach'
             ORDER BY hierarchielevel1, hierarchielevel2, type
             """
@@ -214,7 +214,7 @@ async def get_wahlfaecher(user_email: str = Depends(get_current_user_email)):
             """
             SELECT id, hierarchielevel0, hierarchielevel1, hierarchielevel2,
                    type, name, ects
-            FROM lva_hierarchy
+            FROM lvas
             WHERE hierarchielevel0 = 'Wahlfach'
             ORDER BY hierarchielevel1, hierarchielevel2, type
             """
