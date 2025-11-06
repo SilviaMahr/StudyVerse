@@ -52,7 +52,7 @@ async def get_current_user_email(authorization: str = Header(None)) -> str:
 
 @router.get("/recent", response_model=RecentPlanningsResponse)
 async def get_recent_plannings(
-        limit: int = 5,
+        limit: int = 10,
         user_email: str = Depends(get_current_user_email)
 ):
     """
