@@ -1,8 +1,9 @@
-import { Component, Output, EventEmitter} from '@angular/core';
+import { Component} from '@angular/core';
 import { CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, NgForm} from '@angular/forms';
 import { PreselectionData, Weekdays} from '../../models/preselection.model';
 import {PreselectionService} from '../../../services/preselection.service';
+import {Router} from '@angular/router';
 
 
 @Component( {
@@ -17,10 +18,8 @@ import {PreselectionService} from '../../../services/preselection.service';
 })
 
 export class PreselectionComponent {
-  @Output() startPlanning = new EventEmitter<PreselectionData>();
-
-  selectedSemester: string = 'WS2025/26';
-  selectedECTS: number = 30;
+  selectedSemester: string | null = null;
+  selectedECTS: number | null = null;
   preferredCourses: string = '';
   successMessage: string | null = null;
   errorMessage: string | null = null;
@@ -34,7 +33,9 @@ export class PreselectionComponent {
     noRestriction: true
   };
 
-  constructor(private preselectionService: PreselectionService) {
+  constructor(
+    private preselectionService: PreselectionService,
+    private router: Router) {
     this.onDayChange();
   }
 
@@ -60,37 +61,38 @@ export class PreselectionComponent {
     this.days.friday = status;
   }
 
-  onSubmit(): void {
+  onSubmit(form: NgForm): void {
     this.successMessage = null;
     this.errorMessage = null;
 
-
-    if (!this.selectedSemester) {
-      return;
-    }
-    if (this.selectedECTS > 60 || this.selectedECTS <= 0) {
-      return;
-    }
-    if (!this.isDaySelected) {
+    if (form.invalid || !this.isDaySelected) {
+      console.warn("Formular ist gültig oder kein Tag ausgewählt.");
       return;
     }
 
-    this.successMessage = "Bitte habe einen Moment Geduld. Ich arbeite gerade an deiner Semesterplanung, das kann einen Moment dauern."
-    setTimeout(() => {
-      this.successMessage = "";
-    }, 5000);
+    this.successMessage = "Bitte habe einen Moment Geduld. Ich arbeite gerade an deiner Semesterplanung," +
+      " das kann einen Augenblick dauern.";
+
 
     const data: PreselectionData = {
-      semester: this.selectedSemester,
-      ects: this.selectedECTS,
-      selectedDays: this.getSelectedDaysArray(),
-      preferredCourses: this.preferredCourses
+      semester: this.selectedSemester!,
+      target_ects: this.selectedECTS!,
+      preferred_days: this.getSelectedDaysArray(),
+      mandatory_courses: this.preferredCourses
     };
 
     this.preselectionService.submitPreselection(data).subscribe({
       next: (response) => {
         console.log('Planung erfolgreich gesendet!', response);
-        this.successMessage = "Planung wurde erfolgfreich übermittelt";
+        this.successMessage = "Planung wurde erfolgreich übermittelt";
+
+        this.preselectionService.startRag(response.id).subscribe({
+          next: (ragResponse: any) => {
+            console.log('RAG-Analyse gestartet!', ragResponse);
+            this.successMessage = "Planung erstellt und Analyse gestartet!";
+            this.router.navigate(['/plan', response.id]);
+          }
+        })
 
         setTimeout(() => {
           this.successMessage = null;
@@ -104,18 +106,26 @@ export class PreselectionComponent {
 
         if (error.status === 401) {
           this.errorMessage = "Authentifizierung fehlgeschlagen. Bitte neu einloggen";
+        } else if (error.status === 422) {
+          this.errorMessage = "Die übermittelten Daten sind gültig. (Fehler 422)";
         } else {
-          this.errorMessage = "Ein Fehler ist aufgetreten. Bitte versuche es später erneut";
+          this.errorMessage = "Ein Fehler ist aufgetreten. Bitte versuche es später erneut."
         }
       }
     });
-
-    this.startPlanning.emit(data);
   }
 
   private getSelectedDaysArray(): string[] {
+    const dayMap: { [key: string]: string} = {
+      monday: "Montag",
+      tuesday: "Dienstag",
+      wednesday: "Mittwoch",
+      thursday: "Donnerstag",
+      friday: "Freitag"
+    };
+
     return Object.entries(this.days)
       .filter(([key, value]) => value === true && key !== 'noRestriction')
-      .map(([key, value]) => key);
+      .map(([key, value]) => dayMap[key]);
   }
 }

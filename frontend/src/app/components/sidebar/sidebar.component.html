@@ -29,19 +29,42 @@
       </li>
     </ul>
 
+    <h3>Letzte Planungen</h3>
+
+    @if (isLoading) {
+      <div class="sidebar-loading">Lade Planungen...</div>
+    }
+
+    @if (error) {
+      <div class="sidebar-error">{{ error }}</div>
+    }
+
+    @if (!isLoading && !error && recentPlannings.length > 0) {
+      <ul class="planning-list">
+
+        @for (plan of recentPlannings; track plan.id) {
+          <li>
+            <a [routerLink]="['/plan', plan.id]">
+              <span class="plan-title">{{ plan.title }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    } @else if (!isLoading && !error && recentPlannings.length === 0) {
+      <p class="empty-message">Noch keine Planungen erstellt.</p>
+    }
+
 
     <div class="mode-toggle">
       <img [src]="themeService.lightIconPath$ | async"
            alt="Helles Erscheinungsbild"
            id="lightModeBtn"
            class="mode-icon"
-           #lightModeIcon
            (click)="toggleDarkMode()">
       <img [src]="themeService.darkIconPath$ | async"
            alt="Dunkles Erscheinungsbild"
            id="nightModeBtn"
            class="mode-icon"
-           #darkModeIcon
            (click)="toggleLightMode()"
       >
     </div>

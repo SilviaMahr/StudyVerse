@@ -1,0 +1,146 @@
+/* Container (ähnlich wie .profile-container) */
+.planning-detail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Etwas weniger Abstand als im Edit-Modus */
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: var(--sidebar-bg); /* Nutzt die Haupt-Theme-Farbe */
+  max-width: 500px;
+  margin: 0 auto; /* Zentriert (nachdem du das main-inner padding-top korrigiert hast) */
+  position: relative;
+  color: white;
+}
+
+.planning-header {
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 1rem;
+}
+
+.planning-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: white;
+}
+
+.planning-header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Styling für die angezeigten Daten (ähnlich wie .form-group) */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: white;
+  font-weight: bold;
+  opacity: 0.8;
+  text-align: left;
+}
+
+.data-field {
+  padding: 0.75rem;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.9); /* Heller Hintergrund */
+  color: black; /* Dunkler Text */
+  font-size: 1rem;
+}
+
+.data-field.free-text {
+  min-height: 60px;
+  white-space: pre-wrap; /* Stellt Zeilenumbrüche im Freitext dar */
+}
+
+/* Liste für die Tage */
+.days-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.days-list li {
+  padding: 4px 10px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+/* Lade- und Fehlermeldungen */
+.loading-message,
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  font-weight: bold;
+}
+
+.error-message {
+  color: #f8d7da;
+}
+
+/* Button-Styling (wiederverwendet von profile-edit) */
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.secondary-button,
+.save-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-decoration: none; /* Für <a>-Tags oder [routerLink] */
+  text-align: center;
+}
+
+.secondary-button {
+  background-color: white;
+  color: black;
+}
+.secondary-button:hover {
+  background-color: #f0f0f0;
+}
+
+.save-button {
+  background-color: var(--preselection-button-bg);
+  color: var(--preselection-button-text);
+}
+.save-button:hover {
+  background-color: var(--preselection-button-hover-bg);
+}
+
+.llm-plan-placeholder {
+  padding: 1.5rem 0.75rem;
+  border-radius: 4px;
+
+  background-color: rgba(0, 0, 0, 0.15);
+
+  color: white;
+  font-size: 0.9rem;
+  font-style: italic;
+
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0.8;
+}
+

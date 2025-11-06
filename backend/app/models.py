@@ -21,7 +21,7 @@ class DayOfWeek(str, Enum):
 class PlanningCreate(BaseModel):
     title: Optional[str] = None #optional since auto generation
     semester: str = Field(..., pattern="^(SS|WS)\\d{2}$", description="Semester im Format SS26 oder WS25")
-    target_ects: int = Field(..., ge=1, le=60, description="Geplante ECTS-Punkte")
+    target_ects: float = Field(..., ge=1, le=60, description="Geplante ECTS-Punkte")
     preferred_days: List[DayOfWeek] = Field(default=[DayOfWeek.ANY], description="Bevorzugte Tage")
     mandatory_courses: Optional[str] = Field(None, description="Freitext für obligatorische LVAs")
 
@@ -30,7 +30,7 @@ class PlanningUpdate(BaseModel):
     #to enable editing exisiting plannings
     title: Optional[str] = None
     semester: Optional[str] = Field(None, pattern="^(SS|WS)\\d{2}$")
-    target_ects: Optional[int] = Field(None, ge=1, le=60)
+    target_ects: Optional[float] = Field(None, ge=1, le=60)
     preferred_days: Optional[List[DayOfWeek]] = None
     mandatory_courses: Optional[str] = None
 
