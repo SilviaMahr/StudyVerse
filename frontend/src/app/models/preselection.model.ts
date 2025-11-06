@@ -29,3 +29,9 @@ export interface RecentPlanningsResponse {
   plannings: PlanningResponse[];
   total: number;
 }
+
+export interface  RAGStartResponse {
+  status: string;
+  message: string;
+  session_id: string | null;
+}

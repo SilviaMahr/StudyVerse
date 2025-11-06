@@ -1,0 +1,56 @@
+<div class="planning-detail-container">
+
+  @if (isLoading) {
+    <div class="loading-message">Lade Planungsdetails...</div>
+  }
+
+  @if (error) {
+    <div class="error-message">{{ error }}</div>
+  }
+
+  @if (planning) {
+    <div class="planning-header">
+      <h2>{{ planning.title }}</h2>
+      <p>Planung vom {{ planning.created_at | date: 'dd.MM.yyyy' }}</p>
+    </div>
+
+    <div class="form-group">
+      <label>Semester:</label>
+      <div class="data-field">{{ planning.semester }}</div>
+    </div>
+
+    <div class="form-group">
+      <label>Ziel-ECTS:</label>
+      <div class="data-field">{{ planning.target_ects }}</div>
+    </div>
+
+    <div class="form-group">
+      <label>Bevorzugte Tage:</label>
+      <ul class="days-list">
+        @for (day of planning.preferred_days; track $index) {
+          <li>{{ day }}</li>
+        } @empty {
+          <li>Keine Einschränkungen</li>
+        }
+      </ul>
+    </div>
+
+    <div class="form-group">
+      <label>LVAs die dieses Semester unbedingt belegt werden sollen (Freitext):</label>
+      <div class="data-field free-text">
+        {{ planning.mandatory_courses || 'Keine Angabe' }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Planungsvorschlag:</label>
+      <div class="llm-plan-placeholder">
+        (Planungsvorschlag wird hier geladen...)
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="save-button" (click)="startRagAnalysis()">Chat-Analyse starten</button> <!--TODO: method to start chat -->
+    </div>
+  }
+</div>

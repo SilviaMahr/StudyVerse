@@ -3,6 +3,7 @@ import { CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
 import { PreselectionData, Weekdays} from '../../models/preselection.model';
 import {PreselectionService} from '../../../services/preselection.service';
+import {Router} from '@angular/router';
 
 
 @Component( {
@@ -32,7 +33,9 @@ export class PreselectionComponent {
     noRestriction: true
   };
 
-  constructor(private preselectionService: PreselectionService) {
+  constructor(
+    private preselectionService: PreselectionService,
+    private router: Router) {
     this.onDayChange();
   }
 
@@ -82,6 +85,14 @@ export class PreselectionComponent {
       next: (response) => {
         console.log('Planung erfolgreich gesendet!', response);
         this.successMessage = "Planung wurde erfolgreich übermittelt";
+
+        this.preselectionService.startRag(response.id).subscribe({
+          next: (ragResponse: any) => {
+            console.log('RAG-Analyse gestartet!', ragResponse);
+            this.successMessage = "Planung erstellt und Analyse gestartet!";
+            this.router.navigate(['/plan', response.id]);
+          }
+        })
 
         setTimeout(() => {
           this.successMessage = null;
