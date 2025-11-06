@@ -135,8 +135,11 @@ class LVAHierarchy(BaseModel):
     modules: List[LVAModule]
 
 #response for client - deliveres entire lva-structure
-class LVAHierarchyResponse(BaseModel):
+class PflichtfaecherResponse(BaseModel):
     pflichtfaecher: List[LVAModule]
+
+#response for client - deliveres entire lva-structure
+class WahlfaecherResponse(BaseModel):
     wahlfaecher: List[LVAModule]
 
 #client request -> sends updated completed_lva data
