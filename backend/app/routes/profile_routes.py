@@ -284,8 +284,9 @@ async def update_completed_lvas(
         user_email: str = Depends(get_current_user_email)
 ):
     """
-    Aktualisiert die Liste der abgeschlossenen LVAs.
-    Nur geänderte Einträge werden aktualisiert.
+    Update completed lvas - only entries who have been edited
+    will be updated (either if checkbox was checked or check
+    was removed.
     """
     pool = await init_db_pool()
     user_id = await get_user_id_by_email(user_email)
@@ -304,14 +305,14 @@ async def update_completed_lvas(
             to_add = new_set - current_set
             to_remove = current_set - new_set
 
-            # 3. Lösche nur nicht mehr benötigte Einträge
+            # 3. delete entries if no longer valid
             if to_remove:
                 await conn.execute(
                     "DELETE FROM completed_lvas WHERE user_id = $1 AND lva_id = ANY($2)",
                     user_id, list(to_remove)
                 )
 
-            # 4. Füge nur neue Einträge hinzu
+            # 4. add new entries
             if to_add:
                 values = [(user_id, lva_id) for lva_id in to_add]
                 await conn.executemany(
@@ -327,58 +328,3 @@ async def update_completed_lvas(
         "total_completed": len(data.lva_ids)
     }
 
-
-@router.post("/lvas/{lva_id}/complete")
-async def mark_lva_completed(
-        lva_id: int,
-        user_email: str = Depends(get_current_user_email)
-):
-    """
-    Markiert eine einzelne LVA als abgeschlossen.
-    Alternative zu update_completed_lvas für einzelne Checkboxen.
-    """
-    pool = await init_db_pool()
-    user_id = await get_user_id_by_email(user_email)
-
-    async with pool.acquire() as conn:
-        # Prüfe ob LVA existiert
-        lva_exists = await conn.fetchval(
-            "SELECT EXISTS(SELECT 1 FROM lva_hierarchy WHERE id = $1)",
-            lva_id
-        )
-        if not lva_exists:
-            raise HTTPException(status_code=404, detail="LVA not found")
-
-        # Füge hinzu (ON CONFLICT DO NOTHING falls bereits vorhanden)
-        await conn.execute(
-            """
-            INSERT INTO completed_lvas (user_id, lva_id)
-            VALUES ($1, $2)
-                ON CONFLICT (user_id, lva_id) DO NOTHING
-            """,
-            user_id,
-            lva_id
-        )
-
-    return {"status": "success", "message": "LVA als abgeschlossen markiert"}
-
-
-@router.delete("/lvas/{lva_id}/complete")
-async def unmark_lva_completed(
-        lva_id: int,
-        user_email: str = Depends(get_current_user_email)
-):
-    """
-    Entfernt eine LVA aus den abgeschlossenen.
-    """
-    pool = await init_db_pool()
-    user_id = await get_user_id_by_email(user_email)
-
-    async with pool.acquire() as conn:
-        await conn.execute(
-            "DELETE FROM completed_lvas WHERE user_id = $1 AND lva_id = $2",
-            user_id,
-            lva_id
-        )
-
-    return {"status": "success", "message": "LVA-Abschluss entfernt"}
