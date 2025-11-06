@@ -35,7 +35,9 @@ export class PreselectionComponent {
 
   constructor(
     private preselectionService: PreselectionService,
-    private router: Router) {
+    private router: Router
+  )
+  {
     this.onDayChange();
   }
 
@@ -97,7 +99,7 @@ export class PreselectionComponent {
 
         setTimeout(() => {
           this.successMessage = null;
-          this.router.navigate([])
+          this.router.navigate(['/plan', response.id])
         }, 5000);
       },
 
