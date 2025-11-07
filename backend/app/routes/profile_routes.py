@@ -151,7 +151,7 @@ async def get_pflichtfaecher(user_email: str = Depends(get_current_user_email)):
                    type, name, ects
             FROM lvas
             WHERE hierarchielevel0 = 'Pflichtfach'
-            ORDER BY hierarchielevel1, hierarchielevel2, type
+            ORDER BY id, hierarchielevel1, hierarchielevel2, type
             """
         )
 
