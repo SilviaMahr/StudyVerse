@@ -24,7 +24,7 @@
 
       @for (module of pflichtfaecher; track module.module_name) {
         <div class="module-container">
-          <details open> <!-- <details> macht es auf- und zuklappbar, 'open' ist Standard -->
+          <details open>
             <summary class="module-header">
               <span>{{ module.module_name }}</span>
               <span>{{ module.total_ects }} ECTS</span>
@@ -39,8 +39,9 @@
                       class="lva-checkbox"
                       [(ngModel)]="lva.is_completed"> <!-- Two-Way-Binding -->
 
-                    <span class="lva-name">{{ lva.name }} ({{ lva.ects }} ECTS)</span>
-                    <span class="lva-type">{{ lva.type }}</span>
+                    <span class="lva-name">{{ lva.name }}</span>
+                    <span class="lva-feature">{{ lva.ects }}</span>
+                    <span class="lva-feature">{{ lva.type }}</span>
                   </label>
                 </li>
               }
@@ -74,7 +75,7 @@
                       [(ngModel)]="lva.is_completed">
 
                     <span class="lva-name">{{ lva.name }} ({{ lva.ects }} ECTS)</span>
-                    <span class="lva-type">{{ lva.type }}</span>
+                    <span class="lva-feature">{{ lva.type }}</span>
                   </label>
                 </li>
               }
