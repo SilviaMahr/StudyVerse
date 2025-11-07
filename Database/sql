@@ -59,7 +59,7 @@ INSERT INTO lvas (hierarchielevel0, hierarchielevel1, hierarchielevel2, type, na
 ('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Formale Grundlagen der Wirtschaftsinformatik', 'VL', 'VL Formale Grundlagen der Wirtschaftsinformatik', 5),
 ('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Formale Grundlagen der Wirtschaftsinformatik', 'UE', 'UE Formale Grundlagen der Wirtschaftsinformatik', 2),
 ('Pflichtfach', 'Grundlagen der Mathematik, Statistik und formaler Methoden', 'Statistik', 'KV', 'KV Statistik', 3),
-('Pflichtfach', 'Grundlagen des Rechts', 'Privatrecht für Wirtschaftsinformatik', 'KV', 'KV Privatrecht für Wirtschaftsinformatik', 5),
+('Pflichtfach', 'Grundlagen des Rechts', 'Privatrecht für Wirtschaftsinformatik', 'KV', 'KV Privatrecht für Wirtschaftsinformatik', 4),
 ('Pflichtfach', 'Grundlagen des Rechts', 'Öffentliches Recht für Wirtschaftsinformatik', 'KV', 'KV Öffentliches Recht für Wirtschaftsinformatik', 2),
 ('Pflichtfach', 'Fachsprache Englisch', 'Kommunikative Fertigkeiten Englisch (B2)', 'KS', 'KS Kommunikative Fertigkeiten Englisch (B2)', 3),
 ('Pflichtfach', 'Fachsprache Englisch', 'Fachsprache Englisch', 'SE', 'SE Fachsprache Englisch', 3),
