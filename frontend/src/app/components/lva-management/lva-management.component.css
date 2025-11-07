@@ -109,7 +109,7 @@
   flex-grow: 1;
 }
 
-.lva-type {
+.lva-feature{
   font-size: 0.8rem;
   opacity: 0.7;
   padding: 2px 6px;
@@ -117,18 +117,18 @@
   border-radius: 4px;
 }
 
+
 .lva-item.completed {
-  background-color: darkgrey;
-  color: #333;
+  background-color: var(--background-completed);
 }
 
 lva-item.completed .lva-name,
-.lva-item.completed .lva-type {
-  color: #333;
+.lva-item.completed .lva-feature {
+  color: white;
   opacity: 0.8;
 }
 
-.lva-item.complete .lva-type  {
+.lva-item.complete .lva-feature {
   background-color: rgba(0, 0, 0, 0.1);
 }
 

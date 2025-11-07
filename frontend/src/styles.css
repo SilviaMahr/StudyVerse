@@ -18,6 +18,7 @@
   --preselection-button-hover-bg: darkgrey;
   --preselection-accent-color: grey;
   --text-color-inverse: white;
+  --background-completed: darkgreen;
 }
 
 body.dark-mode {
@@ -33,6 +34,7 @@ body.dark-mode {
   --preselection-button-bg: #218838;
   --preselection-button-text: white;--preselection-accent-color: lightgreen;
   --preselection-button-hover-bg: green;
+  --background-completed: #431c3a;
 }
 
 body.dark-mode #dayUniverse {
@@ -412,3 +414,4 @@ html, body {
 h3 {
   color: white;
 }
+
