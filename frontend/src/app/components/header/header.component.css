@@ -39,3 +39,11 @@
 :host-context(body.sidebar-collapsed) .studyverse {
   left: calc(50% + (var(--sidebar-collapsed-width)/2));
 }
+
+.header-actions {
+  position: absolute;
+  top: 2vw;
+  right: 5%;
+  z-index: 2;
+  display: flex;
+}

@@ -3,7 +3,7 @@ import { CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
 import { PreselectionData, Weekdays} from '../../models/preselection.model';
 import {PreselectionService} from '../../../services/preselection.service';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 
 
 @Component( {
@@ -11,7 +11,8 @@ import {Router} from '@angular/router';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl: './preselection.component.html',
   styleUrls: ['./preselection.component.css']
