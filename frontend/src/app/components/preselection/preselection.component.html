@@ -1,8 +1,7 @@
 <form class="preselection-container" #preselectionForm="ngForm" (ngSubmit)="onSubmit(preselectionForm)">
   <img src="assets/UNI.png" alt="Maskottchen" class="mascot">
   <h2>Neue Planung starten</h2>
-  <p>Lass uns die Sache gemeinsam angehen und dein nächstes Semester planen!<br><br>
-    Denk daran, deine <a href="/lva-management"> abgeschlossenen LVAs</a> aktuell zu halten.</p>
+  <p>Lass uns die Sache gemeinsam angehen und dein nächstes Semester planen!</p>
 
   <div class="form-group">
     <label for="semester">Semester für das geplant werden soll:</label>
@@ -110,5 +109,10 @@
           class="start-button"
           [disabled]="!preselectionForm.valid || !isDaySelected">
     Planung starten</button>
+
+  <div class="lva-hint">
+    Pssssst: Falls sich bei deinen Wunsch-Wahlfächern oder absolvierten LVAs etwas ändert,
+    kannst du das <a [routerLink]="['/profile']">hier</a> ändern!
+  </div>
 
 </form>
