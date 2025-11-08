@@ -162,3 +162,22 @@ select.ng-invalid.ng-touched {
 
   margin-top: 1rem;
 }
+.lva-hint {
+  font-size: 90%;
+  color: white;
+  opacity: 0.8;
+  text-align: center;
+  margin-top: 1.5rem;
+  padding: 0 1rem;
+}
+
+.lva-hint a {
+  color: white;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.lva-hint a:hover {
+  opacity: 0.8;
+}
