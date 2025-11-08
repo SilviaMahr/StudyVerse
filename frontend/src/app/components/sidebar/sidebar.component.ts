@@ -13,6 +13,7 @@ import { ThemeService} from '../../../services/theme.service';
 import {RouterLink} from '@angular/router';
 import {PlanningResponse} from '../../models/preselection.model';
 import {PlanningService} from '../../../services/planning.service';
+import {LogoutComponent} from '../logout/logout.component';
 
 @Component( {
   selector: 'app-sidebar',

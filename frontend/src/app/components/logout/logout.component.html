@@ -1,0 +1,28 @@
+<a (click)="openModal()" class="logout-link">
+
+  <img
+    src="assets/logoutIcon.png"
+    alt="Logout"
+    class="sidebar-icon"
+    onerror="this.style.display='none'">
+
+  <span class="sidebar-text">Logout</span>
+</a>
+
+@if (showConfirmationModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3>Bestätigung</h3>
+      <p>Möchtest du dich wirklich ausloggen?</p>
+
+      <div class="modal-buttons">
+        <button (click)="closeModal()" class="modal-btn-cancel">
+          Abbrechen
+        </button>
+        <button (click)="confirmLogout()" class="modal-btn-confirm">
+          Ausloggen
+        </button>
+      </div>
+    </div>
+  </div>
+}
