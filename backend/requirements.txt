@@ -47,3 +47,4 @@ unstructured
 psycopg2-binary
 pgvector
 langchain-community
+bs4
