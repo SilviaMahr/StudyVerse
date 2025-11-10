@@ -5,7 +5,6 @@ import {PreselectionComponent} from './components/preselection/preselection.comp
 import {ProfileEditComponent} from './pages/profile/profile-edit.component';
 import { MainLayoutComponent} from './components/main-layout/main-layout.component';
 import {authGuard} from '../services/auth.guard';
-import {PlanningDetailComponent} from './components/planning-detail/planning-detail.component';
 import {LvaManagementComponent} from './components/lva-management/lva-management.component';
 import {HelpComponent} from './components/help/help.component';
 import {PlanWorkspaceComponent} from './components/plan-workspace/plan-workspace.component';
