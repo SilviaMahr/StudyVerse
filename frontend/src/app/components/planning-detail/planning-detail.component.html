@@ -1,13 +1,4 @@
 <div class="planning-detail-container">
-
-  @if (isLoading) {
-    <div class="loading-message">Lade Planungsdetails...</div>
-  }
-
-  @if (error) {
-    <div class="error-message">{{ error }}</div>
-  }
-
   @if (planning) {
     <div class="planning-header">
       <h2>{{ planning.title }}</h2>

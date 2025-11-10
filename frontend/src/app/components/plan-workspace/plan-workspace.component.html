@@ -1,0 +1,24 @@
+@if (isLoading) {
+  <div class="workspace-loading">Lade Planung...</div>
+}
+
+@if (error) {
+  <div class="workspace-error">{{ error }}</div>
+}
+
+@if (!isLoading && !error && (planning$ | async)) {
+  <div class="workspace-layout" [class.chat-visible]="isChatVisible$ | async">
+
+
+    <div class="plan-details-area">
+      <app-planning-detail></app-planning-detail>
+    </div>
+
+    @if (isChatVisible$ | async) {
+      <div class="chat-area">
+        <app-chat></app-chat>
+      </div>
+    }
+
+  </div>
+}

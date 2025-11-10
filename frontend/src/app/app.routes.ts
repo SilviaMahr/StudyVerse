@@ -8,6 +8,7 @@ import {authGuard} from '../services/auth.guard';
 import {PlanningDetailComponent} from './components/planning-detail/planning-detail.component';
 import {LvaManagementComponent} from './components/lva-management/lva-management.component';
 import {HelpComponent} from './components/help/help.component';
+import {PlanWorkspaceComponent} from './components/plan-workspace/plan-workspace.component';
 
 export const routes: Routes = [
   {
@@ -42,7 +43,7 @@ export const routes: Routes = [
       },
       {
         path: 'plan/:id',
-        component: PlanningDetailComponent
+        component: PlanWorkspaceComponent
       },
       {
         path: 'lva-management',

@@ -5,6 +5,7 @@ import {ActivatedRoute} from '@angular/router';
 import {PlanningService} from '../../../services/planning.service';
 import { Subscription} from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import {PlanningStateService} from '../../../services/planning-state.service';
 
 @Component ({
   selector: 'app-planning-detail',
@@ -18,56 +19,23 @@ import { switchMap } from 'rxjs/operators';
 
 export class PlanningDetailComponent implements OnInit, OnDestroy {
   planning: PlanningResponse | null = null;
-  isLoading: boolean = true;
-  error: string | null = null;
 
-  private routeSubscription: Subscription | undefined;
+  private planningSubscription: Subscription | undefined;
 
   constructor(
-    private route: ActivatedRoute,
-    private planningService: PlanningService,
-    private cdr: ChangeDetectorRef
+    private planningState: PlanningStateService
   ) {
   }
 
   ngOnInit() {
-    this.routeSubscription = this.route.paramMap.pipe(
-      switchMap(params => {
-        this.isLoading = true;
-        this.planning = null;
-        this.error = null;
-
-        const idParam = params.get('id');
-
-        if (!idParam) {
-          this.error = "Keine Planungs-ID in der URL gefunden.";
-          this.isLoading = false;
-          throw new Error('NoID');
-        }
-
-        const planningId = Number(idParam);
-        return this.planningService.getPlanningDetails(planningId);
-      })
-    ).subscribe({
-      next: (data) => {
-        this.planning = data;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        if (err.message !== 'NoID') {
-          console.error("Fehler beim Laden der Planungsdetails:", err);
-          this.error = "Planung konnte nicht geladen werden.";
-        }
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.planningSubscription = this.planningState.planning$.subscribe(plan => {
+      this.planning = plan;
+    })
   }
 
   ngOnDestroy() {
-    if (this.routeSubscription) {
-      this.routeSubscription.unsubscribe();
+    if (this.planningSubscription) {
+      this.planningSubscription.unsubscribe();
     }
   }
 
@@ -75,5 +43,6 @@ export class PlanningDetailComponent implements OnInit, OnDestroy {
     if (!this.planning) return;
 
     console.log(`Start RAG für Planung ${this.planning.id}...`);
+    this.planningState.openChat();
   }
 }
