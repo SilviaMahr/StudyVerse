@@ -1,5 +1,6 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import {BehaviorSubject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -7,12 +8,20 @@ import { isPlatformBrowser } from '@angular/common';
 export class AuthService {
 
   private readonly TOKEN_KEY = 'auth_token';
+  private isBrowser: boolean;
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.checkInitialToken());
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  public isAuthenticated$ =this.isAuthenticatedSubject.asObservable();
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
 
   saveToken(token: string): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.TOKEN_KEY, token);
+      this.isAuthenticatedSubject.next(true);
     }
   }
 
@@ -31,6 +40,14 @@ export class AuthService {
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(this.TOKEN_KEY);
+      this.isAuthenticatedSubject.next(false);
     }
+  }
+
+  private checkInitialToken(): boolean {
+    if (isPlatformBrowser(this.platformId)) {
+      return !!localStorage.getItem(this.TOKEN_KEY);
+    }
+    return false;
   }
 }
