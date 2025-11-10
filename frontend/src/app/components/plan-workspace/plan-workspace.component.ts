@@ -35,6 +35,7 @@ export class PlanWorkspaceComponent implements OnInit, OnDestroy {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       this.isLoading = true;
       this.planningState.clearState();
+      this.error = null;
 
       const idParam = params.get('id');
 
@@ -49,9 +50,11 @@ export class PlanWorkspaceComponent implements OnInit, OnDestroy {
           error: (err) => {
             this.error = "Plan konnte nicht geladen werden.";
             this.isLoading = false;
-            this.cdr.detectChanges();
           }
         });
+      } else {
+        this.isLoading = false;
+        this.error = "Keine Planungs-ID gefunden."
       }
     });
   }

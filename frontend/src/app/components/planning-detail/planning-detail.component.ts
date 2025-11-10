@@ -1,10 +1,7 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {PlanningResponse} from '../../models/preselection.model';
-import {ActivatedRoute} from '@angular/router';
-import {PlanningService} from '../../../services/planning.service';
 import { Subscription} from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 import {PlanningStateService} from '../../../services/planning-state.service';
 
 @Component ({
