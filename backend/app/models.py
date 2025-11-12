@@ -40,7 +40,7 @@ class PlanningResponse(BaseModel):
     id: int
     title: str
     semester: str
-    target_ects: int
+    target_ects: float #war int
     preferred_days: List[str]
     mandatory_courses: Optional[str]
     created_at: datetime
@@ -53,7 +53,7 @@ class RecentPlanningsResponse(BaseModel):
     #for side bar memory -> shows recent plannings
     #GET /plannings/recent in routes
     plannings: List[PlanningResponse]
-    total: int
+    total: float
 
 # To start RAG
 #TODO: adapt if necessary as soon as RAG is ready for further implementation
@@ -119,7 +119,7 @@ class LVA(BaseModel):
     hierarchielevel2: str  # Kurs-Name
     type: str              # VL, UE, PR, etc.
     name: str              # Voller Name
-    ects: int
+    ects: float               # war vorher int
     is_completed: bool = False  # completed by user?
 
 #module inkluding it´s lvas: zB Grundlagen der Informatik with
@@ -127,7 +127,7 @@ class LVA(BaseModel):
 class LVAModule(BaseModel):
     module_name: str        # hierarchielevel1
     lvas: List[LVA]
-    total_ects: int
+    total_ects: float       # war vorher int
 
 #hierarchie sends a liste of all modules with it´s courses
 class LVAHierarchy(BaseModel):

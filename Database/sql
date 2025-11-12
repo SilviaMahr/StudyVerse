@@ -92,3 +92,7 @@ INSERT INTO lvas (hierarchielevel0, hierarchielevel1, hierarchielevel2, type, na
 ('Wahlfach', 'Freie Studienleistungen1', 'Freie Studienleistungen1', 'Fr', 'Freie Studienleistungen1', 3),
 ('Wahlfach', 'Freie Studienleistungen2', 'Freie Studienleistungen2', 'Fr', 'Freie Studienleistungen2', 3),
 ('Wahlfach', 'Freie Studienleistungen3', 'Freie Studienleistungen3', 'Fr', 'Freie Studienleistungen3', 3);
+
+ALTER TABLE lvas
+ALTER COLUMN ects
+SET DATA TYPE NUMERIC(3, 1);
