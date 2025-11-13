@@ -50,7 +50,7 @@
 ###  Phase 1. Vorbereitung der Wissensbasis für spätere Anfragen   
 
 - Dokumente, Datenbanken und Websiteinformarionen sammeln
-    - Curriculum (PDF)
+    - Curriculum (PDF) 
         - Format: PDF-Dokument
         - Inhalt:
              - STEOP-Kurse
@@ -164,7 +164,7 @@ Die Studierenden können:
 - Wissenschaftliche Vorgehensweisen zur Problemlösung anwenden (K3)
 ``` 
 
-Falls Metadaten verwendet werden sollen (um Filterung und Retrieval zu erleichtern), dann sollten diese folgende Struktur aufweisen:
+Falls Metadaten verwendet werden sollen (um Filterung und Retrieval zu erleichtern), dann könnten diese folgende Struktur aufweisen:
 (KI generierte Beispiel-Metadaten):#
 
 ```
@@ -179,13 +179,10 @@ metadata = {
     "erwartete_vorkenntnisse": [],  # Liste von LVA-Nummern oder Namen
     "verknuepfte_lvas": ["123.457"],  # z.B. UE, die dazu gehört
     "lva_leiter": "Barbara Krumay",
-    "art": "Präsenz",
     "tag": "Di",
     "uhrzeit": "12:00-15:15"
 }
 ```
-⚠️Team Discussion:  
-Chunking könnte erweitert werden -> Es könnten zusätzlich aus dem Curriculum "Modul-Chunks" erstellt werden. Dies würde es leichter machen, das RAG auf Queries wie: "Welche LVAs gehören zum Modul Grundlagen der BWL zu beantworten. -> Aber wsl. eine Scope überschreitende Anforderung bzw. Nice-To-Have. 
 
 **2.3. Load**
 Speicherung der Daten in der Vektor Datenbank.   
@@ -206,45 +203,13 @@ def load_data_into_vector_store(chunks: List[Document]):
 
 ````
 
-### Phase 3: Datenmodell und Datenstruktur
+### Bestehende Unklarheiten: ⚠️ Team-Discussion!
 
 **3.1. Datenstruktur in Vector-DB** 
-Die Datenstruktur könnte in der Vektor-DB wiefolgt aussehen (nicht vollständig durchdacht! Keine direkte Übernahme bitte):
+Wie werden die Daten in der Vector-DB organisiert? 
+Metadaten sinnvoll oder wird das zu viel? 
 
-```
-LVA-Dokument (Haupt-Entity):
-├── Identifikation
-│   ├── lva_nr (Primärschlüssel)
-│   ├── lva_name
-│   └── modul
-│
-├── Studienplanung 
-│   ├── ects
-│   ├── semester (WS/SS/WS+SS)
-│   ├── steop (boolean)
-│   ├── erwartete_vorkenntnisse (Liste)
-│   └── verknuepfte_lvas (Liste)
-│
-├── Organisation
-│   ├── lva_leiter
-│   ├── tag
-│   ├── uhrzeit
-│   ├── art (Präsenz/Remote/Hybrid) 
-│   └── anmeldestatus
-│
-├── Prüfung & Inhalte
-│   ├── beurteilungskriterium
-│   ├── abhaltungssprache
-│   ├── kompetenzen (Text)
-│   └── zusatzinfos
-│
-└── Metadaten
-    ├── chunk_type ("lva" / "modul")
-    └── last_updated
-
-```
-
-**3.2. Kritische Designentscheidungen** ⚠️ Team-Discussion!
+**3.2. Kritische Designentscheidungen** 
 
 _3.2.1 Freitext-Suche_
 
@@ -269,9 +234,106 @@ metadata = {
 }
 ````
 
-## Retrieval 
+## 3. Retrieval/LLM 
 
-kommt  noch - aktuell brauche ich mal eine Pause vom Denken! 
+**Grundprinzip** 
+
+Die Gesamte Retrieval-Komponente baut darauf auf, dass im ETL-Teil tatsächlich, wie von Sabiha vorgeschlagen, eine Metadatenfilter verwendet wird. 
+Dieser soll dazu verwendet werden, die Suche insgesamt einzugrenzen z.B. wenn der User SS auswählt, werden ausschließlich Kurse, die im SS oder im WS+SS besucht werden können durchsucht, etc. 
+ 
+
+## Phase 1: Hybrid-Retrieval
+1. Metadaten-Filter (Harte Constraints wie bspw. Semester werden direkt überliefert) - Reduziert Vector-Search 
+
+   Beispiel:
+
+   ````python
+   filter_dict = {
+    "semester": {"$in": ["SS", "WS+SS"]},  # User wählt Sommersemester
+    "ects": {"$lte": 18},                   # Max 18 ECTS
+    "steop": False
+    }
+    ```` 
+Die Metadatenfilterung liefert eine Menge an gültigen LVA-Kandidaten, diese müssen dann noch mittels semantischer Suche durchsucht werden.
+- Input = User-Query
+- Output = Top-K LVA Chunks aus der gefilterten Menge z.B. TOP 15 LVAs mit denen das LLM dann arbeiten kann. 
+Beispiel:
+
+````python
+retriever = vectorstore.as_retriever(
+    search_type="similarity",
+    search_kwargs={
+        "k": 15,  # Top 15 Ergebnisse
+        "filter": filter_dict
+    }
+)
+
+results = retriever.get_relevant_documents(user_query)
+
+```` 
+
+
+### Phase 2: LLM Logik
+
+Aufgaben für das LLM
+1. Voraussetzungen prüfen
+   - Wurden die vorausgesetzten LVAs bereits abgeschlossen?
+   - Input:
+         - Verknüpfte LVAs (lt. Metadaten)
+         - Bereits abgeschlossene LVAs  
+     
+         ```sql
+             SELECT lva_id
+             FROM completed_lvas
+             WHERE user = ?
+         ```
+
+2. Konflikte/Zeitplanung auflösen
+    - LLM Prompting (Keine Überschneidungen erlaubt)
+3. Begründung generieren
+    - Text für User, warum eine LVA vorgeschlagen oder abgelehnt wurde. 
+
+
+**Beispielhafter LLM Prompt:**
+
+```
+Du bist ein Studienplanungs-Assistent.
+Die User-Query: "Semester: SS26, ECTS: 9, Tage: Mo, Mi, Gewünschte LVAs: BWL"
+Liste der relevanten LVAs (aus Retriever):
+- SOFT2 VL (3 ECTS, Mo 08:30-10:00)
+- SOFT2 UE (3 ECTS, Mo 10:15-11:45)
+- Operational Systems VL (3 ECTS, Mo 12:00-13:30)
+- BWL2 VL (3 ECTS, Mi 14:00-15:30)
+Prüfe:
+- Überschneidungen der Uhrzeiten
+- Max 9 ECTS dieses Semester
+- Bereits absolvierte LVAs
+Erstelle einen **optimierten Semesterplan** mit kurzer Begründung pro Kurs.
+```
+    
+================================================================================
+
+### Workflow-Darstellung:
+
+1. User Query empfangen 
+    - ECTS-Ziel, Semester, Tage, freie Textangaben (z. B. „Soft2“)
+
+2. Metadaten-Filter anwenden
+    - SQL/PGVector Filter auf LVA-Chunks
+
+3. Vector Retrieval durchführen
+    - Semantische Suche innerhalb der gefilterten Kandidaten
+
+4. LLM-Postprocessing
+   - Prüfung von Voraussetzungen
+   - Konfliktlösung (Tage/Uhrzeiten)
+   - Generierung von Plan & Begründungen
+
+5. Ausgabe an User
+   - Semesterplan + Kommentare
+   - Möglichkeit für Nachfragen / Anpassungen
+
+
 
 
 
