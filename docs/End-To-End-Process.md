@@ -2,6 +2,7 @@
 
 ## 1. Basics
 - RAG-System, für die Semesterplanung (Bachelor-Wirtschaftsinformatik)
+- Das System erstellt Pläne, die gespeichert werden und später wieder aufgerufen/bearbeitet werden können.
 - Input: 
     - ECTS-Ziel (z.B. 15 ECTS) 
     - bereits absolvierte LVAs (z.B. VL + UE EWIN, E-INF, BWL, Integriertes Management, Statistik)  
@@ -11,7 +12,7 @@
 - Output:
     - Semesterplan mit Begründung
     - Beispiel:
-      Hier ist dein Plan für das SS26 mit 15 ECTS. Deine Uni-Tage sind Montag und Mittwoch:
+      Hier ist dein Plan für das SS26 mit 15 ECTS. Deine Uni-Tage sind Montag und Mittwoch (in der Planungsübersicht):  
       - Prozess- und Kommunikationsmodellierung VL - 3 ECTS, Mi 13:45 - 15:15 Uhr (Udo Kannengiesser) 
       - Prozess- und Kommunikationsmodellierung UE - 3 ECTS, Mi 15:30 - 17:00 Uhr (Thomas Jost)
       - Einführung in die Softwareentwicklung VL - 3 ECTS, Mo 8:30 - 10:00 Uhr (Wieland Schwinger)
@@ -35,13 +36,13 @@
       - Uni: Alles klar ich ändere deinen Plan, bitte gib auch angerechnete Lehrveranstaltungen als absolviert an! Soll ich das für dich übernehmen? Gibt es noch andere Kurse, die dir angerechnet wurden? 
  ❗ -> TEAM Discussion (soll das möglich sein)
       - Student: Ja bitte. Nein nur SOFT1!
-      - Uni: Alles klar, dann schlage ich dir folgenden Plan für das SS26 mit 15 ECTS an den Tagen MO und MI vor:
+      - Uni: Verstanden, ich habe deinen Plan angepasst, du findest ihn in der Planungsübersicht!
           - Prozess- und Kommunikationsmodellierung VL - 3 ECTS, Mi 13:45 - 15:15 Uhr (Udo Kannengiesser) 
           - Prozess- und Kommunikationsmodellierung UE - 3 ECTS, Mi 15:30 - 17:00 Uhr (Thomas Jost)
           - Algorithmen und Datenstrukturen VL - 3 ECTS, Mi 10:15 - 11:45 Uhr (Wolfgang Narzt)
           - Algorithmen und Datenstrukturen UE - 3 ECTS, Mi 12:00 - 13:30 Uhr (Dominik Lamprecht) 
           - Kommunikative Fertigkeiten Englisch KS - 3 ECTS, Mo 13:45 - 15:15 Uhr (Nina Einzinger)
-
+    
       Du möchtest VL + UE Vertiefung in die Softwareentwicklung absolvieren, leider findet dieser Kurs aber immer nur am Dienstag statt. Du hast nur die Tage Montag und Mittwoch ausgewählt. Möchtest du Dienstag doch in deine Planung integrieren?
   
 ## 2. Datenquelle und ETL-Pipleline 
