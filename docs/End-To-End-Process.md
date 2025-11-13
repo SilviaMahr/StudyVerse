@@ -145,7 +145,6 @@ Tag: Di, 12:00 - 15:15 Uhr
 Art: Präsenz
 ECTS: 3,00
 Semesterwochenstunden: 2,00
-Anmeldung: möglich
 
 === Voraussetzungen ===
 Erwartete Vorkenntnisse: Keine (STEOP-Kurs)
@@ -173,8 +172,8 @@ metadata = {
     "lva_nr": "123.456",
     "lva_name": "Einführung in die Wirtschaftsinformatik",
     "ects": 3.0,
-    "semester": "WS",  # WS / SS / WS+SS
-    "steop": False,
+    "semester": "WS+SS"  # WS / SS / WS+SS
+    "steop": TRUE,
     "modul": "Wirtschaftsinformatik Grundlagen",
     "idealtypisches_semester": 1,
     "erwartete_vorkenntnisse": [],  # Liste von LVA-Nummern oder Namen
