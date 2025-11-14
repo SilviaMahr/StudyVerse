@@ -63,37 +63,37 @@
         - **Extraktionsmethode: PyPDFLoader**
     - KUSSS LVA-Suche
         - Format: Webseite (strukturiert)
-        - Inhalt:
-              - LVA-Details (LVA Nr, LVA, Titel, ECTS, SSt, WS/SS
-              - Termine (Tag, Uhrzeit - ❗Cave: Uhrzeit beim ersten Termin oft abweichend zu den restlichen Terminen!) 
-              - LVA-Leiter
-              - Abhaltungsart (Präsenz, Remote, Hybrid)
-              - Zusatzinformationen (Anwesenheitspflicht, Literatur, etc.)
-              - Link zum Studienhandbuch
-              - Aktualisierung: Semesterweise (sofern RAG weitergeführt werden würde)
-          - **Extraktionsmethode: UnstructuredURLLoader -> HTML-Parsing-Strukturierte Felder
+        - Inhalt:   
+              - LVA-Details (LVA Nr, LVA, Titel, ECTS, SSt, WS/SS)    
+              - Termine (Tag, Uhrzeit❗Cave: Uhrzeit beim ersten Termin oft abweichend zu den restlichen Terminen!)        
+              - LVA-Leiter       
+              - Abhaltungsart (Präsenz, Remote, Hybrid)      
+              - Zusatzinformationen (Anwesenheitspflicht, Literatur, etc.)      
+              - Link zum Studienhandbuch     
+        - Aktualisierung: Semesterweise (sofern RAG weitergeführt werden würde)
+        - **Extraktionsmethode: UnstructuredURLLoader -> HTML-Parsing-Strukturierte Felder**     
     - Studienhandbuch (❗pro LVA)
         - Format: Webseiten (pro LVA)
-        - Inhalt:
-              - erwartete Vorkenntnisse (⚠️ Wichtig für Planungslogik)
-              - Beurteilungskriterien
-              - Zu erberbende Kompetenzen & Lernegebnisse (Nützlich für Chatfunktion wie: Was lerne ich in Einf. Inf -> ❗Team Discussion: sinnvoll?).
-              - Beurteilungkriterium (z.B. Klausur)
-              - Abhaltungssprache
-              - Sonstige Informationen (❗Hier befinden sich wichtige Informationen, wie z.B. VL + UE müssen gemeinsam absolviert werden). 
-        - Aktualisierung: Semesterweise (sofern RAG weitergeführt werden würde)
-        - **Extraktionsmethode: UnstructuredURLLoader -> Studienhandbuchlink vom KUSSS -> Strukturierung** 
-    - Idealtypischer Studienplan
-        - Format: Relationale Datenbank
-        - Inhalt: Empfohlene Semester-Reihenfolge
-        - Aktualisierung: Statisch
-        - **Extraktionsmethode: Relationale DB mit direct Query, kein Embedding nötig**
+        - Inhalt:    
+              - erwartete Vorkenntnisse (⚠️ Wichtig für Planungslogik)    
+              - Beurteilungskriterien    
+              - Zu erberbende Kompetenzen & Lernegebnisse (Nützlich für Chatfunktion wie: Was lerne ich in Einf. Inf -> ❗Team Discussion: sinnvoll?).    
+              - Beurteilungkriterium (z.B. Klausur)    
+              - Abhaltungssprache    
+              - Sonstige Informationen (❗Hier befinden sich wichtige Informationen, wie z.B. VL + UE müssen gemeinsam absolviert werden).     
+        - Aktualisierung: Semesterweise (sofern RAG weitergeführt werden würde)    
+        - **Extraktionsmethode: UnstructuredURLLoader -> Studienhandbuchlink vom KUSSS -> Strukturierung**     
+    - Idealtypischer Studienplan    
+        - Format: Relationale Datenbank    
+        - Inhalt: Empfohlene Semester-Reihenfolge    
+        - Aktualisierung: Statisch    
+        - **Extraktionsmethode: Relationale DB mit direct Query, kein Embedding nötig**    
 
 *⚠️Anmerkung: Die Aktualisierungshinweise sind nur dazu gedacht, darzustellen wie bei einer "tatsächlichen" Inbetriebnahme mit laufender Wartung aussehen würde. Relevant, fall Chatbot z.B. für BSc/Masterarbeit weiterentwickelt werden soll. 
 
 ### Phase 2. ETL-Pipeline (Extract, Transform, Load) 
 
-**2.1. Extrakt**
+**2.1. Extract**
 
 KI generierter Beispielcode! Dient nur der Veranschaulichung: 
 
@@ -184,7 +184,7 @@ metadata = {
 }
 ```
 
-**2.3. Load**
+**2.3. Load**    
 Speicherung der Daten in der Vektor Datenbank.   
 KI-generierter Beispiel-Code:
 
@@ -205,8 +205,8 @@ def load_data_into_vector_store(chunks: List[Document]):
 
 ### Bestehende Unklarheiten: ⚠️ Team-Discussion!
 
-**3.1. Datenstruktur in Vector-DB** 
-Wie werden die Daten in der Vector-DB organisiert? 
+**3.1. Datenstruktur in Vector-DB**     
+Wie werden die Daten in der Vector-DB organisiert?     
 Metadaten sinnvoll oder wird das zu viel? 
 
 **3.2. Kritische Designentscheidungen** 
@@ -278,9 +278,9 @@ results = retriever.get_relevant_documents(user_query)
 Aufgaben für das LLM
 1. Voraussetzungen prüfen
    - Wurden die vorausgesetzten LVAs bereits abgeschlossen?
-   - Input:
-         - Verknüpfte LVAs (lt. Metadaten)
-         - Bereits abgeschlossene LVAs  
+   - Input:  
+         - Verknüpfte LVAs (lt. Metadaten)    
+         - Bereits abgeschlossene LVAs     
      
          ```sql
              SELECT lva_id
