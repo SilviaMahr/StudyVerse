@@ -53,7 +53,7 @@ class RecentPlanningsResponse(BaseModel):
     #for side bar memory -> shows recent plannings
     #GET /plannings/recent in routes
     plannings: List[PlanningResponse]
-    total: float
+    total: int #total number of plannings - can stay int
 
 # To start RAG
 #TODO: adapt if necessary as soon as RAG is ready for further implementation
