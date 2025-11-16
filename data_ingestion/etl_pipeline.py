@@ -2,19 +2,20 @@ import os
 from dotenv import load_dotenv
 from typing import List
 from langchain.schema import Document
+import data_ingestion.extractor as extractor
+import data_ingestion.processor as processor
 
-from data_ingestion.extractor import load_all_curriculum_data
-from data_ingestion.processor import process_documents
-
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores.pgvector import PGVector
+#from langchain_google_genai import GoogleGenerativeAIEmbeddings
+#from langchain_community.vectorstores.pgvector import PGVector
+#import psycopg2
+#import psycopg2.extras
 
 load_dotenv()
 
 NEON_COLLECTION_NAME = "studyverse_curriculum_data"
 # im Backend auch den GLEICHEN Embedding-Dienst verwenden
-# Der "text-embedding-004" ist Googles neuestes Embedding-Modell
-EMBEDDING_MODEL = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
+# "text-embedding-004" ist Googles neuestes Embedding-Modell
+#EMBEDDING_MODEL = GoogleGenerativeAIEmbeddings(model="text-embedding-001")
 
 def check_env_variables(neon_db_url: str, gemini_api_key: str) -> bool:
     is_valid = True
@@ -56,22 +57,81 @@ def run_etl_pipeline():
 
     print("--> ETL-PIPELINE gestartet... <--")
 
-    raw_documents = load_all_curriculum_data()
+    #conn = psycopg2.connect(neon_db_url)
+    #conn.autocommit = True
+
+    raw_documents = extractor.load_all_curriculum_data()
+    #study_manual_links = extractor.get_links_from_study_manual()
+    #for link in study_manual_links:
+     #   subject_html = extractor.fetch_content_from_div(link)
+    #
+    (root_html, root_url) = extractor.extract_win_bsc_info()
+    (chunks, html_url) = processor.process_main_page(root_url, root_html)
+    #store_html_chunks(chunks=chunks, embeddings=embeddings, url=root_url)
+    print_debug(chunks=chunks, url=html_url)
+
+    course_links = extractor.extract_links()
+
+    for course_url in course_links:
+        print(f"--> Course page: {course_url}")
+        subject_links = extractor.extract_links(course_url)
+        subject_html = extractor.fetch_content_from_div(subject_links[0])
+
+        lva_links = extractor.extract_course_page(subject_html)
+
+        for lva_url in lva_links:
+            print(f"--> LVA page: {lva_url}")
+            lva_html = extractor.fetch_content_from_div(lva_url)
+            (lva_chunks, lva_url) = processor.process_page(lva_url, lva_html)
+            print_debug(chunks=lva_chunks, url=lva_url)
+            #store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
 
     if not raw_documents:
         print("Pipeline beendet: Keine Quelldokumente gefunden.")
         return
 
-    processed_chunks = process_documents(raw_documents)
+    processed_chunks = processor.process_documents(raw_documents)
 
     if not processed_chunks:
         print("Pipeline beendet: Nach der Verarbeitung keine Chunks übrig.")
         return
 
-    load_data_into_vector_store(processed_chunks)
+    #load_data_into_vector_store(processed_chunks)
 
     print("\n--> ETL-PIPELINE beendet! <--")
 
+
+def store_html_chunks(chunks, embeddings, url):
+    with conn.cursor() as cursor:
+        for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+            row_id = f"{url}_chunk_{i}"
+
+            cursor.execute(
+                """
+                INSERT INTO rag_documents (id, url, chunk_text, embedding)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (id) DO NOTHING;
+                """,
+                (
+                    row_id, url, chunk, emb.toList(),
+                )
+            )
+
+
+def print_debug(chunks, url):
+    # DEBUG PRINT BEFORE STORING
+    print("\n================ DEBUG ================")
+    print("URL:", url)
+    print("Number of chunks:", len(chunks))
+    print("---------------------------------------")
+
+    for i, chunk in enumerate(chunks):
+        print(f"\n--- CHUNK {i} ---")
+        print(chunk)  # first 500 chars to keep log readable
+        print("---------------------------------------")
+
+    #print("Embeddings shape:", embeddings.shape)
+    #print("=======================================\n")
 
 if __name__ == "__main__":
     load_dotenv()
