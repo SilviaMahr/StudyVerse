@@ -2,13 +2,15 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import List
 from langchain.schema import Document
 import re
+from html2text import HTML2Text
+from data_ingestion.extractor import load_all_curriculum_data, extract_lva_metadata
+#from sentence_transformer import SentenceTransformer
 
-from data_ingestion.extractor import load_all_curriculum_data
-
+#EMBEDDER = SentenceTransformer('sentence-transformer/all-mpnet-base-v2')
 
 def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
+        chunk_size=2000,
         chunk_overlap=100,
         length_function=len,
         separators=["\n\n", "\n", " ", ""]
@@ -81,8 +83,8 @@ def get_ideal_plans(data: Document) -> List[dict]:
         re.MULTILINE
     )
 
-    print(f"[DEBUG] RegEx fand {len(lva_matches)} mögliche LVA-Matches.")
-    print(f"[DEBUG] Erste 5 Matches: {lva_matches[:5]}")
+    # print(f"[DEBUG] RegEx fand {len(lva_matches)} mögliche LVA-Matches.")
+    # print(f"[DEBUG] Erste 5 Matches: {lva_matches[:5]}")
 
     for name, ects_val in lva_matches:
         name = name.strip()
@@ -188,6 +190,54 @@ def process_documents(documents: List[Document]) -> List[Document]:
 
     print(f"--> {len(processed_data)} verarbeitete Chunks bereit für Vektorisierung.")
     return processed_data
+
+
+def html_to_text(html):
+    converter = HTML2Text()
+    converter.ignore_links = False
+    converter.ignore_images = True
+    converter.body_width = 0
+    return converter.handle(html)
+
+def chunk_text(text):
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
+    return splitter.split_text(text)
+
+
+def chunk_text_with_metadata(text, metadata):
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
+    chunks = splitter.split_text(text)
+
+    chunks_with_meta = []
+    for chunk in chunks:
+        chunks_with_meta.append({
+            "text": chunk,
+            "metadata": metadata
+        })
+
+    return chunks_with_meta
+
+
+def embed_chunks(chunks):
+    return EMBEDDER.encode(chunks, convert_to_numpy=True)
+
+
+def process_page(url, html):
+    metadata = extract_lva_metadata(html)
+    text = html_to_text(html)
+    chunks = chunk_text_with_metadata(text, metadata)
+    chunks_text = [c["text"] for c in chunks]
+    #embeddings = embed_chunks(chunks_text)
+    #for i, c in enumerate(chunks):
+     #   c["embedding"] = embeddings[i]
+    return chunks, url
+
+def process_main_page(url, html):
+    text = html_to_text(html)
+    chunks = chunk_text(text)
+    #embeddings = embed_chunks(chunks)
+    return chunks, url
+
 
 # Test
 if __name__ == "__main__":
