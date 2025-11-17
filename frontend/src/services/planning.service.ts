@@ -10,6 +10,7 @@ import {PlanningResponse, RecentPlanningsResponse} from '../app/models/preselect
 
 export class PlanningService {
   private apiUrl='http://127.0.0.1:8000/plannings/recent';
+  private baseUrl = 'http://127.0.0.1:8000/plannings';
 
   constructor(
     private http: HttpClient,
@@ -19,10 +20,6 @@ export class PlanningService {
 
   public getRecentPlannings(limit: number = 5): Observable<RecentPlanningsResponse> {
     const token = this.authService.getToken();
-
-    /*if (!token) {
-      return EMPTY;
-    }*/
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -39,7 +36,6 @@ export class PlanningService {
 
   public getPlanningDetails(id: number): Observable<PlanningResponse> {
     const token = this.authService.getToken();
-    //if (!token) return EMPTY;
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -50,4 +46,14 @@ export class PlanningService {
     return this.http.get<PlanningResponse>(url, { headers: headers });
   }
 
+  public deletePlanning(id: number): Observable<any> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    const url = `${this.baseUrl}/${id}`;
+    return this.http.delete<any>(url, { headers: headers });
+  }
 }

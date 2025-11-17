@@ -10,10 +10,9 @@ import {
 } from '@angular/core';
 import {CommonModule, isPlatformBrowser} from '@angular/common';
 import { ThemeService} from '../../../services/theme.service';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {PlanningResponse} from '../../models/preselection.model';
 import {PlanningService} from '../../../services/planning.service';
-import {LogoutComponent} from '../logout/logout.component';
 
 @Component( {
   selector: 'app-sidebar',
@@ -33,13 +32,18 @@ export class SidebarComponent implements OnInit {
   isLoading: boolean = true;
   error: string | null = null;
 
+  showDeleteModal = false;
+  planToDelete: PlanningResponse | null = null;
+  deleteMessage: string | null = null;
+
 
   constructor(
     protected themeService: ThemeService,
     private renderer: Renderer2,
     @Inject(PLATFORM_ID) private platformId: Object,
     private planningService: PlanningService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -119,6 +123,49 @@ export class SidebarComponent implements OnInit {
         console.error("Fehler beim Laden der Planungen", err);
         this.error = "Planungen konnten nicht geladen werden.";
         this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openDeleteModal(event: MouseEvent, plan: PlanningResponse): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.planToDelete = plan;
+    this.showDeleteModal = true;
+    this.deleteMessage = null;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.planToDelete = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.planToDelete) return;
+
+    const planId = this.planToDelete.id;
+    this.planningService.deletePlanning(planId).subscribe({
+      next: () => {
+        this.deleteMessage = "Planung erfolgreich gelöscht."
+        this.recentPlannings = this.recentPlannings.filter(p => p.id !== planId)
+        this.closeDeleteModal();
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.deleteMessage = null;
+          this.cdr.detectChanges();
+        }, 1500);
+
+        if (this.router.url.includes(`/plan/${planId}`)) {
+          this.router.navigate(['/landing']);
+        }
+      },
+      error: (err) => {
+        console.error("Fehler beim Löschen:", err);
+        this.deleteMessage = "Löschen fehlgeschlagen. Bitte versuche es erneut.";
+        this.closeDeleteModal();
         this.cdr.detectChanges();
       }
     });
