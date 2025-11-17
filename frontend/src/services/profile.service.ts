@@ -3,7 +3,7 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {AuthService} from './auth.service';
 import {Observable, EMPTY} from 'rxjs';
 import {UserProfile, UserProfileUpdate} from '../app/models/user-profile.model';
-import { PflichtfaecherResponse, WahlfaecherResponse, CompletedLVAsUpdate} from '../app/models/lva.models';
+import { PflichtfaecherResponse, CompletedLVAsUpdate} from '../app/models/lva.models';
 
 @Injectable({
   providedIn: 'root'
@@ -52,13 +52,13 @@ export class ProfileService {
     return this.http.get<PflichtfaecherResponse>(`${this.baseUrl}/pflichfaecher`, { headers });
   }
 
-  public getWahlfaecher(): Observable<WahlfaecherResponse> {
+  /*public getWahlfaecher(): Observable<WahlfaecherResponse> {
     const headers = this.getAuthHeaders();
     if (!headers) {
       return EMPTY;
     }
     return this.http.get<WahlfaecherResponse>(`${this.baseUrl}/wahlfaecher`, { headers });
-  }
+  }*/
 
   public updateCompletedLvas(data: CompletedLVAsUpdate): Observable<any> {
     const headers = this.getAuthHeaders();
