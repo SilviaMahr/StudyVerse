@@ -205,7 +205,7 @@ def chunk_text(text):
 
 
 def chunk_text_with_metadata(text, metadata):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = splitter.split_text(text)
 
     chunks_with_meta = []
@@ -222,8 +222,8 @@ def embed_chunks(chunks):
     return EMBEDDER.encode(chunks, convert_to_numpy=True)
 
 
-def process_page(url, html):
-    metadata = extract_lva_metadata(html)
+def process_html_page(url, html, semester):
+    metadata = extract_lva_metadata(html, semester)
     text = html_to_text(html)
     chunks = chunk_text_with_metadata(text, metadata)
     chunks_text = [c["text"] for c in chunks]

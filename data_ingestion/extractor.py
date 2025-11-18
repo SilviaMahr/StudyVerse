@@ -118,10 +118,10 @@ def fetch_content_from_div(url: str) -> Optional[str]:
             content_html = str(target_div)
 
             combined_html = (
-                    "<div class='semester-info'>" + semester_html + "</div>\n" +
+                    "<div class='semester-tobe-planned'>" + semester_html + "</div>\n" +
                     content_html
             )
-            print(combined_html[:5000])
+            print(f"CONTENT_DIV --> extracted html:\n{combined_html[:5000]}")
             return combined_html
 
         else:
@@ -132,8 +132,13 @@ def fetch_content_from_div(url: str) -> Optional[str]:
         print(f"ERROR fetching URL {url}: {e}")
         return None
 
-def extract_links(url=WIN_ROOT_URL):
-    html = fetch_content_from_div(url)
+def extract_links(**kwargs):
+    html = ""
+    if kwargs.get("url"):
+        html = fetch_content_from_div(kwargs.get("url"))
+    elif kwargs.get("html"):
+        html = kwargs.get("html")
+
     soup = BeautifulSoup(html, 'html.parser')
     links = []
 
@@ -144,70 +149,134 @@ def extract_links(url=WIN_ROOT_URL):
             link_path = a['href']
             links.append(urljoin(KUSSS_BASE_URL, link_path))
 
-    print(f"Len(cell):  {len(links)}")
+    print(f"EXTRACT_LINKS --> Len(cell):  {len(links)}")
     return links
 
 
-def extract_course_page(html):
+def extract_lva_links_for_course(html):
     soup = BeautifulSoup(html, 'html.parser')
     lva_links = []
+    lva_nrs = []
 
-    for a in soup.select("a.normallinkcyan[href]"):
-        lva_links.append(urljoin(KUSSS_BASE_URL, a["href"]))
+    # check if the course is offered in the selected semester
+    message_element = soup.select_one("p.message")
 
-    print(f"Len(cyan): {len(lva_links)} \nlva_links[1]: {lva_links[1]}")
-    return lva_links
+    if message_element:
+        message_text = message_element.text.strip()
+        print(f"INFO --> Message found: {message_text}")
+        return {
+            "lva_links": [],
+            "semester_msg": message_text
+        }
+
+    lva_link_selector = "tr.darkcell td:first-child a.normallinkcyan[href], tr.lightcell td:first-child a.normallinkcyan[href]"
+
+    for a in soup.select(lva_link_selector):
+
+        lva_nr = a.text.strip()
+
+        if '.' in lva_nr:
+            lva_nrs.append(lva_nr)
+            lva_links.append(urljoin(KUSSS_BASE_URL, a["href"]))
+
+    print(f"LVA_NRS --> Extracted {len(lva_nrs)} LVA-Nr.s")
+    print(f"LVA_NRS (sample): {lva_links[0] if lva_links else '[]'}")
+
+    return {
+        "lva_links": lva_links,
+        "semester_msg": ""
+    }
 
 
 def extract_win_bsc_info():
     return fetch_content_from_div(WIN_ROOT_URL), WIN_ROOT_URL
 
 
-def extract_lva_metadata(page):
+def extract_semester_info(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    div_element = soup.select_one("div.semester-tobe-planned")
+
+    if div_element:
+        text_content = div_element.text.strip()
+
+        if text_content:
+            last_char = text_content[-1]
+            return last_char +"S"
+        else:
+            return None
+    else:
+        return None
+
+
+def extract_lva_metadata(html, semester):
+    soup = BeautifulSoup(html, 'html.parser')
     metadata = {}
 
     # --- LVA-Nr. ---
     try:
-        metadata["lva_nr"] = page.inner_text("tr.priorityhighlighted a.normallinkcyan").strip()
-    except AttributeError:
+        lva_nr_element = soup.select_one("tr.priorityhighlighted a.normallinkcyan")
+        if lva_nr_element:
+            metadata["lva_nr"] = lva_nr_element.text.strip()
+        else:
+            metadata["lva_nr"] = None # not offered in the given semester
+    except Exception:
         metadata["lva_nr"] = None
 
     # --- LVA Name ---
     try:
-        metadata["lva_name"] = page.inner_text("h3 b").split(":")[-1].strip()
-    except AttributeError:
+        lva_name_element = soup.select_one("h3 b")
+        if lva_name_element:
+            metadata["lva_name"] = lva_name_element.text.split(":")[-1].strip()
+        else:
+            metadata["lva_name"] = None
+    except Exception:
         metadata["lva_name"] = None
 
     # --- ECTS ---
     try:
-        ects_text = page.inner_text("text=ECTS").split("ECTS:")[1].split("|")[0]
-        metadata["ects"] = float(ects_text.replace(",", "."))
-    except AttributeError:
+        # <td ...> ECTS: X.X | ... </td>
+        ects_element = soup.find(lambda tag: tag.name == 'td' and 'ECTS:' in tag.text)
+        if ects_element:
+            # the text between "ECTS:" and "|"
+            ects_text = ects_element.text.split("ECTS:")[1].split("|")[0].strip()
+            metadata["ects"] = float(ects_text.replace(",", "."))
+        else:
+            metadata["ects"] = None
+    except Exception:
         metadata["ects"] = None
 
-    # --- Semester (W/S) ---
-    try:
-        selected = page.inner_text("#term option[selected]")
-        metadata["semester"] = selected[-1]  # last char (W or S)
-    except AttributeError:
-        metadata["semester"] = None
+    # --- Semester (WS/SS) ---
+    metadata["semester"] = semester
 
     # --- LVA-Leiter ---
     try:
-        metadata["lva_leiter"] = page.inner_text("tr.priorityhighlighted td[align='left']").strip()
-    except AttributeError:
+        leiter_element = soup.select_one("tr.priorityhighlighted td[align='left']")
+        if leiter_element:
+            metadata["lva_leiter"] = leiter_element.text.strip()
+        else:
+            metadata["lva_leiter"] = None
+    except Exception:
         metadata["lva_leiter"] = None
 
-    # --- First date row: Tag ---
+    # --- Tag ---
     try:
-        metadata["tag"] = page.inner_text("tr.priorityhighlighted td:nth-child(2)").strip()
-    except AttributeError:
+        tag_element = soup.select_one("tr.priorityhighlighted td:nth-child(2)")
+        if tag_element:
+            metadata["tag"] = tag_element.text.strip()
+        else:
+            metadata["tag"] = None
+    except Exception:
         metadata["tag"] = None
 
+    # --- Uhrzeit ---
     try:
-        t = page.inner_text("tr.priorityhighlighted td:nth-child(4)").strip()
-        metadata["uhrzeit"] = t.split("(")[0].strip()  # remove (W)
-    except AttributeError:
+        uhrzeit_element = soup.select_one("tr.priorityhighlighted td:nth-child(4)")
+        if uhrzeit_element:
+            t = uhrzeit_element.text.strip()
+            metadata["uhrzeit"] = t.split("(")[0].strip()
+        else:
+            metadata["uhrzeit"] = None
+    except Exception:
         metadata["uhrzeit"] = None
 
     return metadata
