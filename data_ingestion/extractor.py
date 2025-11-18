@@ -120,6 +120,7 @@ def fetch_content_from_div(url: str) -> Optional[str]:
         print(f"ERROR fetching URL {url}: {e}")
         return None
 
+
 def extract_links(**kwargs):
     html = ""
     if kwargs.get("url"):
@@ -131,12 +132,16 @@ def extract_links(**kwargs):
     links = []
 
     for row in soup.select("tr.darkcell, tr.lightcell"):
-        a = row.select_one("a[href]")
+        a_lva = row.select_one("td:nth-child(2) a[href]")
 
-        if a:
-            link_path = a['href']
+        if a_lva:
+            link_path = a_lva['href']
             links.append(urljoin(KUSSS_BASE_URL, link_path))
 
+        a_study_manual = row.select_one("td:last-child a[href]")
+
+        if a_study_manual and a_study_manual['href'].startswith('https'):
+            links.append(a_study_manual['href'])
     return links
 
 
@@ -205,6 +210,17 @@ def extract_lva_metadata(html, semester):
     except Exception:
         metadata["lva_nr"] = None
 
+    # --- LVA Type ---
+    try:
+        lva_type_abbr = soup.select_one("h3 abbr")
+        if lva_type_abbr:
+            short_type = lva_type_abbr.get_text(strip=True)
+            metadata["lva_type"] = short_type
+        else:
+            metadata["lva_type"] = None
+    except Exception:
+        metadata["lva_type"] = None
+
     # --- LVA Name ---
     try:
         lva_name_element = soup.select_one("h3 b")
@@ -241,26 +257,106 @@ def extract_lva_metadata(html, semester):
     except Exception:
         metadata["lva_leiter"] = None
 
-    # --- Tag ---
-    try:
-        tag_element = soup.select_one("tr.priorityhighlighted td:nth-child(2)")
-        if tag_element:
-            metadata["tag"] = tag_element.text.strip()
-        else:
-            metadata["tag"] = None
-    except Exception:
-        metadata["tag"] = None
+    termin_table = soup.find("table", summary=lambda s: s and "Übersicht aller Termine der Lehrveranstaltung" in s)
+    if termin_table:
+        first_row = termin_table.select_one("tr.darkcell, tr.lightcell")
 
-    # --- Uhrzeit ---
-    try:
-        uhrzeit_element = soup.select_one("tr.priorityhighlighted td:nth-child(4)")
-        if uhrzeit_element:
-            t = uhrzeit_element.text.strip()
-            metadata["uhrzeit"] = t.split("(")[0].strip()
-        else:
+        if first_row:
+            try:
+                # --- Tag ---
+                tag_element = first_row.select_one("td:nth-child(1)")
+                if tag_element:
+                    metadata["tag"] = tag_element.text.strip()
+                else:
+                    metadata["tag"] = None
+            except Exception:
+                metadata["tag"] = None
+
+            try:
+                # --- Uhrzeit ---
+                uhrzeit_element = first_row.select_one("td:nth-child(3)")
+                if uhrzeit_element:
+                    metadata["uhrzeit"] = uhrzeit_element.text.strip()
+                else:
+                    metadata["uhrzeit"] = None
+            except Exception:
+                metadata["uhrzeit"] = None
+
+    else:
+        try:
+            tag_element = soup.select_one("tr.priorityhighlighted td:nth-child(2)")
+            if tag_element:
+                metadata["tag"] = tag_element.text.strip()
+            else:
+                metadata["tag"] = None
+        except Exception:
+            metadata["tag"] = None
+
+
+        try:
+            uhrzeit_element = soup.select_one("tr.priorityhighlighted td:nth-child(4)")
+            if uhrzeit_element:
+                t = uhrzeit_element.text.strip()
+                metadata["uhrzeit"] = t.split("(")[0].strip()
+            else:
+                metadata["uhrzeit"] = None
+        except Exception:
             metadata["uhrzeit"] = None
+
+    return metadata
+
+
+def extract_metadata_from_sm(html)-> Dict[str, Any]:
+    soup = BeautifulSoup(html, 'html.parser')
+    metadata = {}
+
+    try:
+        lva_code_element = soup.select_one("#code")
+        if lva_code_element:
+            metadata["lva_code"] = lva_code_element.get_text(strip=True)
+        else:
+            metadata["lva_code"] = None
     except Exception:
-        metadata["uhrzeit"] = None
+        metadata["lva_code"] = None
+
+    try:
+        leiter_cell = soup.select_one("table tr.darkcell td:nth-child(5)")
+
+        if leiter_cell:
+            metadata["lva_verantwortlicheR"] = leiter_cell.get_text(strip=True)
+        else:
+            metadata["lva_verantwortlicheR"] = None
+    except Exception:
+        metadata["lva_verantwortlicheR"] = None
+
+    try:
+        voraus_key_cell = soup.find("td", string=lambda t: t and "Anmeldevoraussetzungen" in t)
+
+        if voraus_key_cell and voraus_key_cell.next_sibling:
+            value_cell = voraus_key_cell.find_next_sibling('td')
+            if value_cell:
+                metadata["anmeldevoraussetzungen"] = value_cell.get_text(strip=True)
+            else:
+                metadata["anmeldevoraussetzungen"] = None
+        else:
+            metadata["anmeldevoraussetzungen"] = None
+    except Exception:
+        metadata["anmeldevoraussetzungen"] = None
+
+    try:
+        sprache_key_cell = soup.find("td", string=lambda t: t and "Abhaltungssprache" in t)
+
+        if sprache_key_cell and sprache_key_cell.next_sibling:
+            value_cell = sprache_key_cell.find_next_sibling('td')
+            if value_cell:
+                metadata["abhaltungssprache"] = value_cell.get_text(strip=True)
+            else:
+                metadata["abhaltungssprache"] = None
+        else:
+            metadata["abhaltungssprache"] = None
+
+    except Exception:
+        metadata["abhaltungssprache"] = None
 
     return metadata
 
@@ -312,7 +408,7 @@ def extract_lva_metadata_from_manual(page)-> Dict[str, Any]:
         metadata["ects"] = None
 
     try:
-        leiter_cell = page.query_selector("table tr.darkcell td:nth-child(5)")
+        leiter_cell = page.query_selector("table tr.darkcell td:nth-child(4)")
 
         if leiter_cell:
             metadata["lva_leiter"] = leiter_cell.inner_text().strip()
@@ -327,7 +423,7 @@ def extract_lva_metadata_from_manual(page)-> Dict[str, Any]:
         voraus_text = page.inner_text("text=Anmeldevoraussetzungen + td:nth-child(2)")
         metadata["anmeldevoraussetzungen"] = voraus_text.strip()
     except Exception:
-        metadata["anmeldevoraussetzungen"] = None
+        metadata["anmeldevoraussetzungen"] = "keine"
 
     try:
         sprache_text = page.inner_text("text=Abhaltungssprache + td:nth-child(2)")

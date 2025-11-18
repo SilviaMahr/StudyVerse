@@ -3,7 +3,7 @@ from typing import List
 from langchain.schema import Document
 import re
 from html2text import HTML2Text
-from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata
+from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata, extract_metadata_from_sm
 #from sentence_transformer import SentenceTransformer
 
 #EMBEDDER = SentenceTransformer('sentence-transformer/all-mpnet-base-v2')
@@ -200,12 +200,12 @@ def html_to_text(html):
     return converter.handle(html)
 
 def chunk_text(text):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2500, chunk_overlap=200)
     return splitter.split_text(text)
 
 
 def chunk_text_with_metadata(text, metadata):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2500, chunk_overlap=500)
     chunks = splitter.split_text(text)
 
     chunks_with_meta = []
@@ -222,10 +222,13 @@ def embed_chunks(chunks):
     return EMBEDDER.encode(chunks, convert_to_numpy=True)
 
 
-def process_html_page(url, html, semester):
-    metadata = extract_lva_metadata(html, semester)
-    text = html_to_text(html)
-    chunks = chunk_text_with_metadata(text, metadata)
+def process_html_page(url, kusss_html, sm_html, semester):
+    kusss_metadata = extract_lva_metadata(kusss_html, semester)
+    sm_metadata = extract_metadata_from_sm(sm_html)
+    kusss_metadata.update(sm_metadata)
+    subject_html = kusss_html + sm_html
+    text = html_to_text(subject_html)
+    chunks = chunk_text_with_metadata(text, kusss_metadata)
     chunks_text = [c["text"] for c in chunks]
     #embeddings = embed_chunks(chunks_text)
     #for i, c in enumerate(chunks):

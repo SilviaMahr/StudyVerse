@@ -81,18 +81,22 @@ def run_etl_pipeline():
     course_links = extractor.extract_links(html=root_html)
 
     for course_url in course_links:
+        # the one middle page
         subject_links = extractor.extract_links(url=course_url)
-        subject = subject_links[0]
-        subject_html = extractor.fetch_content_from_div(subject)
+        subject_url = subject_links[0]
+        study_manual_url = subject_links[1]
+        subject_html = extractor.fetch_content_from_div(subject_url)
+        ### STUDY MANUAL DATA ETL (part 1)
+        sm_subject_html = extractor.fetch_content_from_div(study_manual_url)
         course_data = extractor.extract_lva_links_for_course(subject_html)
         lva_links = course_data["lva_links"]
         semester_msg = course_data["semester_msg"]
 
         if lva_links:
             for lva_url in lva_links:
-                print(f"--> LVA page: {lva_url}")
                 lva_html = extractor.fetch_content_from_div(lva_url)
-                (lva_chunks, lva_url) = processor.process_html_page(lva_url, lva_html, semester)
+                (lva_chunks, lva_url) = processor.process_html_page(lva_url, lva_html, sm_subject_html, semester)
+                print_debug(lva_chunks, lva_url)
                 #store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
         elif semester_msg:
             if semester == "WS":
@@ -101,12 +105,13 @@ def run_etl_pipeline():
             if semester == "SS":
                 semester = "WS"
 
-            (lva_chunks, lva_url) = processor.process_html_page(subject, subject_html, semester)
+            (lva_chunks, lva_url) = processor.process_html_page(subject_url, subject_html, sm_subject_html, semester)
+            print_debug(lva_chunks, lva_url)
             # store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
 
     # load_data_into_vector_store(processed_curriculum_chunks)
 
-    ### STUDY MANUAL DATA ETL
+    ### STUDY MANUAL DATA ETL (part 2)
     study_manual_links = extractor.get_links_from_study_manual()
     last_two_links = study_manual_links[-2:]
     for link in last_two_links:
