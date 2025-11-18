@@ -60,14 +60,22 @@ def run_etl_pipeline():
     #conn = psycopg2.connect(neon_db_url)
     #conn.autocommit = True
 
+    ### CURRICULUM DATA ETL
     curriculum_data = extractor.load_curriculum_data()
     if not curriculum_data:
         print("Pipeline beendet: Keine Quelldokumente gefunden.")
         return
 
-    processed_chunks = processor.process_documents(curriculum_data)
+    processed_curriculum_chunks = processor.process_documents(curriculum_data)
+    if not processed_curriculum_chunks:
+        print("Pipeline beendet: Nach der Verarbeitung keine Chunks übrig.")
+        return
 
+    # load_data_into_vector_store(processed_curriculum_chunks)
+
+    ### KUSSS DATA ETL
     (root_html, root_url) = extractor.extract_win_bsc_info()
+    semester = extractor.extract_semester_info(root_html)
     (chunks, html_url) = processor.process_main_page(root_url, root_html)
     #store_html_chunks(chunks=chunks, embeddings=embeddings, url=root_url)
     course_links = extractor.extract_links(html=root_html)
@@ -84,27 +92,26 @@ def run_etl_pipeline():
             for lva_url in lva_links:
                 print(f"--> LVA page: {lva_url}")
                 lva_html = extractor.fetch_content_from_div(lva_url)
-                semester = extractor.extract_semester_info(root_html)
                 (lva_chunks, lva_url) = processor.process_html_page(lva_url, lva_html, semester)
                 #store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
         elif semester_msg:
-            semester = extractor.extract_semester_info(root_html)
             if semester == "WS":
                 semester = "SS"
 
             if semester == "SS":
                 semester = "WS"
 
-            processor.process_html_page(subject, subject_html, semester)
+            (lva_chunks, lva_url) = processor.process_html_page(subject, subject_html, semester)
+            # store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
 
+    # load_data_into_vector_store(processed_curriculum_chunks)
+
+    ### STUDY MANUAL DATA ETL
     study_manual_links = extractor.get_links_from_study_manual()
     last_two_links = study_manual_links[-2:]
     for link in last_two_links:
        subject_html = extractor.fetch_content_from_div(link)
 
-    if not processed_chunks:
-        print("Pipeline beendet: Nach der Verarbeitung keine Chunks übrig.")
-        return
 
     #load_data_into_vector_store(processed_chunks)
 
