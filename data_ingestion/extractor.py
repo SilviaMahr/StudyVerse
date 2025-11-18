@@ -78,7 +78,6 @@ def load_sites_from_url(url: str = STUDIENHANDBUCH_URL) -> List[Document]:
 def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document]:
     embedded_links = []
     try:
-        print(f"Hauptseite: {url}")
         response = requests.get(url, timeout=15)
         response.raise_for_status()
 
@@ -91,18 +90,8 @@ def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document
     return embedded_links
 
 
-def load_all_curriculum_data() -> List[Document]:
-    all_documents = []
-
-    curriculum_pdf = load_pages_from_pdf(CURRICULUM_PDF_PATH)
-    all_documents.extend(curriculum_pdf)
-    study_plan_pdf = load_pages_from_pdf(IDEAL_STUDY_PLAN_PDF_PATH)
-    all_documents.extend(study_plan_pdf)
-
-    url_docs = load_sites_from_url()
-    all_documents.extend(url_docs)
-
-    return all_documents
+def load_curriculum_data() -> List[Document]:
+    return load_pages_from_pdf(CURRICULUM_PDF_PATH)
 
 
 def fetch_content_from_div(url: str) -> Optional[str]:
@@ -363,7 +352,7 @@ def extract_lva_metadata_from_manual(page)-> Dict[str, Any]:
 
 # Test
 if __name__ == "__main__":
-    all_docs = load_all_curriculum_data()
+    all_docs = load_curriculum_data()
     if all_docs:
         print("\nDokumentauszug Test:")
         print(f"Content: {all_docs[0].page_content[:1000]}...")

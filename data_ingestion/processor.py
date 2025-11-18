@@ -3,7 +3,7 @@ from typing import List
 from langchain.schema import Document
 import re
 from html2text import HTML2Text
-from data_ingestion.extractor import load_all_curriculum_data, extract_lva_metadata
+from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata
 #from sentence_transformer import SentenceTransformer
 
 #EMBEDDER = SentenceTransformer('sentence-transformer/all-mpnet-base-v2')
@@ -241,28 +241,7 @@ def process_main_page(url, html):
 
 # Test
 if __name__ == "__main__":
-    processed_chunks = process_documents(load_all_curriculum_data())
+    processed_chunks = process_documents(load_curriculum_data())
 
     if processed_chunks:
         print("\nFinished")
-        '''
-        print(processed_chunks[55])
-        count = 0
-
-        for chunk in processed_chunks:
-            if chunk.metadata.get('retrieval_type') == 'ideal_plan_sequence':
-                count += 1
-                print(f"\n--- Chunk #{count} (Seiteninhalt und Metadaten) ---")
-
-                print("Content (Auszug):", chunk.page_content[:400] + "...")
-                print("Metadata:")
-                relevant_keys = [
-                    'source_file', 'retrieval_type', 'semester_num', 'semester_type',
-                    'study_mode', 'study_start_mode', 'has_lva_data'
-                ]
-
-                filtered_metadata = {k: v for k, v in chunk.metadata.items() if k in relevant_keys}
-                print(filtered_metadata)
-
-        print(f"\n'ideal_plan_sequence' Chunks: {count}")
-        '''

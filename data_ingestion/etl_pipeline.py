@@ -60,11 +60,13 @@ def run_etl_pipeline():
     #conn = psycopg2.connect(neon_db_url)
     #conn.autocommit = True
 
-    raw_documents = extractor.load_all_curriculum_data()
-    #study_manual_links = extractor.get_links_from_study_manual()
-    #for link in study_manual_links:
-     #   subject_html = extractor.fetch_content_from_div(link)
-    #
+    curriculum_data = extractor.load_curriculum_data()
+    if not curriculum_data:
+        print("Pipeline beendet: Keine Quelldokumente gefunden.")
+        return
+
+    processed_chunks = processor.process_documents(curriculum_data)
+
     (root_html, root_url) = extractor.extract_win_bsc_info()
     (chunks, html_url) = processor.process_main_page(root_url, root_html)
     #store_html_chunks(chunks=chunks, embeddings=embeddings, url=root_url)
@@ -95,11 +97,10 @@ def run_etl_pipeline():
 
             processor.process_html_page(subject, subject_html, semester)
 
-    if not raw_documents:
-        print("Pipeline beendet: Keine Quelldokumente gefunden.")
-        return
-
-    processed_chunks = processor.process_documents(raw_documents)
+    study_manual_links = extractor.get_links_from_study_manual()
+    last_two_links = study_manual_links[-2:]
+    for link in last_two_links:
+       subject_html = extractor.fetch_content_from_div(link)
 
     if not processed_chunks:
         print("Pipeline beendet: Nach der Verarbeitung keine Chunks übrig.")
