@@ -33,9 +33,8 @@
   - Nachfragen und Planänderungen im Chatfenster möglich
   - Beispiel:
       -  Student: Ich habe Einf. in die Softwareentwicklung angerechnet bekommen, da ich HTL Absolvent bin. Ich möchte bitte SOFT2 machen.
-      - Uni: Alles klar ich ändere deinen Plan, bitte gib auch angerechnete Lehrveranstaltungen als absolviert an! Soll ich das für dich übernehmen? Gibt es noch andere Kurse, die dir angerechnet wurden? 
- ❗ -> TEAM Discussion (soll das möglich sein)
-      - Student: Ja bitte. Nein nur SOFT1!
+      - Uni: Alles klar ich ändere deinen Plan, bitte gib auch angerechnete Lehrveranstaltungen als absolviert an! Gibt es noch andere Kurse, die dir angerechnet wurden?
+      - Nein nur SOFT1!
       - Uni: Verstanden, ich habe deinen Plan angepasst, du findest ihn in der Planungsübersicht!
           - Prozess- und Kommunikationsmodellierung VL - 3 ECTS, Mi 13:45 - 15:15 Uhr (Udo Kannengiesser) 
           - Prozess- und Kommunikationsmodellierung UE - 3 ECTS, Mi 15:30 - 17:00 Uhr (Thomas Jost)
