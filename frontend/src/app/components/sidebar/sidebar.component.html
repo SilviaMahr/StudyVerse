@@ -39,11 +39,11 @@
 
     <h3>Letzte Planungen</h3>
 
-    @if (isLoading) {
+    @if (deleteMessage) {
+      <div class="delete-message">{{ deleteMessage }}</div>
+    } @else if (isLoading) {
       <div class="sidebar-loading">Lade Planungen...</div>
-    }
-
-    @if (error) {
+    } @else if (error) {
       <div class="sidebar-error">{{ error }}</div>
     }
 
@@ -51,10 +51,15 @@
       <ul class="planning-list">
 
         @for (plan of recentPlannings; track plan.id) {
-          <li>
-            <a [routerLink]="['/plan', plan.id]">
+          <li class="planning-list-item">
+            <a class ="plan-link" [routerLink]="['/plan', plan.id]">
               <span class="plan-title">{{ plan.title }}</span>
             </a>
+            <button class="delete-plan-btn"
+                    title="Planung löschen"
+                    (click)="openDeleteModal($event, plan)">
+              <img src="assets/deleteIcon.png" alt="Löschen" class="delete-icon">
+            </button>
           </li>
         }
       </ul>
@@ -78,3 +83,26 @@
     </div>
   </aside>
 </div>
+
+@if (showDeleteModal && planToDelete) {
+
+  <div class="modal-overlay" (click)="closeDeleteModal()">
+
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3>Planung löschen</h3>
+      <p>
+        Möchtest du die Planung <strong>"{{ planToDelete.title }}"</strong> wirklich endgültig löschen?
+      </p>
+
+      <div class="modal-buttons">
+        <button (click)="closeDeleteModal()" class="modal-btn-cancel">
+          Abbrechen
+        </button>
+        <button (click)="confirmDelete()" class="modal-btn-confirm">
+          Löschen
+        </button>
+      </div>
+    </div>
+
+  </div>
+}

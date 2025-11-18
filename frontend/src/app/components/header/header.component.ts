@@ -1,11 +1,15 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
 import {LogoutComponent} from '../logout/logout.component';
+import {Observable} from 'rxjs';
+import {AuthService} from '../../../services/auth.service';
+import {AsyncPipe} from '@angular/common';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
-    LogoutComponent
+    LogoutComponent,
+    AsyncPipe
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
@@ -13,5 +17,11 @@ import {LogoutComponent} from '../logout/logout.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeaderComponent {
-  constructor() { }
+  public isLoggedIn$: Observable<boolean>;
+
+  constructor(
+    private authService: AuthService
+  ) {
+    this.isLoggedIn$ = this.authService.isAuthenticated$;
+  }
 }

@@ -12,6 +12,12 @@
   border-color: white;
 }
 
+.profile-container form {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+}
+
 .profile-header h2 {
   margin-bottom: 0.25rem;
   color: white;
@@ -110,6 +116,7 @@
   transition: background-color 0.2s;
   margin-top: 2rem;
   align-self: center;
+  text-align: center;
   background-color: var(--preselection-button-bg);
   color: var(--preselection-button-text);
 }

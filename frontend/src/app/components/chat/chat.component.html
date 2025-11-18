@@ -1,0 +1,62 @@
+<div class="chat-container">
+
+  <header class="chat-header">
+    <h3>Chat mit UNI </h3>
+    <button (click)="closeChat()" class="close-btn" title="Chat schließen">&times;</button>
+  </header>
+
+  <div class="chat-history">
+    @for (msg of messages; track $index) {
+
+      <!-- messages from user -->
+      @if (msg.sender === 'user') {
+        <div class="message-wrapper sender-user">
+          <p class="message-bubble">{{ msg.text }}</p>
+        </div>
+      }
+
+      <!-- messages from LLM -->
+      @if (msg.sender === 'UNI') {
+        <div class="message-wrapper sender-llm">
+
+          <img
+            src="assets/UNI.png"
+            alt="Maskottchen"
+            class="llm-avatar"
+            onerror="this.style.display='none'">
+
+          <p class="message-bubble">{{ msg.text }}</p>
+        </div>
+      }
+    }
+
+    @if (isLLMLoading) {
+      <div class="message-wrapper sender-llm">
+        <img
+          src="/assets/UNI.png"
+          alt="Maskottchen"
+          class="llm-avatar"
+          onerror="this.style.display='none'">
+
+        <div class="message-bubble typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- input -->
+  <form class="chat-input-form" #chatForm="ngForm" (ngSubmit)="onSendMessage(chatForm)">
+    <input
+      type="text"
+      class="chat-input"
+      placeholder="z.B. 'Ich möchte doch lieber...'"
+      name="message"
+      [(ngModel)]="currentMessage"
+      autocomplete="off">
+    <button type="submit" class="send-btn" [disabled]="!chatForm.valid">Senden</button>
+  </form>
+
+</div>

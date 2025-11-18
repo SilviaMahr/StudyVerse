@@ -21,8 +21,6 @@ export class ProfileEditComponent {
   userName: string = '';
   email: string = '';
   selectedDegree: string = '';
-  completedCoursesCount: string = ''; //TODO: replace when backend logic is implemented
-  electiveWishlistCount: string = ''; //TODO: replace when backend logic is implemented
 
   isLoading: boolean = true;
   errorMessage: string | null = null;
@@ -103,15 +101,5 @@ export class ProfileEditComponent {
        this.cdr.detectChanges();
      }
    });
-  }
-
-  openCompletedCoursesModal() : void {
-    console.log('Öffne Modal für absolviere LVAs...');
-    //TODO: implement logic
-  }
-
-  openWishlistModal(): void {
-    console.log('Öffne Modal für Wunschwahlfächer...');
-    //TODO: implement logic
   }
 }
