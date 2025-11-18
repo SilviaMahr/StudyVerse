@@ -60,6 +60,9 @@ def run_etl_pipeline():
     #conn = psycopg2.connect(neon_db_url)
     #conn.autocommit = True
 
+    ### IDEAL_PLAN DATA ETL
+
+
     ### CURRICULUM DATA ETL
     curriculum_data = extractor.load_curriculum_data()
     if not curriculum_data:
@@ -76,7 +79,7 @@ def run_etl_pipeline():
     ### KUSSS DATA ETL
     (root_html, root_url) = extractor.extract_win_bsc_info()
     semester = extractor.extract_semester_info(root_html)
-    (chunks, html_url) = processor.process_main_page(root_url, root_html)
+    chunks = processor.process_main_page(root_html)
     #store_html_chunks(chunks=chunks, embeddings=embeddings, url=root_url)
     course_links = extractor.extract_links(html=root_html)
 
@@ -95,9 +98,8 @@ def run_etl_pipeline():
         if lva_links:
             for lva_url in lva_links:
                 lva_html = extractor.fetch_content_from_div(lva_url)
-                (lva_chunks, lva_url) = processor.process_html_page(lva_url, lva_html, sm_subject_html, semester)
-                print_debug(lva_chunks, lva_url)
-                #store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
+                lva_chunks = processor.process_html_page(lva_html, sm_subject_html, semester)
+                #store_html_chunks(chunks=lva_chunks["text"], metadata=lva_chunks["metadata"], embeddings=lva_embeddings, url=lva_url)
         elif semester_msg:
             if semester == "WS":
                 semester = "SS"
@@ -105,20 +107,17 @@ def run_etl_pipeline():
             if semester == "SS":
                 semester = "WS"
 
-            (lva_chunks, lva_url) = processor.process_html_page(subject_url, subject_html, sm_subject_html, semester)
-            print_debug(lva_chunks, lva_url)
-            # store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
-
-    # load_data_into_vector_store(processed_curriculum_chunks)
+            lva_chunks = processor.process_html_page(subject_html, sm_subject_html, semester)
+            # store_html_chunks(chunks=lva_chunks["text"], metadata=lva_chunks["metadata"], embeddings=lva_embeddings, url=subject_url)
 
     ### STUDY MANUAL DATA ETL (part 2)
     study_manual_links = extractor.get_links_from_study_manual()
-    last_two_links = study_manual_links[-2:]
-    for link in last_two_links:
-       subject_html = extractor.fetch_content_from_div(link)
+    for url in study_manual_links:
+        subject_html = extractor.fetch_content_from_div(url)
+        subject_chunks = processor.process_sm_html(subject_html)
+        print_debug(subject_chunks, url)
 
-
-    #load_data_into_vector_store(processed_chunks)
+    #load_data_into_vector_store(processed_sm_chunks)
 
     print("\n--> ETL-PIPELINE beendet! <--")
 

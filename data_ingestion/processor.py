@@ -3,7 +3,7 @@ from typing import List
 from langchain.schema import Document
 import re
 from html2text import HTML2Text
-from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata, extract_metadata_from_sm
+from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata, extract_metadata_from_sm, extract_lva_metadata_from_manual
 #from sentence_transformer import SentenceTransformer
 
 #EMBEDDER = SentenceTransformer('sentence-transformer/all-mpnet-base-v2')
@@ -222,7 +222,7 @@ def embed_chunks(chunks):
     return EMBEDDER.encode(chunks, convert_to_numpy=True)
 
 
-def process_html_page(url, kusss_html, sm_html, semester):
+def process_html_page(kusss_html, sm_html, semester):
     kusss_metadata = extract_lva_metadata(kusss_html, semester)
     sm_metadata = extract_metadata_from_sm(sm_html)
     kusss_metadata.update(sm_metadata)
@@ -233,13 +233,25 @@ def process_html_page(url, kusss_html, sm_html, semester):
     #embeddings = embed_chunks(chunks_text)
     #for i, c in enumerate(chunks):
      #   c["embedding"] = embeddings[i]
-    return chunks, url
+    return chunks
 
-def process_main_page(url, html):
+
+def process_sm_html(sm_html):
+    sm_metadata = extract_lva_metadata_from_manual(sm_html)
+    text = html_to_text(sm_html)
+    chunks = chunk_text_with_metadata(text, sm_metadata)
+    chunks_text = [c["text"] for c in chunks]
+    # embeddings = embed_chunks(chunks_text)
+    # for i, c in enumerate(chunks):
+    #   c["embedding"] = embeddings[i]
+    return chunks
+
+
+def process_main_page(html):
     text = html_to_text(html)
     chunks = chunk_text(text)
     #embeddings = embed_chunks(chunks)
-    return chunks, url
+    return chunks
 
 
 # Test

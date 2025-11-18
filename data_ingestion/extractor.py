@@ -28,65 +28,39 @@ def load_pages_from_pdf(file_path: str) -> List[Document]:
         print(f"FEHLER beim Laden der PDF: {e}")
         return []
 
-def get_links_from_url(url: str, content: str) -> Set[str]:
-    links = set()
-    # Basis-Link gefolgt von mindestens einer Ziffer
-    link_pattern = re.compile(r"^" + re.escape(DOMAIN_BASE) + r"\d+$")
-    try:
-        soup = BeautifulSoup(content, 'html.parser')
-
-        for link_tag in soup.find_all('a', href=True):
-            href = link_tag['href']
-            absolute_url = urljoin(url, href)
-
-            if link_pattern.match(absolute_url):
-                links.add(absolute_url)
-
-    except Exception as e:
-        print(f"Fehler während Parsen der links von {url}: {e}")
-
-    return links
-
-
-def load_sites_from_url(url: str = STUDIENHANDBUCH_URL) -> List[Document]:
-    all_webpages = []
-
-    try:
-        print(f"Hauptseite: {url}")
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
-
-        embedded_links = get_links_from_url(url, response.text)
-        print(f"--> {len(embedded_links)} eingebettete Links gefunden.")
-        #print(f"Beispiellink: {list(embedded_links)[31]}")
-
-        urls_to_load = list(embedded_links)
-        urls_to_load.append(url)
-
-        loader = UnstructuredURLLoader(urls=urls_to_load)
-        webpages = loader.load()
-
-        all_webpages.extend(webpages)
-
-    except Exception as e:
-        print(f"FEHLER beim Laden der URL(s): {e}")
-
-    print(f"--> {len(all_webpages)} Dokumente geladen.")
-    return all_webpages
-
 
 def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document]:
     embedded_links = []
+
     try:
         response = requests.get(url, timeout=15)
         response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-        embedded_links = get_links_from_url(url, response.text)
+        overview_table = soup.find('th', string='Übersicht')
+        if overview_table:
+            overview_table = overview_table.find_parent('table')
+        else:
+            print("FEHLER: Übersichtstabelle nicht gefunden.")
+            return []
 
+        for td in overview_table.find_all('td', class_='lightcell', align=False):
+            bold_element = td.find('b')
+            link_element = td.find('a', class_='currlist')
+
+            if bold_element and link_element:
+                href = link_element.get('href')
+                if link_element.find_parent('b'):
+                    absolute_url = urljoin(url, href)
+                    embedded_links.append(absolute_url)
+
+    except requests.exceptions.RequestException as e:
+        print(f"FEHLER beim Laden der URL {url}: {e}")
     except Exception as e:
-        print(f"FEHLER beim Laden der URL(s): {e}")
+        print(f"FEHLER beim Parsen: {e}")
 
-    print(f"--> {len(embedded_links)} eingebettete Links gefunden.")
+    print(f"--> {len(embedded_links)} eingebettete Links (Level 1 & 2) gefunden.")
+
     return embedded_links
 
 
@@ -361,82 +335,93 @@ def extract_metadata_from_sm(html)-> Dict[str, Any]:
     return metadata
 
 
-def extract_lva_metadata_from_manual(page)-> Dict[str, Any]:
+def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
+    soup = BeautifulSoup(html, 'html.parser')
     metadata = {}
 
+    header_h3 = soup.select_one("td.dotted-bottom h3")
+    # --- LVA Code ---
     try:
-        metadata["lva_nr"] = page.inner_text("#code").strip()
+        lva_code_element = soup.select_one("#code")
+        metadata["lva_code"] = lva_code_element.get_text(strip=True) if lva_code_element else None
     except Exception:
-        metadata["lva_nr"] = None
+        metadata["lva_code"] = None
 
-    try:
-        header_text = page.inner_text("h3").strip()
-        # Beispiel: [ 526GLWN11 ] Studienfach Grundlagen der Wirtschaftsinformatik
+    # --- LVA Type und Name ---
+    if header_h3:
+        header_text = header_h3.get_text(strip=True)
 
-        if metadata["lva_nr"]:
-             clean_text = header_text.replace(f"[ {metadata['lva_nr']} ]", "").strip()
+        # Type (Studienfach / Modul)
+        if "Studienfach" in header_text:
+            metadata["lva_type"] = "Studienfach"
+        elif "Modul" in header_text:
+            metadata["lva_type"] = "Modul"
+
+        # LVA Name
+        if metadata.get("lva_type"):
+            name_part = header_text.split(metadata["lva_type"], 1)[-1]
+            metadata["lva_name"] = name_part.replace(f"[ {metadata.get('lva_code', '')} ]", "").strip()
         else:
-             clean_text = header_text
+            metadata["lva_name"] = None
 
-        # LVA-Typ: das erste Wort (Studienfach, Modul) oder die Abkürzung (VL, UE, SE)
-        parts = clean_text.split(maxsplit=1)
-        if parts:
-             metadata["lva_type"] = parts[0].strip()
-             metadata["lva_name"] = parts[1].strip() if len(parts) > 1 else clean_text
-        else:
-             metadata["lva_type"] = None
-             metadata["lva_name"] = clean_text
-
-    except Exception:
-        metadata["lva_type"] = None
-        metadata["lva_name"] = None
-
+    # --- ECTS (Workload) ---
     try:
-        ects_cell = page.query_selector("table tr.darkcell td:nth-child(1)")
-
+        ects_cell = soup.select_one("table tr.darkcell td:nth-child(1)")
         if ects_cell:
-            ects_text = ects_cell.inner_text().strip()
+            ects_text = ects_cell.get_text(strip=True)
             ects_match = re.search(r'(\d{1,2}(?:,\d{1,2})?)\s*ECTS', ects_text)
             if ects_match:
-                 metadata["ects"] = float(ects_match.group(1).replace(",", "."))
+                metadata["ects"] = float(ects_match.group(1).replace(",", "."))
             else:
-                 metadata["ects"] = None
+                metadata["ects"] = None
         else:
-             metadata["ects"] = None
-
+            metadata["ects"] = None
     except Exception:
         metadata["ects"] = None
 
+    #--- VerantwortlicheR ---
     try:
-        leiter_cell = page.query_selector("table tr.darkcell td:nth-child(4)")
+        leiter_cell = soup.select_one("table tr.darkcell td:nth-child(5)")
 
         if leiter_cell:
-            metadata["lva_leiter"] = leiter_cell.inner_text().strip()
+            metadata["lva_verantwortlicheR"] = leiter_cell.get_text(strip=True)
         else:
-            metadata["lva_leiter"] = None
-
+            metadata["lva_verantwortlicheR"] = None
     except Exception:
-        metadata["lva_leiter"] = None
+        metadata["lva_verantwortlicheR"] = None
 
-
+    # --- Anmeldevoraussetzungen ---
     try:
-        voraus_text = page.inner_text("text=Anmeldevoraussetzungen + td:nth-child(2)")
-        metadata["anmeldevoraussetzungen"] = voraus_text.strip()
+        voraus_key_cell = soup.find("td", string=lambda t: t and "Anmeldevoraussetzungen" in t)
+
+        if voraus_key_cell and voraus_key_cell.next_sibling:
+            value_cell = voraus_key_cell.find_next_sibling('td')
+            if value_cell:
+                metadata["anmeldevoraussetzungen"] = value_cell.get_text(strip=True)
+            else:
+                metadata["anmeldevoraussetzungen"] = None
+        else:
+            metadata["anmeldevoraussetzungen"] = None
     except Exception:
-        metadata["anmeldevoraussetzungen"] = "keine"
+        metadata["anmeldevoraussetzungen"] = None
 
+    #--- Untergeordnete LVAs ---
     try:
-        sprache_text = page.inner_text("text=Abhaltungssprache + td:nth-child(2)")
-        metadata["abhaltungssprache"] = sprache_text.strip()
-    except Exception:
-        metadata["abhaltungssprache"] = None
+        untergeordnete_lvas = []
 
+        header_th = soup.find('th', string='Untergeordnete Studienfächer, Module und Lehrveranstaltungen')
 
-    try:
-        untergeordnete_elements = page.query_selector_all("ul li a")
+        if header_th:
+            links_table = header_th.find_parent('table')
 
-        if untergeordnete_elements:
-            metadata['untergeordnete_lvas'] = [a.inner_text().strip() for a in untergeordnete_elements]
+            if links_table:
+                link_elements = links_table.find_all("a")
+
+                for a in link_elements:
+                    untergeordnete_lvas.append(a.get_text(strip=True))
+
+            metadata['untergeordnete_lvas'] = untergeordnete_lvas if untergeordnete_lvas else None
+
         else:
             metadata['untergeordnete_lvas'] = None
 
