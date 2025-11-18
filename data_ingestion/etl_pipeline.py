@@ -115,7 +115,6 @@ def run_etl_pipeline():
     for url in study_manual_links:
         subject_html = extractor.fetch_content_from_div(url)
         subject_chunks = processor.process_sm_html(subject_html)
-        print_debug(subject_chunks, url)
 
     #load_data_into_vector_store(processed_sm_chunks)
 
