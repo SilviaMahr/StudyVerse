@@ -121,7 +121,6 @@ def fetch_content_from_div(url: str) -> Optional[str]:
                     "<div class='semester-tobe-planned'>" + semester_html + "</div>\n" +
                     content_html
             )
-            print(f"CONTENT_DIV --> extracted html:\n{combined_html[:5000]}")
             return combined_html
 
         else:
@@ -149,7 +148,6 @@ def extract_links(**kwargs):
             link_path = a['href']
             links.append(urljoin(KUSSS_BASE_URL, link_path))
 
-    print(f"EXTRACT_LINKS --> Len(cell):  {len(links)}")
     return links
 
 
@@ -163,7 +161,6 @@ def extract_lva_links_for_course(html):
 
     if message_element:
         message_text = message_element.text.strip()
-        print(f"INFO --> Message found: {message_text}")
         return {
             "lva_links": [],
             "semester_msg": message_text
@@ -178,9 +175,6 @@ def extract_lva_links_for_course(html):
         if '.' in lva_nr:
             lva_nrs.append(lva_nr)
             lva_links.append(urljoin(KUSSS_BASE_URL, a["href"]))
-
-    print(f"LVA_NRS --> Extracted {len(lva_nrs)} LVA-Nr.s")
-    print(f"LVA_NRS (sample): {lva_links[0] if lva_links else '[]'}")
 
     return {
         "lva_links": lva_links,

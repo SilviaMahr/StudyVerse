@@ -65,22 +65,15 @@ def run_etl_pipeline():
     #for link in study_manual_links:
      #   subject_html = extractor.fetch_content_from_div(link)
     #
-    print("Visiting win_bsc main page:")
     (root_html, root_url) = extractor.extract_win_bsc_info()
     (chunks, html_url) = processor.process_main_page(root_url, root_html)
     #store_html_chunks(chunks=chunks, embeddings=embeddings, url=root_url)
-    print_debug(chunks=chunks, url=html_url)
-    print("Extracting course page links from win_bsc main page:")
     course_links = extractor.extract_links(html=root_html)
 
     for course_url in course_links:
-        print(f"--> Course page: {course_url}")
-        print("Extracting one link from the course page:")
         subject_links = extractor.extract_links(url=course_url)
-        print("--> visit the one link and get course page")
         subject = subject_links[0]
         subject_html = extractor.fetch_content_from_div(subject)
-        print("--> get lva links from course page")
         course_data = extractor.extract_lva_links_for_course(subject_html)
         lva_links = course_data["lva_links"]
         semester_msg = course_data["semester_msg"]
@@ -91,7 +84,6 @@ def run_etl_pipeline():
                 lva_html = extractor.fetch_content_from_div(lva_url)
                 semester = extractor.extract_semester_info(root_html)
                 (lva_chunks, lva_url) = processor.process_html_page(lva_url, lva_html, semester)
-                print_debug(chunks=lva_chunks, url=lva_url)
                 #store_html_chunks(chunks=lva_chunks, embeddings=lva_embeddings, url=lva_url)
         elif semester_msg:
             semester = extractor.extract_semester_info(root_html)
