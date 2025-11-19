@@ -57,11 +57,10 @@ def run_etl_pipeline():
 
     print("--> ETL-PIPELINE gestartet... <--")
 
-    #conn = psycopg2.connect(neon_db_url)
-    #conn.autocommit = True
+    conn = psycopg2.connect(neon_db_url)
+    conn.autocommit = True
 
-    ### IDEAL_PLAN DATA ETL
-
+    ### IDEAL_PLAN DATA ETL (manual)
 
     ### CURRICULUM DATA ETL
     curriculum_data = extractor.load_curriculum_data()

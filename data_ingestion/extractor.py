@@ -9,7 +9,6 @@ from playwright.sync_api import Playwright, sync_playwright
 from typing import Optional, Dict, Any
 
 CURRICULUM_PDF_PATH = "../docs/1193_17_BS_Wirtschaftsinformatik.pdf"
-IDEAL_STUDY_PLAN_PDF_PATH = "../docs/idealtypischerStudienverlauf.pdf"
 DOMAIN_BASE = "https://studienhandbuch.jku.at/"
 STUDIENHANDBUCH_URL = DOMAIN_BASE + "curr/1193?id=1193&lang=de"
 KUSSS_BASE_URL = "https://kusss.jku.at/kusss/"
