@@ -11,7 +11,7 @@ import json
 
 load_dotenv()
 
-NEON_COLLECTION = "studyverse_data"
+NEON_COLLECTION = "studymanual_data"
 
 def check_env_variables(neon_db_url: str, gemini_api_key: str) -> bool:
     is_valid = True
