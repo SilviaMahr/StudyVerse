@@ -3,10 +3,13 @@ from typing import List
 from langchain.schema import Document
 import re
 from html2text import HTML2Text
-from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata, extract_metadata_from_sm, extract_lva_metadata_from_manual
-#from sentence_transformer import SentenceTransformer
+from data_ingestion.extractor import (load_curriculum_data,
+                                      extract_lva_metadata,
+                                      extract_metadata_from_sm,
+                                      extract_lva_metadata_from_manual)
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-#EMBEDDER = SentenceTransformer('sentence-transformer/all-mpnet-base-v2')
+model = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
 def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(
@@ -139,9 +142,9 @@ def process_html_page(kusss_html, sm_html, semester):
     text = html_to_text(subject_html)
     chunks = chunk_text_with_metadata(text, kusss_metadata)
     chunks_text = [c["text"] for c in chunks]
-    #embeddings = embed_chunks(chunks_text)
-    #for i, c in enumerate(chunks):
-     #   c["embedding"] = embeddings[i]
+    embeddings = model.embed_document(chunks_text)
+    for i, c in enumerate(chunks_text):
+       c["embedding"] = embeddings[i]
     return chunks
 
 
@@ -150,16 +153,18 @@ def process_sm_html(sm_html):
     text = html_to_text(sm_html)
     chunks = chunk_text_with_metadata(text, sm_metadata)
     chunks_text = [c["text"] for c in chunks]
-    # embeddings = embed_chunks(chunks_text)
-    # for i, c in enumerate(chunks):
-    #   c["embedding"] = embeddings[i]
+    embeddings = model.embed_query(chunks_text)
+    for i, c in enumerate(chunks_text):
+        c["embedding"] = embeddings[i]
     return chunks
 
 
 def process_main_page(html):
     text = html_to_text(html)
     chunks = chunk_text(text)
-    #embeddings = embed_chunks(chunks)
+    embeddings = model.embed_query(chunks)
+    for i, c in enumerate(chunks):
+        c["embedding"] = embeddings[i]
     return chunks
 
 
