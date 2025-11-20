@@ -139,4 +139,32 @@
   text-align: center;
   opacity: 0.8;
 }
+.disclaimer-container {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.disclaimer-container p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: white;
+  opacity: 0.8;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+.kusss-link {
+  color: inherit;
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
 
