@@ -2,6 +2,7 @@ import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
 import {Component, OnInit} from '@angular/core';
 import {PlanningStateService} from '../../../services/planning-state.service';
+import {ChatService} from '../../../services/chat.service';
 
 interface ChatMessage {
   sender: 'user' | 'UNI';
@@ -21,7 +22,10 @@ export class ChatComponent implements OnInit {
 
   isLLMLoading: boolean = false;
 
-  constructor(private planningState: PlanningStateService) { }
+  constructor(
+    private planningState: PlanningStateService,
+    private chatService: ChatService
+  ) { }
 
   ngOnInit() {
     this.messages.push({
@@ -40,22 +44,49 @@ export class ChatComponent implements OnInit {
 
     this.messages.push(userMessage);
 
-    //TODO send message to LLM
+    // Send message to LLM
     this.isLLMLoading = true;
-    this.addDummyLLMResponse(chatForm.value.message);
+    this.sendMessageToLLM(chatForm.value.message);
+    // OLD CODE: this.addDummyLLMResponse(chatForm.value.message);
 
     chatForm.reset();
   }
-//dummy-code for testing
-  private addDummyLLMResponse(userText: string): void {
-    setTimeout(() => {
-      this.isLLMLoading = false;
-      this.messages.push({
-        sender: 'UNI',
-        text: `Okay, ich habe deine Anmerkung "${userText}" zur Kenntnis genommen.`
-      });
-    }, 500);
+
+  private sendMessageToLLM(userText: string): void {
+    console.log('Sending message to LLM:', userText);
+
+    this.chatService.sendMessage(userText).subscribe({
+      next: (response) => {
+        console.log('LLM Response received:', response);
+        this.isLLMLoading = false;
+        this.messages.push({
+          sender: 'UNI',
+          text: response.message
+        });
+      },
+      error: (error) => {
+        console.error('Error sending message to LLM:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        this.isLLMLoading = false;
+        this.messages.push({
+          sender: 'UNI',
+          text: 'Entschuldigung, es gab einen Fehler bei der Verarbeitung deiner Nachricht. Bitte versuche es erneut.'
+        });
+      }
+    });
   }
+
+  // ========== OLD DUMMY CODE (kept for reference) ==========
+  // private addDummyLLMResponse(userText: string): void {
+  //   setTimeout(() => {
+  //     this.isLLMLoading = false;
+  //     this.messages.push({
+  //       sender: 'UNI',
+  //       text: `Okay, ich habe deine Anmerkung "${userText}" zur Kenntnis genommen.`
+  //     });
+  //   }, 500);
+  // }
 
   closeChat(): void {
     this.planningState.closeChat();
