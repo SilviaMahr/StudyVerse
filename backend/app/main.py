@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware #needed for angular connectio
 from .routes import auth_routes
 from .routes import planning_routes
 from .routes import profile_routes
+from .routes import chat_routes
 from .db import init_db_pool, close_db_pool
 #lifespan event handler
 from contextlib import asynccontextmanager
@@ -39,6 +40,7 @@ app.add_middleware(
 app.include_router(auth_routes.router)
 app.include_router(planning_routes.router)
 app.include_router(profile_routes.router)
+app.include_router(chat_routes.router)
 
 @app.get("/")
 async def root():

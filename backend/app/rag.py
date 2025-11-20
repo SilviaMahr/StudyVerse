@@ -44,6 +44,15 @@ def retrieve_lvadata(lva):
 
     return context
 
+
+def store_prompt_into_db(prompt):
+    pass
+
+
+def store_response_into_db(response):
+    pass
+
+
 def rag_query(question, lva, ects, semester):
     """RAG: Retrieve LVA Data and generate answer"""
 
@@ -71,12 +80,18 @@ Du bist ein **hilfsbereiter und präziser Assistent**, der alle Fragen zu den fo
 
 **ANTWORT:**
 """
+    store_prompt_into_db(prompt)
+
+    model.generate_content()
 
     response = model.generate_content(
         prompt,
         # no hallus
         #temperature=0.0,
     )
+
+
+    store_response_into_db(response)
     return response.text
 
 if __name__ == "__main__":
