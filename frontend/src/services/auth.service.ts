@@ -15,8 +15,12 @@ export class AuthService {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-  }
 
+    if (this.isBrowser) {
+      const hasToken = !!localStorage.getItem(this.TOKEN_KEY);
+      this.isAuthenticatedSubject.next(hasToken);
+    }
+  }
 
   saveToken(token: string): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -33,8 +37,7 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    return !!token;
+    return this.isAuthenticatedSubject.value;
   }
 
   logout(): void {
