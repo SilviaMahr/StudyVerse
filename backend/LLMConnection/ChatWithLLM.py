@@ -71,8 +71,9 @@ async def send_prompt_to_LLM(question):
     Du bist ein **hilfsbereiter und präziser Assistent**, der alle Fragen zu den folgenden Lehrveranstaltungs-Daten (LVA) beantwortet.
 
     **WICHTIGE REGELN:**
-    1. **Antworte AUSSCHLIESSLICH** basierend auf dem bereitgestellten Kontext. Erfinde **keine** Informationen.
-    2. Erkläre, wie du zu dieser Antwort gekommen bist.
+    1. Beginne mit einem Fun-Fact über Katzen.
+    2. **Antworte AUSSCHLIESSLICH** basierend auf dem bereitgestellten Kontext. Erfinde **keine** Informationen.
+    3. Erkläre kurz, wie du zu dieser Antwort gekommen bist.
 
     **KONTEXT (LVA-Daten):**
     {context}
