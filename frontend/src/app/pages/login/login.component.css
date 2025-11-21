@@ -116,3 +116,22 @@
 .login-message.error {
   color: red;
 }
+
+.register-hint {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.register-link {
+  color: inherit;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: color 0.2s;
+}
+.register-link:hover {
+  color: var(--button-hover-bg);
+}

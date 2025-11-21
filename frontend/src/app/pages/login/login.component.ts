@@ -1,6 +1,6 @@
 import {Component, ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {ThemeService} from '../../../services/theme.service';
 import {FormsModule, NgForm} from '@angular/forms';
 import { APILoginService } from '../../../services/login/api.login.service';
@@ -10,9 +10,10 @@ import {AuthService} from '../../../services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports : [
+  imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
@@ -26,7 +27,7 @@ export class LoginComponent {
     private router: Router,
     protected themeService: ThemeService,
     private api: APILoginService,
-    private authServie: AuthService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -39,7 +40,7 @@ export class LoginComponent {
         console.log('Login erfolgreich', response);
 
         if (response && response.access_token) {
-          this.authServie.saveToken(response.access_token);
+          this.authService.saveToken(response.access_token);
           this.loginMessage = 'Login erfolgreich! Du wirst weitergeleitet ...';
           this.loginStatus = 'success';
           this.cdr.detectChanges();
