@@ -57,22 +57,27 @@ export class ChatComponent implements OnInit {
 
     this.chatService.sendMessage(userText).subscribe({
       next: (response) => {
-        console.log('LLM Response received:', response);
-        this.isLLMLoading = false;
-        this.messages.push({
-          sender: 'UNI',
-          text: response.message
-        });
+
+        setTimeout(() => {
+          console.log('LLM Response received:', response);
+          this.isLLMLoading = false;
+          this.messages.push({
+            sender: 'UNI',
+            text: response.message
+          });
+        }, 0);
       },
       error: (error) => {
-        console.error('Error sending message to LLM:', error);
-        console.error('Error status:', error.status);
-        console.error('Error message:', error.message);
-        this.isLLMLoading = false;
-        this.messages.push({
-          sender: 'UNI',
-          text: 'Entschuldigung, es gab einen Fehler bei der Verarbeitung deiner Nachricht. Bitte versuche es erneut.'
-        });
+        setTimeout(() => {
+          console.error('Error sending message to LLM:', error);
+          console.error('Error status:', error.status);
+          console.error('Error message:', error.message);
+          this.isLLMLoading = false;
+          this.messages.push({
+            sender: 'UNI',
+            text: 'Entschuldigung, es gab einen Fehler bei der Verarbeitung deiner Nachricht. Bitte versuche es erneut.'
+          });
+        },0);
       }
     });
   }
