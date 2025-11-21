@@ -15,51 +15,50 @@ def retrieve_lvadata():
     return context
 
 # ========== Database Storage ========== ##
-async def store_prompt_into_db_async(prompt, question, planning_id=None):
+async def _store_message_into_db_async(role: str, content: str, planning_id=None):
     """
-    Stores the prompt into the database asynchronously.
-    Returns the inserted chat_id.
+    Helper function to store a chat message into the database asynchronously.
+
+    Args:
+        role: The role of the message sender ('user' or 'assistant')
+        content: The message content
+        planning_id: Optional planning session ID to associate with the message
+
+    Returns:
+        The inserted chat_id or None if an error occurred
     """
     try:
         pool = await init_db_pool()
         async with pool.acquire() as conn:
-            # Store the user's question (prompt)
             chat_id = await conn.fetchval(
                 """
                 INSERT INTO chat_messages (planning_id, role, content, timestamp)
                 VALUES ($1, $2, $3, $4)
                 RETURNING id
                 """,
-                planning_id, 'user', question, datetime.utcnow()
+                planning_id, role, content, datetime.utcnow()
             )
-            print(f"✅ Prompt stored with chat_id: {chat_id}")
+            print(f"✅ {role.capitalize()} message stored with chat_id: {chat_id}")
             return chat_id
     except Exception as e:
-        print(f"❌ Error storing prompt: {e}")
+        print(f"❌ Error storing {role} message: {e}")
         return None
+
+
+async def store_question_into_db_async(question, planning_id=None):
+    """
+    Stores the user's prompt into the database asynchronously.
+    Returns the inserted chat_id.
+    """
+    return await _store_message_into_db_async('user', question, planning_id)
 
 
 async def store_response_into_db_async(response_text, planning_id=None):
     """
     Stores the LLM response into the database asynchronously.
+    Returns the inserted chat_id.
     """
-    try:
-        pool = await init_db_pool()
-        async with pool.acquire() as conn:
-            # Store the assistant's response
-            chat_id = await conn.fetchval(
-                """
-                INSERT INTO chat_messages (planning_id, role, content, timestamp)
-                VALUES ($1, $2, $3, $4)
-                RETURNING id
-                """,
-                planning_id, 'assistant', response_text, datetime.utcnow()
-            )
-            print(f"✅ Response stored with chat_id: {chat_id}")
-            return chat_id
-    except Exception as e:
-        print(f"❌ Error storing response: {e}")
-        return None
+    return await _store_message_into_db_async('assistant', response_text, planning_id)
 
 
 async def send_prompt_to_LLM(question):
@@ -71,9 +70,8 @@ async def send_prompt_to_LLM(question):
     Du bist ein **hilfsbereiter und präziser Assistent**, der alle Fragen zu den folgenden Lehrveranstaltungs-Daten (LVA) beantwortet.
 
     **WICHTIGE REGELN:**
-    1. Beginne mit einem Fun-Fact über Katzen.
-    2. **Antworte AUSSCHLIESSLICH** basierend auf dem bereitgestellten Kontext. Erfinde **keine** Informationen.
-    3. Erkläre kurz, wie du zu dieser Antwort gekommen bist.
+    1. **Antworte AUSSCHLIESSLICH** basierend auf dem bereitgestellten Kontext. Erfinde **keine** Informationen.
+    2. Erkläre kurz, wie du zu dieser Antwort gekommen bist.
 
     **KONTEXT (LVA-Daten):**
     {context}
