@@ -1,0 +1,120 @@
+<div class="register-container">
+
+  @if (step === 'account') {
+    <div class="auth-card fade-in">
+      <div class="auth-header">
+        <h2>Account erstellen</h2>
+        <p>Erstelle dein Profil, um deine Studienplanung zu starten.</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()">
+
+        <div class="form-group">
+          <label for="username">Benutzername</label>
+          <input id="username" type="text" formControlName="username" class="data-field" placeholder="Dein Name">
+          @if (registerForm.get('username')?.touched && registerForm.get('username')?.invalid) {
+            <div class="validation-hint">
+              Name ist erforderlich.
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Adresse</label>
+          <input id="email" type="email" formControlName="email" class="data-field" placeholder="k12345678@students.jku.at">
+          @if (registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+            <div class="validation-hint">
+              Gültige Email erforderlich.
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="password">Passwort</label>
+          <input id="password" type="password" formControlName="password" class="data-field" placeholder="Mindestens 6 Zeichen">
+          @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+            <div class="validation-hint">
+              Passwort muss mind. 6 Zeichen lang sein.
+            </div>
+          }
+        </div>
+
+        @if (error) {
+          <div class="error-banner">
+            {{ error }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="registerForm.invalid || isLoading" class="save-button full-width">
+            @if (isLoading) {
+              <span>Verarbeite...</span>
+            } @else {
+              <span>Weiter zur Fachauswahl</span>
+            }
+          </button>
+        </div>
+
+        <div class="auth-footer">
+          <p>Bereits registriert? <a routerLink="/login">Zum Login</a></p>
+        </div>
+      </form>
+    </div>
+  }
+
+
+  @if (step === 'lvas') {
+    <div class="auth-card wide-card fade-in">
+      <div class="auth-header">
+        <h2>Fast geschafft! 🎉</h2>
+        <p>Wähle Fächer aus, die du <strong>bereits bestanden</strong> hast. <br>Diese werden bei der Planung automatisch ausgeschlossen.</p>
+      </div>
+
+      <div class="lva-selection-container">
+
+        @for (module of availableModules; track module.module_name) {
+          <div class="module-group">
+            <h3 class="module-title">{{ module.module_name }}</h3>
+
+            <div class="lva-grid">
+              @for (lva of module.lvas; track lva.id) {
+                <div class="lva-card"
+                     [class.selected]="selectedLvas.includes(lva.id)"
+                     (click)="toggleLva(lva.id)">
+
+                  <div class="checkbox-indicator">
+                    @if (selectedLvas.includes(lva.id)) {
+                      <span>✓</span>
+                    }
+                  </div>
+
+                  <div class="lva-details">
+                    <span class="lva-name">{{ lva.name }}</span>
+                    <span class="lva-type">{{ lva.type }} | {{ lva.ects }} ECTS</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (availableModules.length === 0) {
+          <div class="empty-state">
+            <p>Lade Kursdaten...</p>
+          </div>
+        }
+
+      </div>
+
+      <div class="button-group right-aligned">
+        <button (click)="finishRegistration()" class="secondary-button">
+          Überspringen
+        </button>
+        <button (click)="finishRegistration()" class="save-button">
+          Speichern & Fertig
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

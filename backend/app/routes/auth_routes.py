@@ -5,25 +5,26 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from ..auth import verify_password, create_access_token, hash_password
 from ..db import init_db_pool
+from ..models import UserRegister
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
 
-''' Register is nice to have - maybe include or otherwise delete later in MS4
+''' Register is nice to have - maybe include or otherwise delete later in MS4 '''
 
 @router.post("/register")
-async def register(email: str, password: str):
+async def register(user_data: UserRegister):
     pool = await init_db_pool()
     async with pool.acquire() as conn:
-        user = await conn.fetchrow("SELECT * FROM users WHERE email = $1", email)
+        user = await conn.fetchrow("SELECT * FROM users WHERE email = $1", user_data.email)
         if user:
             raise HTTPException(status_code=400, detail="User already exists")
-        hashed = hash_password(password)
-        await conn.execute("INSERT INTO users (email, password) VALUES ($1, $2)", email, hashed)
+        hashed = hash_password(user_data.password)
+        await conn.execute("INSERT INTO users (email, password) VALUES ($1, $2)", user_data.email, hashed)
     return {"message": "User registered successfully"}
-'''
+
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     pool = await init_db_pool()

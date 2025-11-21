@@ -93,6 +93,11 @@ class ChatHistoryResponse(BaseModel):
     messages: List[ChatMessage]
     total: int
 
+class UserRegister(BaseModel):
+    username: str
+    email: str
+    password: str
+    studiengang: str ="Bachelor Wirtschaftsinformatik"
 # ========== Profile models ==========
 
 #user data
