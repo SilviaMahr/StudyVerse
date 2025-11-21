@@ -2,14 +2,13 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import List
 from langchain.schema import Document
 import re
+import os
 from html2text import HTML2Text
 from data_ingestion.extractor import (load_curriculum_data,
                                       extract_lva_metadata,
                                       extract_metadata_from_sm,
                                       extract_lva_metadata_from_manual)
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-model = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
 def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(
@@ -91,18 +90,26 @@ def enrich_metadata(data: Document) -> Document:
     return data
 
 
-def process_documents(documents: List[Document]) -> List[Document]:
+def process_documents(documents: List[Document], model) -> (List[Document], List[List[float]]):
     chunks = split_pages_into_chunks(documents)
 
-    processed_data = []
+    processed_chunks = []
+    chunks_text = []
 
-    for data in chunks:
-        enriched_data = enrich_metadata(data)
-        processed_data.append(enriched_data)
+    for chunk in chunks:
+        enriched_chunk = enrich_metadata(chunk)
+        processed_chunks.append(enriched_chunk)
 
-    print(f"--> {len(processed_data)} verarbeitete Chunks bereit für Vektorisierung.")
-    return processed_data
+        chunks_text.append(enriched_chunk.page_content)
 
+    try:
+        embeddings = model.embed_documents(chunks_text)
+    except Exception as e:
+        print(f"FATALER FEHLER bei der Vektorisierung: {e}")
+        return [], []
+
+    print(f"--> {len(processed_chunks)} verarbeitete Chunks bereit.")
+    return processed_chunks, embeddings
 
 def html_to_text(html):
     converter = HTML2Text()
@@ -130,11 +137,7 @@ def chunk_text_with_metadata(text, metadata):
     return chunks_with_meta
 
 
-def embed_chunks(chunks):
-    return EMBEDDER.encode(chunks, convert_to_numpy=True)
-
-
-def process_html_page(kusss_html, sm_html, semester):
+def process_html_page(kusss_html, sm_html, semester, model):
     kusss_metadata = extract_lva_metadata(kusss_html, semester)
     sm_metadata = extract_metadata_from_sm(sm_html)
     kusss_metadata.update(sm_metadata)
@@ -142,27 +145,27 @@ def process_html_page(kusss_html, sm_html, semester):
     text = html_to_text(subject_html)
     chunks = chunk_text_with_metadata(text, kusss_metadata)
     chunks_text = [c["text"] for c in chunks]
-    embeddings = model.embed_document(chunks_text)
+    embeddings = model.embed_documents(chunks_text)
     for i, c in enumerate(chunks_text):
        c["embedding"] = embeddings[i]
     return chunks
 
 
-def process_sm_html(sm_html):
+def process_sm_html(sm_html, model):
     sm_metadata = extract_lva_metadata_from_manual(sm_html)
     text = html_to_text(sm_html)
     chunks = chunk_text_with_metadata(text, sm_metadata)
     chunks_text = [c["text"] for c in chunks]
-    embeddings = model.embed_query(chunks_text)
+    embeddings = model.embed_documents(chunks_text)
     for i, c in enumerate(chunks_text):
         c["embedding"] = embeddings[i]
     return chunks
 
 
-def process_main_page(html):
+def process_main_page(html, model):
     text = html_to_text(html)
     chunks = chunk_text(text)
-    embeddings = model.embed_query(chunks)
+    embeddings = model.embed_documents(chunks)
     for i, c in enumerate(chunks):
         c["embedding"] = embeddings[i]
     return chunks

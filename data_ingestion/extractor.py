@@ -9,6 +9,7 @@ from playwright.sync_api import Playwright, sync_playwright
 from typing import Optional, Dict, Any
 
 CURRICULUM_PDF_PATH = "../docs/1193_17_BS_Wirtschaftsinformatik.pdf"
+CURRICULUM_URL = "https://studienhandbuch.jku.at/texte/1193_17_BS_Wirtschaftsinformatik.pdf"
 DOMAIN_BASE = "https://studienhandbuch.jku.at/"
 STUDIENHANDBUCH_URL = DOMAIN_BASE + "curr/1193?id=1193&lang=de"
 KUSSS_BASE_URL = "https://kusss.jku.at/kusss/"
@@ -64,7 +65,7 @@ def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document
 
 
 def load_curriculum_data() -> List[Document]:
-    return load_pages_from_pdf(CURRICULUM_PDF_PATH)
+    return load_pages_from_pdf(CURRICULUM_PDF_PATH), CURRICULUM_URL
 
 
 def fetch_content_from_div(url: str) -> Optional[str]:
