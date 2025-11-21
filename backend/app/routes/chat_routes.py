@@ -65,17 +65,79 @@ async def send_chat_message(
     Stores both the user message and LLM response in the database.
     """
     print(f"📩 Received chat message from {user_email}: {request.message}")
+    print(f"Planning ID: {planning_id}")
+
+    pool = await init_db_pool()
+
     try:
+        # Verify planning_id exists and belongs to user if provided
+        if planning_id is not None:
+            async with pool.acquire() as conn:
+                planning_exists = await conn.fetchval(
+                    """
+                    SELECT EXISTS(
+                        SELECT 1 FROM plannings
+                        WHERE id = $1 AND user_email = $2
+                    )
+                    """,
+                    planning_id,
+                    user_email
+                )
+
+                if not planning_exists:
+                    raise HTTPException(status_code=404, detail="Planning not found or access denied")
+
+        # Save user message to database
+        timestamp = datetime.utcnow()
+        user_message_id = None
+
+        if planning_id is not None:
+            async with pool.acquire() as conn:
+                user_message_id = await conn.fetchval(
+                    """
+                    INSERT INTO chat_messages (planning_id, role, content, timestamp)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING id
+                    """,
+                    planning_id,
+                    'user',
+                    request.message,
+                    timestamp
+                )
+                print(f"💾 Saved user message with ID: {user_message_id}")
+
         # Call the LLM with the user's message
         print("🔄 Calling LLM...")
         llm_response = await send_prompt_to_LLM(request.message)
         print(f"✅ LLM response received: {llm_response[:100]}...")
 
+        # Save assistant response to database
+        assistant_message_id = None
+
+        if planning_id is not None:
+            async with pool.acquire() as conn:
+                assistant_message_id = await conn.fetchval(
+                    """
+                    INSERT INTO chat_messages (planning_id, role, content, timestamp)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING id
+                    """,
+                    planning_id,
+                    'assistant',
+                    llm_response,
+                    datetime.utcnow()
+                )
+                print(f"💾 Saved assistant message with ID: {assistant_message_id}")
+
         return {
             "success": True,
             "message": llm_response,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": timestamp.isoformat(),
+            "user_message_id": user_message_id,
+            "assistant_message_id": assistant_message_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"❌ Error in send_chat_message: {e}")
         import traceback

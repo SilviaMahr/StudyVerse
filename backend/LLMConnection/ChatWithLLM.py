@@ -83,14 +83,14 @@ async def send_prompt_to_LLM(question):
     **ANTWORT:**
     """
     print(prompt)
-    await store_prompt_into_db_async(prompt, question)
+    # Note: Database storage is now handled by chat_routes.py to ensure planning_id is included
 
     response = model.generate_content(
         prompt,
         generation_config={"temperature": 0.1}
     )
 
-    await store_response_into_db_async(response.text)
+    # Note: Database storage is now handled by chat_routes.py to ensure planning_id is included
     return response.text
 
 
