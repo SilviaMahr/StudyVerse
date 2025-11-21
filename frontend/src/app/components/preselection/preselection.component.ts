@@ -89,15 +89,6 @@ export class PreselectionComponent {
         console.log('Planung erfolgreich gesendet!', response);
         this.successMessage = "Planung wurde erfolgreich übermittelt";
 
-        //TODO: implement when backend logic is implemented
-       /* this.preselectionService.startRag(response.id).subscribe({
-          next: (ragResponse: any) => {
-            console.log('RAG-Analyse gestartet!', ragResponse);
-            this.successMessage = "Planung erstellt und Analyse gestartet!";
-            this.router.navigate(['/plan', response.id]);
-          }
-        })*/
-
         setTimeout(() => {
           this.successMessage = null;
           this.router.navigate(['/plan', response.id])
