@@ -1,22 +1,16 @@
-/* Container füllt den Screen (minus Sidebar theoretisch, aber hier meist Fullscreen oder zentriert) */
 .register-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Oben ausgerichtet mit etwas Abstand */
+  align-items: flex-start;
   padding-top: 5vh;
   min-height: 100vh;
   width: 100%;
   box-sizing: border-box;
   color: white;
-  /* Optional: Falls du keinen globalen Hintergrund hast */
-  /* background-color: #1a1a1a; */
 }
 
-/* Die Karte ("Glassmorphism") */
 .auth-card {
   background-color: var(--sidebar-bg, #2c3e50); /* Fallback Farbe falls Variable fehlt */
-  /* Alternativ transparenter: background-color: rgba(40, 44, 52, 0.95); */
-
   padding: 2rem 2.5rem;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -26,10 +20,9 @@
 }
 
 .wide-card {
-  max-width: 900px; /* Breiter für die LVA Liste */
+  max-width: 900px;
 }
 
-/* Animation beim Wechsel */
 .fade-in {
   animation: fadeIn 0.4s ease-out;
 }
@@ -39,7 +32,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Header Bereich */
+
 .auth-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -58,7 +51,7 @@
   line-height: 1.4;
 }
 
-/* Formular Styles */
+
 .form-group {
   margin-bottom: 1.2rem;
   display: flex;
@@ -73,7 +66,7 @@
   margin-left: 2px;
 }
 
-/* Wiederverwendung deiner .data-field Klasse */
+
 .data-field {
   padding: 0.75rem;
   border-radius: 4px;
@@ -86,11 +79,11 @@
 
 .data-field:focus {
   outline: none;
-  border-color: #c93a40; /* Fokus in deiner Akzentfarbe */
+  border-color: #c93a40;
 }
 
 .validation-hint {
-  color: #ff6b6b;
+  color: #ff9999;
   font-size: 0.8rem;
   margin-top: 2px;
 }
@@ -106,7 +99,7 @@
   text-align: center;
 }
 
-/* Buttons */
+
 .form-actions {
   margin-top: 1.5rem;
 }
@@ -174,15 +167,13 @@
   cursor: pointer;
 }
 
-/* --- Schritt 2: LVA Liste --- */
 
 .lva-selection-container {
-  max-height: 55vh; /* Damit es auf kleinen Screens scrollbar ist */
+  max-height: 55vh;
   overflow-y: auto;
-  padding-right: 10px; /* Platz für Scrollbar */
+  padding-right: 10px;
 }
 
-/* Scrollbar Customization (optional, für Webkit Browser) */
 .lva-selection-container::-webkit-scrollbar {
   width: 8px;
 }
