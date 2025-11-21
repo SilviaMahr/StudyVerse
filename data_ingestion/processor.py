@@ -2,11 +2,13 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import List
 from langchain.schema import Document
 import re
+import os
 from html2text import HTML2Text
-from data_ingestion.extractor import load_curriculum_data, extract_lva_metadata, extract_metadata_from_sm, extract_lva_metadata_from_manual
-#from sentence_transformer import SentenceTransformer
+from data_ingestion.extractor import (load_curriculum_data,
+                                      extract_lva_metadata,
+                                      extract_metadata_from_sm,
+                                      extract_lva_metadata_from_manual)
 
-#EMBEDDER = SentenceTransformer('sentence-transformer/all-mpnet-base-v2')
 
 def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(
@@ -45,72 +47,6 @@ def get_lecture_details(content: str) -> dict:
     return details
 
 
-def get_study_start_mode(content: str) -> str:
-    if "mit Beginn im Wintersemester" in content:
-        return 'Start_WS'
-    elif "mit Beginn im Sommersemester" in content:
-        return 'Start_SS'
-
-    # Fallback: über die 1. Semester-Angabe bestimmen
-    sem_match = re.search(r'1\.\s*Semester\s*\((?P<ws_ss>WS|SS)\)', content)
-    if sem_match:
-        return f'Start_{sem_match.group("ws_ss")}'
-
-    return 'Start_Unknown'
-
-
-def get_ideal_plans(data: Document) -> List[dict]:
-    content = data.page_content
-    plans = []
-
-    study_start = get_study_start_mode(data.page_content)
-    study_mode = 'unknown'
-    if "Vollzeit" in content:
-        study_mode = 'full_time'
-    elif "Teilzeit" in content:
-        study_mode = 'part_time'
-
-    semester_match = re.search(r'(?P<sem_num>\d+)\.\s*Semester\s*\((?P<ws_ss>WS|SS)\)', content)
-    if semester_match:
-        semester_type = semester_match.group('ws_ss')
-        semester_num = int(semester_match.group('sem_num'))
-    else:
-        return []  # Chunk enthält kein klarer Semester-Plan-Teil
-
-    lva_matches = re.findall(
-        r'(?P<lva_name>[A-ZÄÖÜa-zäöüß\s,-/()]+?)\s{1,2}(?P<ects>\d{1,2})\s*$',
-        content,
-        re.MULTILINE
-    )
-
-    # print(f"[DEBUG] RegEx fand {len(lva_matches)} mögliche LVA-Matches.")
-    # print(f"[DEBUG] Erste 5 Matches: {lva_matches[:5]}")
-
-    for name, ects_val in lva_matches:
-        name = name.strip()
-
-        # alles andere ignorieren
-        if "Summe" in name or "Semester" in name or "ECTS" in name or name.isspace() or not name:
-            continue
-
-        try:
-            ects = int(ects_val)
-        except ValueError:
-            continue
-
-        plans.append({
-            'study_start_mode': study_start, # Beginn mit WS oder SS für gesammten Plan
-            'study_mode': study_mode, # Vollzeit, Teilzeit
-            'semester_type': semester_type, # WS oder SS im Plan
-            'semester_num': semester_num, # 1-9
-            'lva_name': name,
-            'ects': ects,
-            'retrieval_type': 'ideal_plan_sequence'
-        })
-
-    return plans
-
-
 def enrich_metadata(data: Document) -> Document:
     content = data.page_content
 
@@ -129,24 +65,6 @@ def enrich_metadata(data: Document) -> Document:
     data.metadata.update(extracted_details)
 
     source_file = data.metadata.get('source_file', '')
-
-    # für Priorisierung und Semesterzuweisung
-    if 'idealtypischerStudienverlauf.pdf' in source_file:
-        data.metadata['retrieval_type'] = 'ideal_plan_sequence'
-        plan_details = get_ideal_plans(data)
-
-        if plan_details:
-            first_lva = plan_details[0]
-            data.metadata['semester_type'] = first_lva['semester_type']
-            data.metadata['semester_num'] = first_lva['semester_num']
-
-            start_mode = first_lva['study_start_mode']
-            if start_mode != 'Start_Unknown':
-                data.metadata['study_start_mode'] = start_mode
-
-            study_mode = first_lva['study_mode']
-            if study_mode != 'unknown':
-                data.metadata['study_mode'] = study_mode
 
     if '1193_17_BS_Wirtschaftsinformatik.pdf' in source_file:
         # Pflichtfächer
@@ -169,28 +87,29 @@ def enrich_metadata(data: Document) -> Document:
         if '§ 9 Freie Studienleistungen' in content:
             data.metadata['retrieval_type'] = 'free_electives'
 
-    # Voraussetzungsketten
-    if 'Anmeldevoraussetzungen' in content:
-        data.metadata['retrieval_type'] = 'prerequisite_lva'
-
-    # Prüfen, ob eine LVA/ein Modul identifiziert wurde
-    data.metadata['has_lva_code'] = 'lva_code' in data.metadata
-
     return data
 
 
-def process_documents(documents: List[Document]) -> List[Document]:
+def process_documents(documents: List[Document], model) -> (List[Document], List[List[float]]):
     chunks = split_pages_into_chunks(documents)
 
-    processed_data = []
+    processed_chunks = []
+    chunks_text = []
 
-    for data in chunks:
-        enriched_data = enrich_metadata(data)
-        processed_data.append(enriched_data)
+    for chunk in chunks:
+        enriched_chunk = enrich_metadata(chunk)
+        processed_chunks.append(enriched_chunk)
 
-    print(f"--> {len(processed_data)} verarbeitete Chunks bereit für Vektorisierung.")
-    return processed_data
+        chunks_text.append(enriched_chunk.page_content)
 
+    try:
+        embeddings = model.embed_documents(chunks_text)
+    except Exception as e:
+        print(f"FATALER FEHLER bei der Vektorisierung: {e}")
+        return [], []
+
+    print(f"--> {len(processed_chunks)} verarbeitete Chunks bereit.")
+    return processed_chunks, embeddings
 
 def html_to_text(html):
     converter = HTML2Text()
@@ -218,11 +137,7 @@ def chunk_text_with_metadata(text, metadata):
     return chunks_with_meta
 
 
-def embed_chunks(chunks):
-    return EMBEDDER.encode(chunks, convert_to_numpy=True)
-
-
-def process_html_page(kusss_html, sm_html, semester):
+def process_html_page(kusss_html, sm_html, semester, model):
     kusss_metadata = extract_lva_metadata(kusss_html, semester)
     sm_metadata = extract_metadata_from_sm(sm_html)
     kusss_metadata.update(sm_metadata)
@@ -230,27 +145,29 @@ def process_html_page(kusss_html, sm_html, semester):
     text = html_to_text(subject_html)
     chunks = chunk_text_with_metadata(text, kusss_metadata)
     chunks_text = [c["text"] for c in chunks]
-    #embeddings = embed_chunks(chunks_text)
-    #for i, c in enumerate(chunks):
-     #   c["embedding"] = embeddings[i]
+    embeddings = model.embed_documents(chunks_text)
+    for i, c in enumerate(chunks_text):
+       c["embedding"] = embeddings[i]
     return chunks
 
 
-def process_sm_html(sm_html):
+def process_sm_html(sm_html, model):
     sm_metadata = extract_lva_metadata_from_manual(sm_html)
     text = html_to_text(sm_html)
     chunks = chunk_text_with_metadata(text, sm_metadata)
     chunks_text = [c["text"] for c in chunks]
-    # embeddings = embed_chunks(chunks_text)
-    # for i, c in enumerate(chunks):
-    #   c["embedding"] = embeddings[i]
+    embeddings = model.embed_documents(chunks_text)
+    for i, c in enumerate(chunks_text):
+        c["embedding"] = embeddings[i]
     return chunks
 
 
-def process_main_page(html):
+def process_main_page(html, model):
     text = html_to_text(html)
     chunks = chunk_text(text)
-    #embeddings = embed_chunks(chunks)
+    embeddings = model.embed_documents(chunks)
+    for i, c in enumerate(chunks):
+        c["embedding"] = embeddings[i]
     return chunks
 
 
