@@ -21,6 +21,7 @@ export class ChatComponent implements OnInit {
   currentMessage: string = '';
 
   isLLMLoading: boolean = false;
+  currentPlanningId: number | null = null;
 
   constructor(
     private planningState: PlanningStateService,
@@ -31,6 +32,14 @@ export class ChatComponent implements OnInit {
     this.messages.push({
       sender: 'UNI',
       text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+    });
+
+    // Subscribe to current planning to get the planning ID
+    this.planningState.planning$.subscribe({
+      next: (planning) => {
+        this.currentPlanningId = planning?.id ?? null;
+        console.log('Current planning ID:', this.currentPlanningId);
+      }
     });
   }
 
@@ -54,8 +63,9 @@ export class ChatComponent implements OnInit {
 
   private sendMessageToLLM(userText: string): void {
     console.log('Sending message to LLM:', userText);
+    console.log('With planning ID:', this.currentPlanningId);
 
-    this.chatService.sendMessage(userText).subscribe({
+    this.chatService.sendMessage(userText, this.currentPlanningId ?? undefined).subscribe({
       next: (response) => {
 
         setTimeout(() => {
