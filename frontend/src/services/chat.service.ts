@@ -2,29 +2,12 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {AuthService} from './auth.service';
 import {Observable, timeout} from 'rxjs';
-
-export interface ChatSendRequest {
-  message: string;
-}
-
-export interface ChatSendResponse {
-  success: boolean;
-  message: string;
-  timestamp: string;
-}
-
-export interface ChatHistoryResponse {
-  planning_id: number;
-  messages: ChatMessageModel[];
-  total: number;
-}
-
-export interface ChatMessageModel {
-  id: number;
-  role: string;  // 'user' or 'assistant'
-  content: string;
-  timestamp: string;
-}
+import {
+  ChatSendRequest,
+  ChatSendResponse,
+  ChatHistoryResponse,
+  ChatMessage
+} from '../app/models/chat.model';
 
 @Injectable({
   providedIn: 'root'
