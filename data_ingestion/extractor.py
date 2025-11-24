@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader, UnstructuredURLLoader
 from typing import List, Set
-from langchain.schema import Document
+from langchain_core.documents import Document
 import re
 import requests
 from bs4 import BeautifulSoup

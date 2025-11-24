@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from typing import List
-from langchain.schema import Document
+from langchain_core.documents import Document
 import data_ingestion.extractor as extractor
 import data_ingestion.processor as processor
 from langchain_community.vectorstores.pgvector import PGVector
