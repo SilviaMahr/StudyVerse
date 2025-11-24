@@ -13,12 +13,13 @@ from .query_parser import (
     build_metadata_filter,
     extract_completed_lvas,
     LVA_ALIASES,
-    WEEKDAY_MAPPING,
 )
 
 from .hybrid_retriever import HybridRetriever
 
 from .semester_planner import SemesterPlanner
+
+from .ideal_plan_loader import IdealPlanLoader
 
 from .rag_pipeline import StudyPlanningRAG
 
@@ -29,13 +30,15 @@ __all__ = [
     "build_metadata_filter",
     "extract_completed_lvas",
     "LVA_ALIASES",
-    "WEEKDAY_MAPPING",
 
     # Retriever
     "HybridRetriever",
 
     # Planner
     "SemesterPlanner",
+
+    # Ideal Plan
+    "IdealPlanLoader",
 
     # Pipeline
     "StudyPlanningRAG",

@@ -7,6 +7,7 @@ import os
 import google.generativeai as genai
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
+from .ideal_plan_loader import IdealPlanLoader
 
 load_dotenv()
 
@@ -27,6 +28,10 @@ class SemesterPlanner:
 
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name="gemini-2.0-flash-exp")
+
+        # Load ideal study plan for LLM context
+        self.ideal_plan_loader = IdealPlanLoader()
+        self.ideal_plan_context = self.ideal_plan_loader.format_ideal_plan_for_llm()
 
     def create_semester_plan(
         self,
@@ -68,7 +73,7 @@ class SemesterPlanner:
         try:
             response = self.model.generate_content(
                 prompt,
-                generation_config={"temperature": 0.3}  # Etwas kreativ, aber konsistent
+                generation_config={"temperature": 0.3}
             )
             return response.text
 
@@ -122,6 +127,8 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
 
         prompt = f"""Du bist ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
+{self.ideal_plan_context}
+
 **USER-ANFRAGE:**
 {user_query}
 
@@ -141,6 +148,7 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
    - Keine zeitlichen Überschneidungen haben
    - Voraussetzungen erfüllen (bereits absolvierte LVAs beachten!)
    - Gewünschte LVAs priorisieren
+   - Den idealtypischen Studienverlauf berücksichtigen (welche LVAs werden typischerweise in welchem Semester empfohlen?)
 
 2. **Prüfe Voraussetzungen**:
    - Wenn eine LVA Voraussetzungen hat, prüfe ob diese erfüllt sind
@@ -207,7 +215,7 @@ Hier ist dein Plan für das [Semester] mit [X] ECTS. Deine Uni-Tage sind [Tage]:
         try:
             response = self.model.generate_content(
                 prompt,
-                generation_config={"temperature": 0.1}  # Sehr faktisch
+                generation_config={"temperature": 0.1}
             )
             return response.text
 

@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Any
 # Mapping für LVA-Aliase (Soft1, Soft2, etc.)
 LVA_ALIASES = {
     "soft1": ["Einführung in die Softwareentwicklung"],
+    "esoft": ["Einführung in die Softwareentwicklung"],
     "soft2": ["Vertiefung Softwareentwicklung"],
     "algo" : ["Algorithmen und Datenstrukturen"],
     "algodat" : ["Algorithmen und Datenstrukturen"],
@@ -19,21 +20,8 @@ LVA_ALIASES = {
     "dke": ["Data and Knowledge Engineering"],
 }
 
-# Mapping für Wochentage
-WEEKDAY_MAPPING = {
-    "mo": "Mo.",
-    "montag": "Mo.",
-    "di": "Di.",
-    "dienstag": "Di.",
-    "mi": "Mi.",
-    "mittwoch": "Mi.",
-    "do": "Do.",
-    "donnerstag": "Do.",
-    "fr": "Fr.",
-    "freitag": "Fr.",
-}
-
-# Semester-Patterns
+# Semester-Patterns (für Freitext-Parsing als Fallback)
+# Normalerweise kommen Semester-Werte direkt vom Frontend
 SEMESTER_PATTERNS = {
     r"SS\s*\d{2}": "SS",  # SS26, SS 26
     r"WS\s*\d{2}": "WS",  # WS25, WS 25
@@ -78,9 +66,22 @@ def parse_user_query(query: str) -> Dict[str, Any]:
             result["semester"] = semester_code
             break
 
-    # 3. Wochentage extrahieren
-    for day_variant, day_code in WEEKDAY_MAPPING.items():
-        if day_variant in query_lower:
+    # 3. Wochentage extrahieren (nur als Fallback, Frontend liefert normalerweise direkt)
+    # Die Werte kommen vom Frontend bereits formatiert als ["Mo.", "Di.", etc.]
+    day_patterns = {
+        r"\bmo\.?\b": "Mo.",
+        r"\bdi\.?\b": "Di.",
+        r"\bmi\.?\b": "Mi.",
+        r"\bdo\.?\b": "Do.",
+        r"\bfr\.?\b": "Fr.",
+        r"montag": "Mo.",
+        r"dienstag": "Di.",
+        r"mittwoch": "Mi.",
+        r"donnerstag": "Do.",
+        r"freitag": "Fr.",
+    }
+    for pattern, day_code in day_patterns.items():
+        if re.search(pattern, query_lower):
             if day_code not in result["preferred_days"]:
                 result["preferred_days"].append(day_code)
 
