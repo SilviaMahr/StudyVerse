@@ -4,9 +4,9 @@ End-to-End Pipeline für Studienplanung.
 """
 
 from typing import Dict, List, Any, Optional
-from backend.app.query_parser import parse_user_query, build_metadata_filter, extract_completed_lvas
-from backend.app.retrieval import HybridRetriever
-from backend.app.semester_planner import SemesterPlanner
+from .query_parser import parse_user_query, build_metadata_filter, extract_completed_lvas
+from .hybrid_retriever import HybridRetriever
+from .semester_planner import SemesterPlanner
 
 
 class StudyPlanningRAG:

@@ -6,7 +6,7 @@ Testet Query Parsing, Retrieval und Semester Planning
 import sys
 sys.path.append(".")
 
-from backend.app.integrated_rag import StudyPlanningRAG
+from backend.app.retrieval import StudyPlanningRAG
 
 
 def test_semester_planning():

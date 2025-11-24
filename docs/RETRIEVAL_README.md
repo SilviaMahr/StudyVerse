@@ -24,7 +24,9 @@ Semester Plan (formatiert)
 
 ## Komponenten
 
-### 1. Query Parser (`backend/app/query_parser.py`)
+Alle Retrieval-Komponenten befinden sich im Package `backend/app/retrieval/`:
+
+### 1. Query Parser (`backend/app/retrieval/query_parser.py`)
 
 **Funktionen:**
 - `parse_user_query(query)` - Extrahiert ECTS, Semester, Tage, gewünschte LVAs
@@ -33,7 +35,7 @@ Semester Plan (formatiert)
 
 **Beispiel:**
 ```python
-from backend.app.query_parser import parse_user_query
+from backend.app.retrieval import parse_user_query
 
 query = "15 ECTS im SS26, Montag und Mittwoch, ich möchte SOFT1 machen"
 parsed = parse_user_query(query)
@@ -48,7 +50,7 @@ parsed = parse_user_query(query)
 # }
 ```
 
-### 2. Hybrid Retriever (`backend/app/retrieval.py`)
+### 2. Hybrid Retriever (`backend/app/retrieval/hybrid_retriever.py`)
 
 **Klasse:** `HybridRetriever`
 
@@ -85,7 +87,7 @@ results = retriever.retrieve(
 - `$and` - Logisches UND
 - `$or` - Logisches ODER
 
-### 3. Semester Planner (`backend/app/semester_planner.py`)
+### 3. Semester Planner (`backend/app/retrieval/semester_planner.py`)
 
 **Klasse:** `SemesterPlanner`
 
@@ -95,7 +97,7 @@ results = retriever.retrieve(
 
 **Beispiel:**
 ```python
-from backend.app.semester_planner import SemesterPlanner
+from backend.app.retrieval import SemesterPlanner
 
 planner = SemesterPlanner()
 
@@ -109,7 +111,7 @@ plan = planner.create_semester_plan(
 )
 ```
 
-### 4. Integriertes RAG-System (`backend/app/integrated_rag.py`)
+### 4. Integriertes RAG-System (`backend/app/retrieval/rag_pipeline.py`)
 
 **Klasse:** `StudyPlanningRAG`
 
@@ -122,7 +124,7 @@ plan = planner.create_semester_plan(
 
 **Beispiel:**
 ```python
-from backend.app.integrated_rag import StudyPlanningRAG
+from backend.app.retrieval import StudyPlanningRAG
 
 rag = StudyPlanningRAG()
 
@@ -157,32 +159,31 @@ Das Test-Skript testet:
 
 ```bash
 # Query Parser testen
-python backend/app/query_parser.py
+python -m backend.app.retrieval.query_parser
 
 # Retriever testen
-python backend/app/retrieval.py
+python -m backend.app.retrieval.hybrid_retriever
 
 # Planner testen
-python backend/app/semester_planner.py
+python -m backend.app.retrieval.semester_planner
 
 # Komplettes System testen
-python backend/app/integrated_rag.py
+python -m backend.app.retrieval.rag_pipeline
 ```
 
 ## LVA-Aliase
 
 Häufige Abkürzungen werden automatisch erkannt:
 
-| Alias | Voller Name |
-|-------|-------------|
-| SOFT1 | Einführung in die Softwareentwicklung |
+| Alias | Voller Name                                                     |
+|-------|-----------------------------------------------------------------|
+| SOFT1 | Einführung in die Softwareentwicklung                           |
 | SOFT2 | Vertiefung Softwareentwicklung, Algorithmen und Datenstrukturen |
-| EWIN | Einführung in die Wirtschaftsinformatik |
-| BWL | Betriebswirtschaftslehre |
-| DM | Datenmanagement |
-| BS | Betriebssysteme |
+| EWIN  | Einführung in die Wirtschaftsinformatik                         |
+| BWL   | Betriebswirtschaftslehre                                        |
+| DM    | Datenmaodellierung                                              |
 
-Neue Aliase können in `backend/app/query_parser.py` hinzugefügt werden.
+Neue Aliase können in `backend/app/retrieval/query_parser.py` hinzugefügt werden.
 
 ## Integration ins Backend
 
@@ -190,7 +191,7 @@ Das RAG-System kann einfach in FastAPI-Endpoints integriert werden:
 
 ```python
 from fastapi import APIRouter
-from backend.app.integrated_rag import StudyPlanningRAG
+from backend.app.retrieval import StudyPlanningRAG
 
 router = APIRouter()
 rag = StudyPlanningRAG()
