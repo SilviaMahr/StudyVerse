@@ -9,14 +9,14 @@ from typing import Dict, List, Optional, Any
 
 # Mapping für LVA-Aliase (Soft1, Soft2, etc.)
 LVA_ALIASES = {
-    "soft1": ["Einführung in die Softwareentwicklung", "256.100", "256.101"],
-    "soft2": ["Vertiefung Softwareentwicklung", "Algorithmen und Datenstrukturen"],
-    "ewin": ["Einführung in die Wirtschaftsinformatik", "256.200"],
-    "bwl": ["Betriebswirtschaftslehre", "BWL"],
-    "bwl2": ["Betriebswirtschaftslehre 2", "BWL 2"],
-    "dm": ["Datenmanagement"],
-    "bs": ["Betriebssysteme"],
-    "stat": ["Statistik"],
+    "soft1": ["Einführung in die Softwareentwicklung"],
+    "soft2": ["Vertiefung Softwareentwicklung"],
+    "algo" : ["Algorithmen und Datenstrukturen"],
+    "algodat" : ["Algorithmen und Datenstrukturen"],
+    "ewin": ["Einführung in die Wirtschaftsinformatik"],
+    "bwl": ["Betriebswirtschaftslehre"],
+    "dm": ["Datenmodellierung"],
+    "dke": ["Data and Knowledge Engineering"],
 }
 
 # Mapping für Wochentage
