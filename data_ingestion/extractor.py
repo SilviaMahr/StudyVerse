@@ -8,7 +8,10 @@ from urllib.parse import urljoin, urlparse
 from playwright.sync_api import Playwright, sync_playwright
 from typing import Optional, Dict, Any
 
-CURRICULUM_PDF_PATH = "../docs/1193_17_BS_Wirtschaftsinformatik.pdf"
+import os as _os
+# Get the project root directory (parent of data_ingestion folder)
+_PROJECT_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+CURRICULUM_PDF_PATH = _os.path.join(_PROJECT_ROOT, "docs", "1193_17_BS_Wirtschaftsinformatik.pdf")
 CURRICULUM_URL = "https://studienhandbuch.jku.at/texte/1193_17_BS_Wirtschaftsinformatik.pdf"
 DOMAIN_BASE = "https://studienhandbuch.jku.at/"
 STUDIENHANDBUCH_URL = DOMAIN_BASE + "curr/1193?id=1193&lang=de"
@@ -64,7 +67,7 @@ def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document
     return embedded_links
 
 
-def load_curriculum_data() -> List[Document]:
+def load_curriculum_data():
     return load_pages_from_pdf(CURRICULUM_PDF_PATH), CURRICULUM_URL
 
 
@@ -433,7 +436,7 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
 
 # Test
 if __name__ == "__main__":
-    all_docs = load_curriculum_data()
+    all_docs, curriculum_url = load_curriculum_data()
     if all_docs:
         print("\nDokumentauszug Test:")
         print(f"Content: {all_docs[0].page_content[:1000]}...")

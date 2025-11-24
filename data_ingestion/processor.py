@@ -145,9 +145,13 @@ def process_html_page(kusss_html, sm_html, semester, model):
     text = html_to_text(subject_html)
     chunks = chunk_text_with_metadata(text, kusss_metadata)
     chunks_text = [c["text"] for c in chunks]
-    embeddings = model.embed_documents(chunks_text)
-    for i, c in enumerate(chunks_text):
-       c["embedding"] = embeddings[i]
+    try:
+        embeddings = model.embed_documents(chunks_text)
+        for i, chunk in enumerate(chunks):
+            chunk["embedding"] = embeddings[i]
+    except Exception as e:
+        print(f"FATALER FEHLER bei der Vektorisierung: {e}")
+        return []
     return chunks
 
 
@@ -156,18 +160,31 @@ def process_sm_html(sm_html, model):
     text = html_to_text(sm_html)
     chunks = chunk_text_with_metadata(text, sm_metadata)
     chunks_text = [c["text"] for c in chunks]
-    embeddings = model.embed_documents(chunks_text)
-    for i, c in enumerate(chunks_text):
-        c["embedding"] = embeddings[i]
+    try:
+        embeddings = model.embed_documents(chunks_text)
+        for i, chunk in enumerate(chunks):
+            chunk["embedding"] = embeddings[i]
+    except Exception as e:
+        print(f"FATALER FEHLER bei der Vektorisierung: {e}")
+        return []
     return chunks
 
 
 def process_main_page(html, model):
     text = html_to_text(html)
-    chunks = chunk_text(text)
-    embeddings = model.embed_documents(chunks)
-    for i, c in enumerate(chunks):
-        c["embedding"] = embeddings[i]
+    chunks_text = chunk_text(text)
+    try:
+        embeddings = model.embed_documents(chunks_text)
+        chunks = []
+        for i, text_chunk in enumerate(chunks_text):
+            chunks.append({
+                "text": text_chunk,
+                "metadata": {},
+                "embedding": embeddings[i]
+            })
+    except Exception as e:
+        print(f"FATALER FEHLER bei der Vektorisierung: {e}")
+        return []
     return chunks
 
 

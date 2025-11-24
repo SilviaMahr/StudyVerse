@@ -9,18 +9,23 @@ import psycopg2
 import psycopg2.extras
 import json
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+import data_ingestion.extractor as extractor
+
 
 load_dotenv()
 
-GOOGLE_EMBEDDING_MODEL = "models/gemini-embedding-001"
+GOOGLE_EMBEDDING_MODEL = "models/text-embedding-004"
 GEMINI_API_KEY_VALUE = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_API_KEY_VALUE:
-    os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY_VALUE
+    os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY_VALUE
 else:
     pass
 
-model = GoogleGenerativeAIEmbeddings(model=GOOGLE_EMBEDDING_MODEL)
+model = GoogleGenerativeAIEmbeddings(
+    model=GOOGLE_EMBEDDING_MODEL,
+    google_api_key=GEMINI_API_KEY_VALUE
+)
 NEON_COLLECTION = "studymanual_data"
 
 def check_env_variables(neon_db_url: str) -> bool:
@@ -36,7 +41,7 @@ def check_env_variables(neon_db_url: str) -> bool:
 
     return is_valid
 
-def load_data_into_vector_store(chunks: List[Document], embeddings, doc_url):
+def load_data_into_vector_store(conn, chunks: List[Document], embeddings, doc_url):
     try:
         cur = conn.cursor()
 
@@ -96,7 +101,7 @@ def run_etl_pipeline():
         print("Pipeline beendet: Nach der Verarbeitung keine Chunks übrig.")
         return
 
-    load_data_into_vector_store(processed_curriculum_chunks, curriculum_embeddings, doc_url)
+    load_data_into_vector_store(conn, processed_curriculum_chunks, curriculum_embeddings, doc_url)
 
 
     ### KUSSS DATA ETL

@@ -8,7 +8,6 @@ google-api-core==2.25.2
 google-api-python-client==2.184.0
 google-auth==2.41.1
 google-auth-httplib2==0.2.0
-google-generativeai==0.8.5
 google-ai-generativelanguage==0.9.0  # Required by langchain-google-genai; causes warning with google-generativeai but works in practice
 googleapis-common-protos==1.70.0
 grpcio==1.75.1
