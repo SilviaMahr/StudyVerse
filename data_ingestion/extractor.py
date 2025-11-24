@@ -64,7 +64,7 @@ def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document
     return embedded_links
 
 
-def load_curriculum_data() -> List[Document]:
+def load_curriculum_data():
     return load_pages_from_pdf(CURRICULUM_PDF_PATH), CURRICULUM_URL
 
 
@@ -433,7 +433,7 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
 
 # Test
 if __name__ == "__main__":
-    all_docs = load_curriculum_data()
+    all_docs, curriculum_url = load_curriculum_data()
     if all_docs:
         print("\nDokumentauszug Test:")
         print(f"Content: {all_docs[0].page_content[:1000]}...")
