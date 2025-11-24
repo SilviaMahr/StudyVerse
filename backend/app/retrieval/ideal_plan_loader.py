@@ -37,7 +37,7 @@ class IdealPlanLoader:
             cur.execute("""
                 SELECT *
                 FROM ideal_study_plan
-                ORDER BY semester_num, lva_code
+                ORDER BY semester_num, lva_name
             """)
 
             columns = [desc[0] for desc in cur.description]
@@ -84,12 +84,11 @@ class IdealPlanLoader:
             lvas = by_semester[semester]
 
             for lva in lvas:
-                lva_code = lva.get('lva_code', 'N/A')
                 lva_name = lva.get('lva_name', 'N/A')
                 ects = lva.get('ects', 'N/A')
-                lva_type = lva.get('lva_type', 'N/A')
+                semester_type = lva.get('semester_type', 'N/A')
 
-                formatted += f"  - {lva_code}: {lva_name} ({lva_type}) - {ects} ECTS\n"
+                formatted += f"  - {lva_name} ({semester_type}) - {ects} ECTS\n"
 
             formatted += "\n"
 
