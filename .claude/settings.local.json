@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -m backend.app.retrieval.ideal_plan_loader:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}

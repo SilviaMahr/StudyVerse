@@ -72,7 +72,7 @@ def test_question_answering():
     test_questions = [
         "Muss ich in Softwareentwicklung eine Klausur schreiben?",
         "Wer unterrichtet Betriebssysteme?",
-        "Wie viele ECTS hat Datenmanagement?",
+        "Wie viele ECTS hat Datenmodellierung?",
     ]
 
     for i, question in enumerate(test_questions, 1):
@@ -101,7 +101,7 @@ def test_lva_search():
     search_terms = [
         "Softwareentwicklung",
         "BWL",
-        "Datenmanagement",
+        "Datenmodellierung",
     ]
 
     for term in search_terms:
