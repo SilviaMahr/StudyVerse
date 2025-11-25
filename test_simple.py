@@ -16,7 +16,7 @@ def test_semester_planning():
 
     rag = StudyPlanningRAG()
 
-    test_query = "Ich moechte 15 ECTS im WS25 machen, an Montag und Mittwoch. Ich moechte unbedingt SOFT1 machen."
+    test_query = "Ich moechte 15 ECTS im SS26 machen, an Montag und Mittwoch. Ich moechte unbedingt SOFT1 machen."
 
     print(f"\nQUERY: {test_query}")
     print(f"\n{'-' * 80}\n")

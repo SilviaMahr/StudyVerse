@@ -129,6 +129,12 @@ def run_etl_pipeline():
         for course_url in course_links:
             # the one middle page
             subject_links = extractor.extract_links(url=course_url)
+
+            # Prüfe ob Links extrahiert wurden
+            if not subject_links or len(subject_links) < 2:
+                print(f"WARNUNG: Konnte keine Links für {course_url} extrahieren. Überspringe...")
+                continue
+
             subject_url = subject_links[0]
             study_manual_url = subject_links[1]
             subject_html = extractor.fetch_content_from_div(subject_url)
