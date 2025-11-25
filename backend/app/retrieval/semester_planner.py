@@ -153,9 +153,12 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
    - Gewünschte LVAs priorisieren
    - Den idealtypischen Studienverlauf berücksichtigen (welche LVAs werden typischerweise in welchem Semester empfohlen?)
 
-2. **Prüfe Voraussetzungen**:
-   - Wenn eine LVA Voraussetzungen hat, prüfe ob diese erfüllt sind
-   - Falls nicht erfüllt: NICHT vorschlagen und erklären warum
+2. **Prüfe Voraussetzungen GRÜNDLICH**:
+   - Nutze die DETAILLIERTEN INFORMATIONEN AUS STUDIENHANDBUCH für jede LVA
+   - Prüfe "Anmeldevoraussetzungen" UND "Erwartete Vorkenntnisse"
+   - Prüfe ob verknüpfte LVAs (z.B. VL + UE) zusammen absolviert werden müssen
+   - Falls Voraussetzungen NICHT erfüllt: NICHT vorschlagen und detailliert erklären warum
+   - Beachte Hinweise wie "Diese VL muss mit UE XYZ kombiniert werden"
 
 3. **Prüfe Zeitkonflikte**:
    - Keine zwei LVAs dürfen zur selben Zeit stattfinden
@@ -166,6 +169,7 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
    - Gesamte ECTS-Summe
    - Kurze Begründung pro LVA (warum vorgeschlagen?)
    - Hinweise zu nicht berücksichtigten gewünschten LVAs
+   - Warnungen zu fehlenden Voraussetzungen oder Verknüpfungen
 
 **OUTPUT-FORMAT:**
 Hier ist dein Plan für das [Semester] mit [X] ECTS. Deine Uni-Tage sind [Tage]:
