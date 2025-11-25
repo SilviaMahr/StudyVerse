@@ -101,7 +101,7 @@ class SemesterPlanner:
                 "Voraussetzungen": metadata.get("anmeldevoraussetzungen", "Keine"),
             }
 
-            # Format als Stichpunkte
+            # Format als Stichpunkte mit vollständigem Content
             formatted_lva = f"""
 LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
   - ECTS: {lva_info['ECTS']}
@@ -109,6 +109,9 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
   - Wochentag: {lva_info['Tag']} um {lva_info['Uhrzeit']}
   - LVA-Leiter: {lva_info['Leiter']}
   - Voraussetzungen: {lva_info['Voraussetzungen']}
+
+  DETAILLIERTE INFORMATIONEN AUS STUDIENHANDBUCH:
+  {content if content else "Keine weiteren Details verfügbar."}
 """
             formatted.append(formatted_lva.strip())
 
