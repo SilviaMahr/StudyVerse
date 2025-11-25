@@ -157,6 +157,79 @@ def extract_win_bsc_info():
     return fetch_content_from_div(WIN_ROOT_URL), WIN_ROOT_URL
 
 
+def extract_win_bsc_info_with_semester(semester: str = "WS"):
+    """
+    Extrahiert WIN BSc Daten für ein bestimmtes Semester mit Playwright.
+
+    Args:
+        semester: "WS" oder "SS"
+
+    Returns:
+        (html_content, url) tuple
+    """
+    try:
+        with sync_playwright() as p:
+            # Browser starten (headless = True für Hintergrund-Ausführung)
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+
+            # Seite laden
+            page.goto(WIN_ROOT_URL, wait_until="networkidle")
+
+            # Semester-Dropdown finden und ändern
+            # Das Dropdown hat die ID "term"
+            if semester == "SS":
+                # Warte bis Dropdown geladen ist
+                page.wait_for_selector("#term", timeout=10000)
+
+                # Hole alle Optionen aus dem Dropdown
+                options = page.locator("#term option").all()
+                ss_option_value = None
+
+                for option in options:
+                    label = option.inner_text()
+                    # Finde die Option die nur "S" enthält (Sommersemester)
+                    # z.B. "2025S" aber nicht "2025W"
+                    if "S" in label and "W" not in label:
+                        ss_option_value = option.get_attribute("value")
+                        print(f"Gefunden: SS-Option mit Label '{label}' und Value '{ss_option_value}'")
+                        break
+
+                if ss_option_value:
+                    # Wähle das SS-Semester aus
+                    page.select_option("#term", value=ss_option_value)
+
+                    # Warte kurz, damit die Seite sich aktualisiert
+                    page.wait_for_timeout(3000)
+                    page.wait_for_load_state("networkidle")
+                else:
+                    print("WARNUNG: Konnte SS-Option im Dropdown nicht finden!")
+
+            # HTML Content extrahieren (nur der contentcell div)
+            content_div = page.query_selector("td.contentcell > div.contentcell")
+            selected_option = page.query_selector("#term option[selected]")
+
+            if content_div:
+                html_content = content_div.inner_html()
+                semester_text = selected_option.inner_text() if selected_option else ""
+
+                combined_html = (
+                    "<div class='semester-tobe-planned'>" + semester_text + "</div>\n" +
+                    html_content
+                )
+
+                browser.close()
+                return combined_html, WIN_ROOT_URL
+            else:
+                print("ERROR: Could not find content div")
+                browser.close()
+                return None, WIN_ROOT_URL
+
+    except Exception as e:
+        print(f"ERROR extracting with Playwright: {e}")
+        return None, WIN_ROOT_URL
+
+
 def extract_semester_info(html):
     soup = BeautifulSoup(html, 'html.parser')
     div_element = soup.select_one("div.semester-tobe-planned")
