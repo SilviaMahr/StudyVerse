@@ -130,7 +130,7 @@ class HybridRetriever:
         Args:
             query: User query für semantische Suche
             metadata_filter: Filter-Dict für Metadaten (Semester, Tage, etc.)
-            top_k: Anzahl der Top-Ergebnisse
+            top_k: Anzahl der Top-Ergebnisse (unique LVAs)
 
         Returns:
             Liste von LVA-Dictionaries mit content, metadata, similarity
@@ -159,8 +159,11 @@ class HybridRetriever:
             LIMIT %s
         """
 
-        # Parameters: [query_embedding, ...metadata_params..., query_embedding, top_k]
-        final_params = [query_embedding] + params + [query_embedding, top_k]
+        # Hole mehr Chunks (top_k * 20) um genug unique LVAs zu bekommen
+        fetch_limit = top_k * 20
+
+        # Parameters: [query_embedding, ...metadata_params..., query_embedding, fetch_limit]
+        final_params = [query_embedding] + params + [query_embedding, fetch_limit]
 
         # 3. Query ausführen
         try:
@@ -170,20 +173,36 @@ class HybridRetriever:
             cur.execute(base_query, final_params)
             rows = cur.fetchall()
 
-            results = []
+            # 4. Duplikate entfernen (basierend auf lva_nr)
+            # Behalte nur den besten (ersten) Chunk pro LVA
+            seen_lvas = set()
+            unique_results = []
+
             for row in rows:
-                results.append({
-                    "id": row[0],
-                    "content": row[1],
-                    "metadata": row[2],
-                    "url": row[3],
-                    "similarity": float(row[4]) if row[4] else 0.0,
-                })
+                metadata = row[2]
+                lva_nr = metadata.get("lva_nr")
+
+                # Wenn lva_nr nicht existiert, trotzdem aufnehmen (z.B. Curriculum-Chunks)
+                if lva_nr is None or lva_nr not in seen_lvas:
+                    if lva_nr:
+                        seen_lvas.add(lva_nr)
+
+                    unique_results.append({
+                        "id": row[0],
+                        "content": row[1],
+                        "metadata": metadata,
+                        "url": row[3],
+                        "similarity": float(row[4]) if row[4] else 0.0,
+                    })
+
+                    # Stop wenn wir genug unique LVAs haben
+                    if len(unique_results) >= top_k:
+                        break
 
             cur.close()
             conn.close()
 
-            return results
+            return unique_results
 
         except Exception as e:
             print(f"Error during retrieval: {e}")
