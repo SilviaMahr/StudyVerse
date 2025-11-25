@@ -27,6 +27,14 @@ class SemesterPlanner:
             raise ValueError("GEMINI_API_KEY not set")
 
         genai.configure(api_key=api_key)
+
+        # ============================================================================
+        # TODO: Talk as a team which Gemini model should be used
+        # Currently using gemini-2.0-flash-exp (only model available with this API key)
+        # NOTE: This model has strict free-tier limits (15 requests/min, 1500/day)
+        # If you hit quota errors during testing, wait ~15 seconds between runs
+        # Other models (gemini-1.5-flash, gemini-1.5-pro) return 404 with this API key
+        # ============================================================================
         self.model = genai.GenerativeModel(model_name="gemini-2.0-flash-exp")
 
         # Load ideal study plan for LLM context
