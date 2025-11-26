@@ -30,16 +30,22 @@ export class ChatComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.messages.push({
-      sender: 'UNI',
-      text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
-    });
-
-    // Subscribe to current planning to get the planning ID
+    // Subscribe to current planning to get the planning ID and load chat history
     this.planningState.planning$.subscribe({
       next: (planning) => {
         this.currentPlanningId = planning?.id ?? null;
         console.log('Current planning ID:', this.currentPlanningId);
+
+        // Load chat history when planning ID is available
+        if (this.currentPlanningId !== null) {
+          this.loadChatHistory(this.currentPlanningId);
+        } else {
+          // Show welcome message if no planning ID
+          this.messages = [{
+            sender: 'UNI',
+            text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+          }];
+        }
       }
     });
   }
@@ -86,6 +92,41 @@ export class ChatComponent implements OnInit {
             text: 'Entschuldigung, es gab einen Fehler bei der Verarbeitung deiner Nachricht. Bitte versuche es erneut.'
           });
           this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadChatHistory(planningId: number): void {
+    console.log('Loading chat history for planning ID:', planningId);
+
+    this.chatService.getChatHistory(planningId).subscribe({
+      next: (response) => {
+        console.log('Chat history loaded:', response);
+
+        // Convert API messages to component format
+        this.messages = response.messages.map(msg => ({
+          sender: msg.role === 'user' ? 'user' : 'UNI',
+          text: msg.content
+        }));
+
+        // If no messages exist, show welcome message
+        if (this.messages.length === 0) {
+          this.messages.push({
+            sender: 'UNI',
+            text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+          });
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading chat history:', error);
+        // Show welcome message on error
+        this.messages = [{
+          sender: 'UNI',
+          text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+        }];
+        this.cdr.detectChanges();
       }
     });
   }
