@@ -1,6 +1,6 @@
 import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
-import {AfterViewChecked, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {PlanningStateService} from '../../../services/planning-state.service';
 import {ChatService} from '../../../services/chat.service';
 
@@ -16,14 +16,13 @@ interface ChatMessage {
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit, AfterViewChecked {
+export class ChatComponent implements OnInit{
   messages: ChatMessage[] = [];
   currentMessage: string = '';
 
   isLLMLoading: boolean = false;
   isLoadingHistory: boolean = false;
   currentPlanningId: number | null = null;
-  shouldScroll: boolean = false;
 
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
@@ -50,14 +49,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
         console.log('Current planning ID:', this.currentPlanningId);
       }
     });
-    this.scrollToBottom();
-  }
-
-  ngAfterViewChecked() {
-    if (this.shouldScroll) {
-      this.scrollToBottom();
-      this.shouldScroll = false;
-    }
   }
 
   onSendMessage(chatForm: NgForm): void{
@@ -69,7 +60,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     };
 
     this.messages.push(userMessage);
-    this.shouldScroll = true;
+    this.cdr.detectChanges();
+    this.scrollToBottom();
 
     // Send message to LLM
     this.isLLMLoading = true;
@@ -77,9 +69,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     // OLD CODE: this.addDummyLLMResponse(chatForm.value.message);
 
     chatForm.reset();
-
-    this.cdr.detectChanges();
-    this.scrollToBottom();
   }
 
   private sendMessageToLLM(userText: string): void {
@@ -97,6 +86,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
           this.cdr.detectChanges();
           this.scrollToBottom();
       },
+
       error: (error) => {
           console.error('Error sending message to LLM:', error);
           console.error('Error status:', error.status);
@@ -132,21 +122,12 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       next: (response) => {
         console.log('Chat history loaded:', response);
 
-        const welcomeMessage: ChatMessage = {
-          sender: 'UNI',
-          text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
-        };
+        let historyMessages: ChatMessage[] = response.messages.map(msg => ({
+          sender: msg.role === 'user' ? 'user' : 'UNI',
+          text: msg.content
+        }));
 
-        let historyMessages: ChatMessage[] = [];
-        if (response.messages && response.messages.length > 0) {
-          historyMessages = response.messages.map(msg => ({
-            sender: msg.role === 'user' ? 'user' : 'UNI',
-            text: msg.content
-          }));
-        }
-
-        this.messages = [welcomeMessage, ...historyMessages];
-        this.shouldScroll = true;
+        this.messages = historyMessages;
 
         this.isLoadingHistory = false;
         this.cdr.detectChanges();
@@ -155,18 +136,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       error: (err) => {
         console.error('Error loading chat history:', err);
         this.isLoadingHistory = false;
-
-        this.addWelcomeMessage();
-        this.cdr.detectChanges();
-        this.scrollToBottom();
       }
-    });
-  }
-
-  private addWelcomeMessage(): void {
-    this.messages.push({
-      sender: 'UNI',
-      text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
     });
   }
 
@@ -176,8 +146,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
   private scrollToBottom(): void {
     try {
-      const container = this.scrollContainer.nativeElement;
-      container.scrollTop = container.scrollHeight;
+      setTimeout(() => {
+        const container = this.scrollContainer.nativeElement;
+        container.scrollTop = container.scrollHeight;
+      },10);
     } catch (err) {
       console.error('Scroll error', err);
     }
