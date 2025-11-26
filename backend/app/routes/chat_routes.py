@@ -152,6 +152,8 @@ async def get_chat_history(
     user_email: str = Depends(get_current_user_email)
 ):
     """
+    Retrieves the chat history for a specific planning session.
+    If no message exists yet, automatically creates the initial welcome message.
     Retrieves the complete chat history for a specific planning session.
     Returns up to 100 messages.
     """
@@ -172,6 +174,21 @@ async def get_chat_history(
 
         if not planning_exists:
             raise HTTPException(status_code=404, detail="Planning not found or access denied")
+
+        existing_count = await conn.fetchval(
+            "SELECT COUNT(*) FROM chat_messages WHERE planning_id = $1",
+            planning_id
+        )
+
+        if existing_count ==0:
+            await conn.execute(
+                """
+                INSERT INTO chat_messages(planning_id, role, content, timestamp)
+                VALUES ($1, 'assistant', $2, NOW())
+                """,
+                planning_id,
+                "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+            )
 
         # Get chat messages
         rows = await conn.fetch(

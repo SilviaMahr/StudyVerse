@@ -1,6 +1,6 @@
 import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {PlanningStateService} from '../../../services/planning-state.service';
 import {ChatService} from '../../../services/chat.service';
 
@@ -16,12 +16,15 @@ interface ChatMessage {
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit{
   messages: ChatMessage[] = [];
   currentMessage: string = '';
 
   isLLMLoading: boolean = false;
+  isLoadingHistory: boolean = false;
   currentPlanningId: number | null = null;
+
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
   constructor(
     private planningState: PlanningStateService,
@@ -33,7 +36,17 @@ export class ChatComponent implements OnInit {
     // Subscribe to current planning to get the planning ID and load chat history
     this.planningState.planning$.subscribe({
       next: (planning) => {
-        this.currentPlanningId = planning?.id ?? null;
+        const newPlanningId = planning?.id ?? null;
+
+        if (newPlanningId && newPlanningId !== this.currentPlanningId) {
+          this.currentPlanningId = newPlanningId;
+          this.loadChatHistory(this.currentPlanningId);
+        } else if (newPlanningId) {
+          this.currentPlanningId = newPlanningId;
+          if (this.messages.length === 0) {
+            this.loadChatHistory(newPlanningId);
+          }
+        }
         console.log('Current planning ID:', this.currentPlanningId);
 
         // Load chat history when planning ID is available
@@ -59,6 +72,8 @@ export class ChatComponent implements OnInit {
     };
 
     this.messages.push(userMessage);
+    this.cdr.detectChanges();
+    this.scrollToBottom();
 
     // Send message to LLM
     this.isLLMLoading = true;
@@ -81,7 +96,9 @@ export class ChatComponent implements OnInit {
             text: response.message
           });
           this.cdr.detectChanges();
+          this.scrollToBottom();
       },
+
       error: (error) => {
           console.error('Error sending message to LLM:', error);
           console.error('Error status:', error.status);
@@ -92,6 +109,7 @@ export class ChatComponent implements OnInit {
             text: 'Entschuldigung, es gab einen Fehler bei der Verarbeitung deiner Nachricht. Bitte versuche es erneut.'
           });
           this.cdr.detectChanges();
+          this.scrollToBottom();
       }
     });
   }
@@ -142,7 +160,45 @@ export class ChatComponent implements OnInit {
   //   }, 500);
   // }
 
+  private loadChatHistory(planningId: number): void {
+    this.isLoadingHistory = true;
+
+    this.messages = [];
+
+    this.chatService.getChatHistory(planningId).subscribe({
+      next: (response) => {
+        console.log('Chat history loaded:', response);
+
+        let historyMessages: ChatMessage[] = response.messages.map(msg => ({
+          sender: msg.role === 'user' ? 'user' : 'UNI',
+          text: msg.content
+        }));
+
+        this.messages = historyMessages;
+
+        this.isLoadingHistory = false;
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+      },
+      error: (err) => {
+        console.error('Error loading chat history:', err);
+        this.isLoadingHistory = false;
+      }
+    });
+  }
+
   closeChat(): void {
     this.planningState.closeChat();
+  }
+
+  private scrollToBottom(): void {
+    try {
+      setTimeout(() => {
+        const container = this.scrollContainer.nativeElement;
+        container.scrollTop = container.scrollHeight;
+      },10);
+    } catch (err) {
+      console.error('Scroll error', err);
+    }
   }
 }

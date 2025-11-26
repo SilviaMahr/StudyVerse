@@ -5,7 +5,7 @@
     <button (click)="closeChat()" class="close-btn" title="Chat schließen">&times;</button>
   </header>
 
-  <div class="chat-history">
+  <div class="chat-history" #scrollContainer>
     @for (msg of messages; track $index) {
 
       <!-- messages from user -->
