@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {SidebarComponent} from '../../components/sidebar/sidebar.component';
 import {PreselectionComponent} from '../../components/preselection/preselection.component';
@@ -18,7 +18,10 @@ import {ProfileService} from '../../../services/profile.service';
 export class LandingComponent implements OnInit {
   username: string | undefined;
   isLoading: boolean = true;
-  constructor(private profileService: ProfileService) {
+  constructor(
+    private profileService: ProfileService,
+    private cdr: ChangeDetectorRef
+  ) {
 
   }
 
@@ -32,10 +35,11 @@ export class LandingComponent implements OnInit {
         this.username = profile.username;
         this.isLoading = false;
         console.log(this.username)
+
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Konnte Profil nicht laden', err);
-        this.username = '';
         this.isLoading = false;
         console.log("Das hat nicht funktioniert")
       }

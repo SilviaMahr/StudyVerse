@@ -1,6 +1,6 @@
 import {CommonModule} from '@angular/common';
 import {FormsModule, NgForm} from '@angular/forms';
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {PlanningStateService} from '../../../services/planning-state.service';
 import {ChatService} from '../../../services/chat.service';
 
@@ -25,7 +25,8 @@ export class ChatComponent implements OnInit {
 
   constructor(
     private planningState: PlanningStateService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -67,18 +68,15 @@ export class ChatComponent implements OnInit {
 
     this.chatService.sendMessage(userText, this.currentPlanningId ?? undefined).subscribe({
       next: (response) => {
-
-        setTimeout(() => {
           console.log('LLM Response received:', response);
           this.isLLMLoading = false;
           this.messages.push({
             sender: 'UNI',
             text: response.message
           });
-        }, 0);
+          this.cdr.detectChanges();
       },
       error: (error) => {
-        setTimeout(() => {
           console.error('Error sending message to LLM:', error);
           console.error('Error status:', error.status);
           console.error('Error message:', error.message);
@@ -87,7 +85,7 @@ export class ChatComponent implements OnInit {
             sender: 'UNI',
             text: 'Entschuldigung, es gab einen Fehler bei der Verarbeitung deiner Nachricht. Bitte versuche es erneut.'
           });
-        },0);
+          this.cdr.detectChanges();
       }
     });
   }
