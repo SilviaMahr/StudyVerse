@@ -148,11 +148,12 @@ async def send_chat_message(
 @router.get("/history/{planning_id}", response_model=ChatHistoryResponse)
 async def get_chat_history(
     planning_id: int,
-    limit: int = 50,
+    limit: int = 100,
     user_email: str = Depends(get_current_user_email)
 ):
     """
-    Retrieves the chat history for a specific planning session.
+    Retrieves the complete chat history for a specific planning session.
+    Returns up to 100 messages.
     """
     pool = await init_db_pool()
 
