@@ -1,6 +1,5 @@
 """
-Query Parser: Extrahiert strukturierte Informationen aus User Queries
-Wandelt natürlichsprachliche Eingaben in Filter-Dictionaries um.
+Extract user query information and transfers it into filter-dictionaries
 """
 
 import re
@@ -31,19 +30,15 @@ SEMESTER_PATTERNS = {
 
 def parse_user_query(query: str) -> Dict[str, Any]:
     """
-    Parsed eine User Query und extrahiert:
-    - ECTS-Ziel
+    paring and extracting the following information:
+    - ECTS
     - Semester (SS/WS)
-    - Bevorzugte Tage
-    - Gewünschte LVAs
-    - Freitext für semantische Suche
-
-    Args:
-        query: Natürlichsprachliche User-Anfrage
-
-    Returns:
-        Dictionary mit parsed parameters
+    - preferred days
+    - desired lvas (free text)
+    - Free text für semantic search
+    returns dictionary with parsed params
     """
+
     query_lower = query.lower()
 
     result = {
@@ -51,22 +46,21 @@ def parse_user_query(query: str) -> Dict[str, Any]:
         "semester": None,
         "preferred_days": [],
         "desired_lvas": [],
-        "free_text": query,  # Originaler Text für semantische Suche
+        "free_text": query,
     }
 
-    # 1. ECTS extrahieren
+    # 1. extract ECTS
     ects_match = re.search(r"(\d{1,2})\s*ects", query_lower)
     if ects_match:
         result["ects_target"] = int(ects_match.group(1))
 
-    # 2. Semester extrahieren
+    # 2. extract semester
     for pattern, semester_code in SEMESTER_PATTERNS.items():
         if re.search(pattern, query, re.IGNORECASE):
             result["semester"] = semester_code
             break
 
-    # 3. Wochentage extrahieren (nur als Fallback, Frontend liefert normalerweise direkt)
-    # Die Werte kommen vom Frontend bereits formatiert als ["Mo.", "Di.", etc.]
+    # 3. extract weekdays
     day_patterns = {
         r"\bmo\.?\b": "Mo.",
         r"\bdi\.?\b": "Di.",
@@ -84,30 +78,26 @@ def parse_user_query(query: str) -> Dict[str, Any]:
             if day_code not in result["preferred_days"]:
                 result["preferred_days"].append(day_code)
 
-    # 4. LVA-Aliase matchen
+    # 4. match aliases (if necessary)
     for alias, lva_names in LVA_ALIASES.items():
         if alias in query_lower:
             result["desired_lvas"].extend(lva_names)
 
     return result
 
-
+#TODO over engineered - is also in hybrid retriever, I don´t remember why I
+#chose this redundancy. But for now, everything works - I will keep it - if bugs
+#occure rethink it!
 def build_metadata_filter(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Erstellt ein Metadata-Filter-Dictionary für pgvector
-    basierend auf der parsed query.
-
-    Args:
-        parsed_query: Output von parse_user_query()
-
-    Returns:
-        Filter-Dictionary für vector search
+    Creates meta-data filter based on user query
+    returns filter dictionary
     """
     filter_conditions = []
 
-    # 1. Semester-Filter
+    # 1. filter semester
     if parsed_query["semester"]:
-        # Suche nach LVAs die entweder im gewünschten Semester ODER ganzjährig angeboten werden
+        # only lvas happening in the chosen semester or in both eg (SS, SS+WS, not WS)
         semester_filter = {
             "$or": [
                 {"semester": {"$eq": parsed_query["semester"]}},
@@ -116,21 +106,21 @@ def build_metadata_filter(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
         }
         filter_conditions.append(semester_filter)
 
-    # 2. Tage-Filter (wenn Tage angegeben wurden)
+    # 2.filter days
     if parsed_query["preferred_days"]:
         days_filter = {
             "tag": {"$in": parsed_query["preferred_days"]}
         }
         filter_conditions.append(days_filter)
 
-    # 3. ECTS-Filter (optional: filtere nur LVAs mit <= target ECTS)
+    # 3. ects - lva must have less ects than target
     if parsed_query["ects_target"]:
         ects_filter = {
             "ects": {"$lte": parsed_query["ects_target"]}
         }
         filter_conditions.append(ects_filter)
 
-    # Kombiniere alle Filter mit AND
+    # combine and use and filter condition
     if filter_conditions:
         if len(filter_conditions) == 1:
             return filter_conditions[0]
@@ -142,20 +132,13 @@ def build_metadata_filter(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
 
 def extract_completed_lvas(user_input: str) -> List[str]:
     """
-    Extrahiert bereits absolvierte LVAs aus User Input.
-
-    Args:
-        user_input: Text mit bereits absolvierten LVAs
-
-    Returns:
-        Liste von LVA-Namen/Codes
+    db query to retrieve completed_lvas for user
     """
     completed = []
 
-    # Pattern: "absolviert: EWIN, SOFT1, BWL"
-    absolviert_match = re.search(r"absolviert[e]?:?\s*([^.]+)", user_input, re.IGNORECASE)
-    if absolviert_match:
-        lva_string = absolviert_match.group(1)
+    completed_match = re.search(r"absolviert[e]?:?\s*([^.]+)", user_input, re.IGNORECASE)
+    if completed_match:
+        lva_string = completed_match.group(1)
         # Split by comma or "und"
         lvas = re.split(r",\s*|und\s+", lva_string)
         for lva in lvas:
