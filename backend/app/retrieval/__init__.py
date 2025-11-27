@@ -11,7 +11,6 @@ Komponenten:
 from .query_parser import (
     parse_user_query,
     build_metadata_filter,
-    extract_completed_lvas,
     LVA_ALIASES,
 )
 
@@ -28,7 +27,6 @@ __all__ = [
     # Query Parser
     "parse_user_query",
     "build_metadata_filter",
-    "extract_completed_lvas",
     "LVA_ALIASES",
 
     # Retriever

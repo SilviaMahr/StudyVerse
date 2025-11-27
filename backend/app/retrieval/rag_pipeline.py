@@ -4,7 +4,7 @@ End-to-End Pipeline für Studienplanung.
 """
 
 from typing import Dict, List, Any, Optional
-from .query_parser import parse_user_query, build_metadata_filter, extract_completed_lvas
+from .query_parser import parse_user_query, build_metadata_filter
 from .hybrid_retriever import HybridRetriever
 from .semester_planner import SemesterPlanner
 
@@ -22,24 +22,28 @@ class StudyPlanningRAG:
         self.planner = SemesterPlanner()
 
     def create_semester_plan(
-        self,
-        user_query: str,
-        top_k: int = 20,
+            self,
+            user_query: str,
+            user_id: int,
+            top_k: int = 20,
     ) -> Dict[str, Any]:
         """
-        Hauptfunktion: Erstellt einen Semesterplan aus natürlichsprachlicher Query.
+        Main function: Creates a semester plan from natural language query.
 
         Args:
-            user_query: Natürlichsprachliche User-Anfrage
-            top_k: Anzahl LVAs für Retrieval
+            user_query: Natural language user query
+            user_id: User ID to fetch completed LVAs from database
+            top_k: Number of LVAs for retrieval
 
         Returns:
-            Dictionary mit Plan, retrieved LVAs und Debug-Info
+            Dictionary with plan, retrieved LVAs and debug info
         """
         # 1. Parse User Query
         print("1. Parsing User Query...")
         parsed_query = parse_user_query(user_query)
-        completed_lvas = extract_completed_lvas(user_query)
+
+        # 2. Fetch completed LVAs from database
+        completed_lvas = self.retriever.get_completed_lvas_for_user(user_id)
 
         print(f"   ECTS-Ziel: {parsed_query['ects_target']}")
         print(f"   Semester: {parsed_query['semester']}")
@@ -47,12 +51,12 @@ class StudyPlanningRAG:
         print(f"   Gewünschte LVAs: {parsed_query['desired_lvas']}")
         print(f"   Absolvierte LVAs: {completed_lvas}")
 
-        # 2. Build Metadata Filter
+        # 3. Build Metadata Filter
         print("\n2. Building Metadata Filter...")
         metadata_filter = build_metadata_filter(parsed_query)
         print(f"   Filter: {metadata_filter}")
 
-        # 3. Hybrid Retrieval
+        # 4. Hybrid Retrieval
         print("\n3. Performing Hybrid Retrieval...")
         retrieved_lvas = self.retriever.retrieve(
             query=parsed_query["free_text"],
@@ -61,18 +65,18 @@ class StudyPlanningRAG:
         )
         print(f"   Retrieved {len(retrieved_lvas)} LVAs")
 
-        # 4. LLM Planning
+        # 5. LLM Planning
         print("\n4. Generating Semester Plan...")
         semester_plan = self.planner.create_semester_plan(
             user_query=user_query,
             retrieved_lvas=retrieved_lvas,
-            ects_target=parsed_query["ects_target"] or 15,  # Default 15 ECTS
+            ects_target=parsed_query["ects_target"] or 15,
             preferred_days=parsed_query["preferred_days"],
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query["desired_lvas"],
         )
 
-        # 5. Return Results
+        # 6. Return Results
         return {
             "plan": semester_plan,
             "retrieved_lvas": retrieved_lvas,
@@ -146,7 +150,7 @@ if __name__ == "__main__":
         print(f"USER QUERY: {query}")
         print("="*60)
 
-        result = rag.create_semester_plan(query)
+        result = rag.create_semester_plan(query, user_id =1)
 
         print("\n" + "="*60)
         print("SEMESTER PLAN:")

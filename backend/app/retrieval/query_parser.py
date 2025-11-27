@@ -85,7 +85,7 @@ def parse_user_query(query: str) -> Dict[str, Any]:
 
     return result
 
-#TODO over engineered - is also in hybrid retriever, I don´t remember why I
+#TODO mayvbe over engineered - is also in hybrid retriever (differntly), I don´t remember why I
 #chose this redundancy. But for now, everything works - I will keep it - if bugs
 #occure rethink it!
 def build_metadata_filter(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
