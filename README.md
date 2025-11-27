@@ -9,3 +9,8 @@ Kontext: JKU-Webseite, Studienhandbuch, Curricula, …
   
 [Figma Prototyp](https://www.figma.com/design/uTokxSX0O6d765v8ZwYtTI/STUDYverse-aktuell?node-id=66-916&p=f&t=iqx1N1wW5LkpCcbu-0)  
 [weekly - Dienstags 14:00](https://jku.zoom.us/j/92197402897?pwd=41cmjlSR6S64oAqpvEmRWyhW36d75D.1)  
+
+Start backend
+```
+uvicorn backend.app.main:app --reload
+```
