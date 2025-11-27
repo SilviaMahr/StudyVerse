@@ -13,17 +13,15 @@ from ..auth import JWT_SECRET, JWT_ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
 from ..retrieval.rag_pipeline import StudyPlanningRAG
 
-# OAuth2 for session management
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-# All endpoints in this router need a valid token
 router = APIRouter(
     prefix="/rag",
     tags=["RAG"],
     dependencies=[Depends(oauth2_scheme)]
 )
 
-# Initialize RAG system
 rag_system = StudyPlanningRAG()
 
 # ========== Helper Functions ==========
