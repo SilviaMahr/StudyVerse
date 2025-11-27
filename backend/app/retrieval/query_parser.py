@@ -130,27 +130,6 @@ def build_metadata_filter(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
     return {}
 
 
-def extract_completed_lvas(user_input: str) -> List[str]:
-    """
-    db query to retrieve completed_lvas for user
-    """
-    completed = []
-
-    completed_match = re.search(r"absolviert[e]?:?\s*([^.]+)", user_input, re.IGNORECASE)
-    if completed_match:
-        lva_string = completed_match.group(1)
-        # Split by comma or "und"
-        lvas = re.split(r",\s*|und\s+", lva_string)
-        for lva in lvas:
-            lva = lva.strip().lower()
-            if lva in LVA_ALIASES:
-                completed.extend(LVA_ALIASES[lva])
-            else:
-                completed.append(lva)
-
-    return completed
-
-
 # Test
 if __name__ == "__main__":
     test_queries = [
