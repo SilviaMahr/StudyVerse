@@ -125,8 +125,10 @@ class HybridRetriever:
         self,
         query: str,
         metadata_filter: Optional[Dict[str, Any]] = None,
-        top_k: int = 15,
+        top_k: int = 20,
     ) -> List[Dict[str, Any]]:
+        #TODO Check if top k none would make sense, try out later when LLM is ready to go
+
         """
         Haupt-Retrieval-Funktion: Hybrid Search
 
@@ -138,10 +140,10 @@ class HybridRetriever:
         Returns:
             Liste von LVA-Dictionaries mit content, metadata, similarity
         """
-        # 1. Query Embedding generieren
+        # 1. generate emedding from user query
         query_embedding = self.embedding_model.embed_query(query)
 
-        # 2. SQL Query mit Metadata-Filter + Vector Similarity
+        # 2. generate query from metadata filter and embedding (hybrid - metadata + similarity)
         where_clause, params = self._build_metadata_sql_filter(metadata_filter or {})
 
         base_query = """
@@ -150,10 +152,10 @@ class HybridRetriever:
                 content,
                 metadata,
                 url,
-                1 - (embedding <=> %s::vector) AS similarity
+                1 - (embedding <=> %s::vector) AS similarity  
             FROM studyverse_data
         """
-
+                #similarty = 1 - distance
         if where_clause:
             base_query += f" WHERE {where_clause}"
 
@@ -162,10 +164,15 @@ class HybridRetriever:
             LIMIT %s
         """
 
-        # Hole mehr Chunks (top_k * 20) um genug unique LVAs zu bekommen
-        fetch_limit = top_k * 20
+        # if top k is limited to eg. 15 best lvas - then generate more lvas to provide the llm
+        #with more context, if we chose none, do nothing other then get the retrieved lvas
+        if top_k is not None:
+            fetch_limit = top_k * 20
+        else:
+            fetch_limit = None
 
-        # Parameters: [query_embedding, ...metadata_params..., query_embedding, fetch_limit]
+
+# Parameters: [query_embedding, ...metadata_params..., query_embedding, fetch_limit]
         final_params = [query_embedding] + params + [query_embedding, fetch_limit]
 
         # 3. Query ausführen
