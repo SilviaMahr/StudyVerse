@@ -6,7 +6,7 @@ End-to-End Pipeline für Studienplanung.
 from typing import Dict, List, Any, Optional
 from .query_parser import parse_user_query, build_metadata_filter
 from .hybrid_retriever import HybridRetriever
-from .semester_planner import SemesterPlanner
+from ..llm_connection.semester_planner import SemesterPlanner
 
 
 class StudyPlanningRAG:
