@@ -260,3 +260,33 @@ class HybridRetriever:
             print(f"Error during LVA name search: {e}")
             return []
 
+    def get_completed_lvas_for_user(self, user_id: int) -> List[str]:
+        """
+        Gets all completed LVA names for a user from the database.
+        Returns a l ist of completed LVA names (e.g., ["Einführung in die Softwareentwicklung", "BWL"])
+        """
+        try:
+            conn = psycopg2.connect(self.db_url)
+            cur = conn.cursor()
+
+            query = """
+                    SELECT l.name, l.ects, l.hierarchielevel2
+                    FROM completed_lvas cl
+                             JOIN lvas l ON cl.lva_id = l.id
+                    WHERE cl.user_id = %s \
+                    """
+
+            cur.execute(query, [user_id])
+            rows = cur.fetchall()
+
+            # Return list of LVA names
+            completed_lva_names = [row[0] for row in rows]
+
+            cur.close()
+            conn.close()
+
+            return completed_lva_names
+
+        except Exception as e:
+            print(f"Error fetching completed LVAs: {e}")
+            return []
