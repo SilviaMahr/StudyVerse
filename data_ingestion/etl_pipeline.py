@@ -104,39 +104,59 @@ def run_etl_pipeline():
     load_data_into_vector_store(conn, processed_curriculum_chunks, curriculum_embeddings, doc_url)
 
 
-    ### KUSSS DATA ETL
-    (root_html, root_url) = extractor.extract_win_bsc_info()
-    semester = extractor.extract_semester_info(root_html)
-    chunks = processor.process_main_page(root_html, model)
-    store_html_chunks(conn=conn, chunks=chunks, url=root_url)
-    course_links = extractor.extract_links(html=root_html)
+    ### KUSSS DATA ETL - BEIDE SEMESTER (WS + SS)
+    semesters_to_process = ["WS", "SS"]
 
-    for course_url in course_links:
-        # the one middle page
-        subject_links = extractor.extract_links(url=course_url)
-        subject_url = subject_links[0]
-        study_manual_url = subject_links[1]
-        subject_html = extractor.fetch_content_from_div(subject_url)
-        ### STUDY MANUAL DATA ETL (part 1)
-        sm_subject_html = extractor.fetch_content_from_div(study_manual_url)
-        course_data = extractor.extract_lva_links_for_course(subject_html)
-        lva_links = course_data["lva_links"]
-        semester_msg = course_data["semester_msg"]
+    for current_semester in semesters_to_process:
+        print(f"\n{'='*80}")
+        print(f"EXTRAHIERE DATEN FÜR {current_semester}")
+        print(f"{'='*80}\n")
 
-        if lva_links:
-            for lva_url in lva_links:
-                lva_html = extractor.fetch_content_from_div(lva_url)
-                lva_chunks = processor.process_html_page(lva_html, sm_subject_html, semester, model)
-                store_html_chunks(conn=conn, chunks=lva_chunks, url=lva_url)
-        elif semester_msg:
-            if semester == "WS":
-                semester = "SS"
+        # Nutze Playwright um das richtige Semester zu laden
+        (root_html, root_url) = extractor.extract_win_bsc_info_with_semester(current_semester)
 
-            if semester == "SS":
-                semester = "WS"
+        if not root_html:
+            print(f"FEHLER: Konnte {current_semester}-Daten nicht laden. Überspringe...")
+            continue
 
-            lva_chunks = processor.process_html_page(subject_html, sm_subject_html, semester, model)
-            store_html_chunks(conn=conn, chunks=lva_chunks, url=subject_url)
+        semester = extractor.extract_semester_info(root_html)
+        chunks = processor.process_main_page(root_html, model)
+        store_html_chunks(conn=conn, chunks=chunks, url=f"{root_url}?semester={current_semester}")
+        course_links = extractor.extract_links(html=root_html)
+
+        print(f"Gefunden: {len(course_links)} Kurse für {current_semester}")
+
+        for course_url in course_links:
+            # the one middle page
+            subject_links = extractor.extract_links(url=course_url)
+
+            # Prüfe ob Links extrahiert wurden
+            if not subject_links or len(subject_links) < 2:
+                print(f"WARNUNG: Konnte keine Links für {course_url} extrahieren. Überspringe...")
+                continue
+
+            subject_url = subject_links[0]
+            study_manual_url = subject_links[1]
+            subject_html = extractor.fetch_content_from_div(subject_url)
+            ### STUDY MANUAL DATA ETL (part 1)
+            sm_subject_html = extractor.fetch_content_from_div(study_manual_url)
+            course_data = extractor.extract_lva_links_for_course(subject_html)
+            lva_links = course_data["lva_links"]
+            semester_msg = course_data["semester_msg"]
+
+            if lva_links:
+                for lva_url in lva_links:
+                    lva_html = extractor.fetch_content_from_div(lva_url)
+                    lva_chunks = processor.process_html_page(lva_html, sm_subject_html, semester, model)
+                    store_html_chunks(conn=conn, chunks=lva_chunks, url=lva_url)
+            elif semester_msg:
+                # Kurs wird in diesem Semester nicht angeboten
+                # Markiere mit dem anderen Semester
+                other_semester = "SS" if current_semester == "WS" else "WS"
+                lva_chunks = processor.process_html_page(subject_html, sm_subject_html, other_semester, model)
+                store_html_chunks(conn=conn, chunks=lva_chunks, url=subject_url)
+
+        print(f"\n{current_semester}-Daten erfolgreich extrahiert!\n")
 
     ### STUDY MANUAL DATA ETL (part 2)
     study_manual_links = extractor.get_links_from_study_manual()

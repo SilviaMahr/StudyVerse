@@ -9,17 +9,13 @@ from ..models import ChatSendRequest, ChatMessage, ChatHistoryResponse
 from ..db import init_db_pool
 from ..auth import JWT_SECRET, JWT_ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
-import sys
-import os
-
-# Import ChatWithLLM module
-# Add the backend directory to path to access LLMConnection
-backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, backend_dir)
-from backend.LLMConnection.ChatWithLLM import send_prompt_to_LLM
+from ..retrieval.rag_pipeline import StudyPlanningRAG
 
 # OAuth2 for session management
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# Initialize RAG system
+rag_system = StudyPlanningRAG()
 
 # All endpoints in this router need a valid token!
 router = APIRouter(
@@ -56,78 +52,135 @@ async def get_current_user_email(authorization: str = Header(None)) -> str:
 
 @router.post("/send")
 async def send_chat_message(
-    request: ChatSendRequest,
-    planning_id: Optional[int] = None,
-    user_email: str = Depends(get_current_user_email)
+        request: ChatSendRequest,
+        planning_id: Optional[int] = None,
+        user_email: str = Depends(get_current_user_email)
 ):
     """
-    Sends a message to the LLM and returns the response.
-    Stores both the user message and LLM response in the database.
+    Sends a message to the RAG system and returns the response.
+
+    Flow:
+    1. First message in a planning session -> Generate semester plan with RAG
+    2. Follow-up messages -> Answer questions with RAG Q&A
+
+    Stores both the user message and assistant response in the database.
     """
-    print(f"📩 Received chat message from {user_email}: {request.message}")
-    print(f"Planning ID: {planning_id}")
+    print(f"[CHAT] Received message from {user_email}: {request.message}")
+    print(f"[CHAT] Planning ID: {planning_id}")
 
     pool = await init_db_pool()
 
     try:
-        # Verify planning_id exists and belongs to user if provided
-        if planning_id is not None:
-            async with pool.acquire() as conn:
-                planning_exists = await conn.fetchval(
-                    """
-                    SELECT EXISTS(
-                        SELECT 1 FROM plannings
-                        WHERE id = $1 AND user_email = $2
-                    )
-                    """,
-                    planning_id,
-                    user_email
+        if planning_id is None:
+            raise HTTPException(status_code=400, detail="planning_id is required")
+
+        async with pool.acquire() as conn:
+            # 1. Get user_id from email
+            user_id = await conn.fetchval(
+                "SELECT id FROM users WHERE email = $1",
+                user_email
+            )
+
+            if not user_id:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # 2. Verify planning exists and belongs to user
+            planning = await conn.fetchrow(
+                """
+                SELECT semester, target_ects, preferred_days, mandatory_courses
+                FROM plannings
+                WHERE id = $1 AND user_email = $2
+                """,
+                planning_id,
+                user_email
+            )
+
+            if not planning:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Planning not found or access denied"
                 )
 
-                if not planning_exists:
-                    raise HTTPException(status_code=404, detail="Planning not found or access denied")
+            # 3. Check if this is the first message in the planning
+            message_count = await conn.fetchval(
+                "SELECT COUNT(*) FROM chat_messages WHERE planning_id = $1",
+                planning_id
+            )
 
         # Save user message to database
         timestamp = datetime.utcnow()
         user_message_id = None
 
-        if planning_id is not None:
-            async with pool.acquire() as conn:
-                user_message_id = await conn.fetchval(
-                    """
-                    INSERT INTO chat_messages (planning_id, role, content, timestamp)
-                    VALUES ($1, $2, $3, $4)
+        async with pool.acquire() as conn:
+            user_message_id = await conn.fetchval(
+                """
+                INSERT INTO chat_messages (planning_id, role, content, timestamp)
+                VALUES ($1, $2, $3, $4)
                     RETURNING id
-                    """,
-                    planning_id,
-                    'user',
-                    request.message,
-                    timestamp
-                )
-                print(f"💾 Saved user message with ID: {user_message_id}")
+                """,
+                planning_id,
+                'user',
+                request.message,
+                timestamp
+            )
+            print(f"[CHAT] Saved user message with ID: {user_message_id}")
 
-        # Call the LLM with the user's message
-        print("🔄 Calling LLM...")
-        llm_response = await send_prompt_to_LLM(request.message)
-        print(f"✅ LLM response received: {llm_response[:100]}...")
+        # 4. Decide: Generate plan OR answer question
+        if message_count == 0:
+            # FIRST MESSAGE -> Generate semester plan
+            print("[CHAT] First message detected -> Generating semester plan with RAG")
+
+            # Build query from planning data
+            semester = planning['semester']
+            target_ects = planning['target_ects']
+            preferred_days = planning['preferred_days'] or []
+            mandatory_courses = planning['mandatory_courses']
+
+            days_str = ", ".join(preferred_days) if preferred_days else "keine Einschränkungen"
+
+            query = f"Ich möchte {target_ects} ECTS im {semester} machen"
+            if preferred_days:
+                query += f", an {days_str}"
+            if mandatory_courses:
+                query += f". Ich möchte unbedingt folgende LVAs machen: {mandatory_courses}"
+
+            print(f"[CHAT] Built query: {query}")
+            print(f"[CHAT] User ID: {user_id}")
+
+            # Call RAG Pipeline for semester planning
+            result = rag_system.create_semester_plan(
+                user_query=query,
+                user_id=user_id,
+                top_k=20
+            )
+
+            llm_response = result["plan"]
+            print(f"[CHAT] Generated semester plan (length: {len(llm_response)})")
+
+        else:
+            # FOLLOW-UP MESSAGE -> Answer question with RAG Q&A
+            print("[CHAT] Follow-up message detected -> Answering with RAG Q&A")
+
+            llm_response = rag_system.answer_question(
+                question=request.message,
+                top_k=10
+            )
+            print(f"[CHAT] Generated answer (length: {len(llm_response)})")
 
         # Save assistant response to database
-        assistant_message_id = None
-
-        if planning_id is not None:
-            async with pool.acquire() as conn:
-                assistant_message_id = await conn.fetchval(
-                    """
-                    INSERT INTO chat_messages (planning_id, role, content, timestamp)
-                    VALUES ($1, $2, $3, $4)
+        async with pool.acquire() as conn:
+            assistant_message_id = await conn.fetchval(
+                """
+                INSERT INTO chat_messages (planning_id, role, content, timestamp)
+                VALUES ($1, $2, $3, $4)
                     RETURNING id
-                    """,
-                    planning_id,
-                    'assistant',
-                    llm_response,
-                    datetime.utcnow()
-                )
-                print(f"💾 Saved assistant message with ID: {assistant_message_id}")
+                """,
+                planning_id,
+                'assistant',
+                llm_response,
+                datetime.utcnow()
+            )
+            print(f"[CHAT] Saved assistant message with ID: {assistant_message_id}")
 
         return {
             "success": True,
@@ -136,26 +189,27 @@ async def send_chat_message(
             "user_message_id": user_message_id,
             "assistant_message_id": assistant_message_id
         }
+
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error in send_chat_message: {e}")
+        print(f"[CHAT ERROR] {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error processing chat message: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing chat message: {str(e)}"
+        )
 
 
 @router.get("/history/{planning_id}", response_model=ChatHistoryResponse)
 async def get_chat_history(
-    planning_id: int,
-    limit: int = 100,
-    user_email: str = Depends(get_current_user_email)
+        planning_id: int,
+        limit: int = 50,
+        user_email: str = Depends(get_current_user_email)
 ):
     """
     Retrieves the chat history for a specific planning session.
-    If no message exists yet, automatically creates the initial welcome message.
-    Retrieves the complete chat history for a specific planning session.
-    Returns up to 100 messages.
     """
     pool = await init_db_pool()
 
@@ -175,21 +229,6 @@ async def get_chat_history(
         if not planning_exists:
             raise HTTPException(status_code=404, detail="Planning not found or access denied")
 
-        existing_count = await conn.fetchval(
-            "SELECT COUNT(*) FROM chat_messages WHERE planning_id = $1",
-            planning_id
-        )
-
-        if existing_count ==0:
-            await conn.execute(
-                """
-                INSERT INTO chat_messages(planning_id, role, content, timestamp)
-                VALUES ($1, 'assistant', $2, NOW())
-                """,
-                planning_id,
-                "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
-            )
-
         # Get chat messages
         rows = await conn.fetch(
             """
@@ -197,7 +236,7 @@ async def get_chat_history(
             FROM chat_messages
             WHERE planning_id = $1
             ORDER BY timestamp ASC
-            LIMIT $2
+                LIMIT $2
             """,
             planning_id,
             limit

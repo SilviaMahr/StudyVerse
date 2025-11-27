@@ -18,10 +18,10 @@ from contextlib import asynccontextmanager
 # lifespan event handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("✅ Startup was successful")
+    print("Startup was successful")
     await init_db_pool()
     yield
-    print("🛑 Shutdown initiated")
+    print("Shutdown initiated")
     await close_db_pool()
 
 app = FastAPI(title="StudyVerse Backend", lifespan=lifespan)
