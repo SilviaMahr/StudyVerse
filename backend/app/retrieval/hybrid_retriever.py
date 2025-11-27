@@ -14,9 +14,9 @@ load_dotenv()
 
 class HybridRetriever:
     """
-    Hybrid Retrieval kombiniert:
-    1. Metadata-Filtering (harte Constraints: Semester, Tage, ECTS)
-    2. Vector Similarity Search (semantische Suche für Freitext)
+    Hybrid Retrieval to combine:
+    1. Metadata-Filtering (hard constraints: Semester, days, ECTS)
+    2. Vector Similarity Search (for free text field)
     """
 
     def __init__(self):
@@ -24,7 +24,6 @@ class HybridRetriever:
         if not self.db_url:
             raise ValueError("DATABASE_URL not set in environment")
 
-        # Initialisiere Embedding-Modell (dasselbe wie in ETL)
         gemini_api_key = os.getenv("GEMINI_API_KEY")
         if not gemini_api_key:
             raise ValueError("GEMINI_API_KEY not set in environment")
@@ -36,32 +35,30 @@ class HybridRetriever:
 
     def _build_metadata_sql_filter(self, filter_dict: Dict[str, Any]) -> tuple:
         """
-        Konvertiert Filter-Dict in SQL WHERE-Clause.
-
-        Args:
-            filter_dict: Metadata filter dictionary
-
-        Returns:
-            (where_clause, params) tuple
+        Build SQL-Where-Clause -> Filer-Dict = Key = String
+                                               Value = Any
+        Returns a tuple eg. "Semester = ? AND ECTS = ?", ["SS", 15]
         """
-        conditions = []
-        params = []
 
-        if not filter_dict:
+        conditions = [] #for SQL-conditions like "Semester = ?"
+        params = [] #values for sql placeholders e.g. "SS"
+
+        if not filter_dict: #if no filter needed, WHERE clause is empty
             return "", []
 
-        # Handle $and operator
+        # if filter conditions connect with $and eg. {$and: [{"Semester: "SS"}, {"ECTS": 15}]}
         if "$and" in filter_dict:
             and_conditions = []
             for condition in filter_dict["$and"]:
-                clause, param = self._parse_condition(condition)
+                clause, param = self._parse_condition(condition) #builds sql-condition as tuple
                 if clause:
                     and_conditions.append(clause)
                     params.extend(param)
             if and_conditions:
                 conditions.append(f"({' AND '.join(and_conditions)})")
+                #parse into useful where clause with all AND conditions
 
-        # Handle $or operator
+        #same for $or conditions
         elif "$or" in filter_dict:
             or_conditions = []
             for condition in filter_dict["$or"]:
@@ -72,7 +69,7 @@ class HybridRetriever:
             if or_conditions:
                 conditions.append(f"({' OR '.join(or_conditions)})")
 
-        # Handle single condition
+        # single condition
         else:
             clause, param = self._parse_condition(filter_dict)
             if clause:
@@ -82,8 +79,13 @@ class HybridRetriever:
         where_clause = " AND ".join(conditions) if conditions else ""
         return where_clause, params
 
+
     def _parse_condition(self, condition: Dict[str, Any]) -> tuple:
-        """Parse a single condition into SQL."""
+        """
+            helper function for _build_metadata_sql_filter
+            - called for every single condition in $and, $or or standalone condition
+            - parses one condition at a time
+        """
         if not condition:
             return "", []
 
@@ -91,12 +93,13 @@ class HybridRetriever:
         params = []
 
         for field, constraint in condition.items():
-            if field in ["$and", "$or"]:
-                continue
+            if field in ["$and", "$or"]: #$and and $or can are not handled here - will be
+                continue                #returning once in for loop treated as single cond.
 
+            #case A: constraint is a dictionary
             if isinstance(constraint, dict):
                 for operator, value in constraint.items():
-                    if operator == "$eq":
+                    if operator == "$eq": # eg. metadata -> Semester & params = SS
                         conditions.append(f"metadata->>'{field}' = %s")
                         params.append(str(value))
                     elif operator == "$in":
@@ -104,14 +107,14 @@ class HybridRetriever:
                         conditions.append(f"metadata->>'{field}' IN ({placeholders})")
                         params.extend([str(v) for v in value])
                     elif operator == "$lte":
-                        # ECTS ist ein Float, casten
+                        # cast ECTS into float
                         conditions.append(f"(metadata->>'{field}')::float <= %s")
                         params.append(float(value))
                     elif operator == "$gte":
                         conditions.append(f"(metadata->>'{field}')::float >= %s")
                         params.append(float(value))
             else:
-                # Direct equality
+                # Case B: constraint is not a dict -> equality given
                 conditions.append(f"metadata->>'{field}' = %s")
                 params.append(str(constraint))
 
@@ -260,52 +263,3 @@ class HybridRetriever:
             print(f"Error during LVA name search: {e}")
             return []
 
-
-# Test
-if __name__ == "__main__":
-    print("=== Hybrid Retriever Test ===\n")
-
-    retriever = HybridRetriever()
-
-    # Test 1: Semantic Search mit Metadata-Filter
-    print("Test 1: Semantic Search mit Semester- und Tages-Filter")
-    print("-" * 60)
-
-    test_query = "Einführung in die Softwareentwicklung"
-    test_filter = {
-        "$and": [
-            {"semester": {"$eq": "SS"}},
-            {"tag": {"$in": ["Mo.", "Mi."]}},
-        ]
-    }
-
-    results = retriever.retrieve(test_query, metadata_filter=test_filter, top_k=5)
-
-    print(f"Query: {test_query}")
-    print(f"Filter: {test_filter}")
-    print(f"\nGefunden: {len(results)} LVAs\n")
-
-    for i, result in enumerate(results, 1):
-        metadata = result["metadata"]
-        print(f"{i}. {metadata.get('lva_name', 'N/A')} ({metadata.get('lva_nr', 'N/A')})")
-        print(f"   ECTS: {metadata.get('ects', 'N/A')}, Semester: {metadata.get('semester', 'N/A')}")
-        print(f"   Tag: {metadata.get('tag', 'N/A')}, Zeit: {metadata.get('uhrzeit', 'N/A')}")
-        print(f"   Similarity: {result['similarity']:.3f}")
-        print()
-
-    # Test 2: Suche nach LVA-Name
-    print("\n" + "="*60)
-    print("Test 2: LVA-Name Search")
-    print("-" * 60)
-
-    lva_search = "Softwareentwicklung"
-    results = retriever.retrieve_by_lva_name(lva_search, top_k=3)
-
-    print(f"Search: {lva_search}")
-    print(f"\nGefunden: {len(results)} LVAs\n")
-
-    for i, result in enumerate(results, 1):
-        metadata = result["metadata"]
-        print(f"{i}. {metadata.get('lva_name', 'N/A')} ({metadata.get('lva_nr', 'N/A')})")
-        print(f"   Semester: {metadata.get('semester', 'N/A')}, ECTS: {metadata.get('ects', 'N/A')}")
-        print()
