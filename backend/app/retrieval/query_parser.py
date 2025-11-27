@@ -7,7 +7,7 @@ import re
 from typing import Dict, List, Optional, Any
 
 
-# Mapping für LVA-Aliase (Soft1, Soft2, etc.)
+# Mapping for known LVA-aliase (Soft1, Soft2, etc.)
 LVA_ALIASES = {
     "soft1": ["Einführung in die Softwareentwicklung"],
     "esoft": ["Einführung in die Softwareentwicklung"],
@@ -20,8 +20,7 @@ LVA_ALIASES = {
     "dke": ["Data and Knowledge Engineering"],
 }
 
-# Semester-Patterns (für Freitext-Parsing als Fallback)
-# Normalerweise kommen Semester-Werte direkt vom Frontend
+# semster patterns (for manual chat input)
 SEMESTER_PATTERNS = {
     r"SS\s*\d{2}": "SS",  # SS26, SS 26
     r"WS\s*\d{2}": "WS",  # WS25, WS 25

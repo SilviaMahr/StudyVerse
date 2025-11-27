@@ -1,7 +1,3 @@
-"""
-Hybrid Retrieval System: Kombiniert Metadata-Filtering mit Vector Similarity Search
-Nutzt pgvector für effiziente semantische Suche in der Neon DB.
-"""
 
 import os
 import psycopg2
@@ -172,10 +168,10 @@ class HybridRetriever:
             fetch_limit = None
 
 
-# Parameters: [query_embedding, ...metadata_params..., query_embedding, fetch_limit]
+# Parameters: [query_embedding + metadata_params + query_embedding, fetch_limit (Order by clause]
         final_params = [query_embedding] + params + [query_embedding, fetch_limit]
 
-        # 3. Query ausführen
+        # run query
         try:
             conn = psycopg2.connect(self.db_url)
             cur = conn.cursor()
@@ -183,8 +179,8 @@ class HybridRetriever:
             cur.execute(base_query, final_params)
             rows = cur.fetchall()
 
-            # 4. Duplikate entfernen (basierend auf lva_nr)
-            # Behalte nur den besten (ersten) Chunk pro LVA
+            # remove duplicates and only keep the first (best) chunk from each lva
+            # to keep it clear
             seen_lvas = set()
             unique_results = []
 
@@ -192,7 +188,7 @@ class HybridRetriever:
                 metadata = row[2]
                 lva_nr = metadata.get("lva_nr")
 
-                # Wenn lva_nr nicht existiert, trotzdem aufnehmen (z.B. Curriculum-Chunks)
+                # also keep chunks without lva nr (e.g. vor Curicculum data)
                 if lva_nr is None or lva_nr not in seen_lvas:
                     if lva_nr:
                         seen_lvas.add(lva_nr)
@@ -205,7 +201,7 @@ class HybridRetriever:
                         "similarity": float(row[4]) if row[4] else 0.0,
                     })
 
-                    # Stop wenn wir genug unique LVAs haben
+                    # stop, if enough unique lvas were retrieved
                     if len(unique_results) >= top_k:
                         break
 
@@ -220,20 +216,14 @@ class HybridRetriever:
 
     def retrieve_by_lva_name(self, lva_name: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """
-        Sucht LVAs nach Name (für Aliase wie "SOFT1" → "Einführung in die Softwareentwicklung")
-
-        Args:
-            lva_name: Name oder Alias der LVA
-            top_k: Maximale Anzahl Ergebnisse
-
-        Returns:
-            Liste von LVA-Dictionaries
+        retrieve lva by name or alias (if alias is already defined, otherwise LLM must
+        ask user to specify lva name
         """
         try:
             conn = psycopg2.connect(self.db_url)
             cur = conn.cursor()
 
-            # Suche nach LVA-Namen im content ODER in metadata
+            # check content or metadata for lva name
             query = """
                 SELECT
                     id,
