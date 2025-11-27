@@ -1,4 +1,4 @@
-# Chat routes for LLM interaction with RAG Pipeline
+# Chat routes for LLM interaction
 # Endpoints for: Send message, Get chat history
 
 from fastapi import APIRouter, HTTPException, Depends, Header
@@ -109,6 +109,7 @@ async def send_chat_message(
 
         # Save user message to database
         timestamp = datetime.utcnow()
+        user_message_id = None
 
         async with pool.acquire() as conn:
             user_message_id = await conn.fetchval(

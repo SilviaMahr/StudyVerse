@@ -46,7 +46,7 @@ export class ChatService {
   /**
    * Retrieves chat history for a specific planning session
    */
-  public getChatHistory(planningId: number, limit: number = 50): Observable<ChatHistoryResponse> {
+  public getChatHistory(planningId: number, limit: number = 100): Observable<ChatHistoryResponse> {
     const token = this.authService.getToken();
 
     const headers = new HttpHeaders({
