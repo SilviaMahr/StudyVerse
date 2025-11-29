@@ -101,9 +101,9 @@ async def send_chat_message(
                     detail="Planning not found or access denied"
                 )
 
-            # 3. Check if this is the first message in the planning
+            # 3. Check if this is the first user message (only greeting exists or no messages)
             message_count = await conn.fetchval(
-                "SELECT COUNT(*) FROM chat_messages WHERE planning_id = $1",
+                "SELECT COUNT(*) FROM chat_messages WHERE planning_id = $1 AND role = 'user'",
                 planning_id
             )
 
@@ -210,6 +210,7 @@ async def get_chat_history(
 ):
     """
     Retrieves the chat history for a specific planning session.
+    If no messages exist yet, creates and stores the initial greeting message.
     """
     pool = await init_db_pool()
 
@@ -228,6 +229,28 @@ async def get_chat_history(
 
         if not planning_exists:
             raise HTTPException(status_code=404, detail="Planning not found or access denied")
+
+        # Check if there are any messages
+        message_count = await conn.fetchval(
+            "SELECT COUNT(*) FROM chat_messages WHERE planning_id = $1",
+            planning_id
+        )
+
+        # If no messages exist, create and store the greeting message
+        if message_count == 0:
+            greeting_message = "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+            greeting_id = await conn.fetchval(
+                """
+                INSERT INTO chat_messages (planning_id, role, content, timestamp)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id
+                """,
+                planning_id,
+                'assistant',
+                greeting_message,
+                datetime.utcnow()
+            )
+            print(f"[CHAT] Created initial greeting message with ID: {greeting_id}")
 
         # Get chat messages
         rows = await conn.fetch(
