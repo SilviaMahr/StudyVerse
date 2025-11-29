@@ -11,6 +11,11 @@ from .ideal_plan_loader import IdealPlanLoader
 
 load_dotenv()
 
+# ============================================================================
+# DEBUG TOGGLE: Set to True to save prompts to Desktop, False to disable
+# ============================================================================
+#SAVE_PROMPTS_TO_FILE = False  # Change to True to enable prompt logging
+SAVE_PROMPTS_TO_FILE = True
 
 class SemesterPlanner:
     """
@@ -30,12 +35,13 @@ class SemesterPlanner:
 
         # ============================================================================
         # TODO: Talk as a team which Gemini model should be used
-        # Currently using gemini-2.0-flash-exp (only model available with this API key)
+        # Silvia: my key only works with gemini-2.5-flash-lite
+        # Marlene: Currently using gemini-2.0-flash-exp (only model available with this API key)
         # NOTE: This model has strict free-tier limits (15 requests/min, 1500/day)
         # If you hit quota errors during testing, wait ~15 seconds between runs
         # Other models (gemini-1.5-flash, gemini-1.5-pro) return 404 with this API key
         # ============================================================================
-        self.model = genai.GenerativeModel(model_name="gemini-2.0-flash-exp")
+        self.model = genai.GenerativeModel(model_name="gemini-2.5-flash-lite")
 
         # Load ideal study plan for LLM context
         self.ideal_plan_loader = IdealPlanLoader()
@@ -77,6 +83,9 @@ class SemesterPlanner:
             desired_lvas=desired_lvas or [],
         )
 
+        # Save prompt to file for debugging/testing in other LLMs
+        self._save_prompt_to_file(prompt, user_query, len(retrieved_lvas))
+
         # Generate Plan
         try:
             response = self.model.generate_content(
@@ -87,6 +96,57 @@ class SemesterPlanner:
 
         except Exception as e:
             return f"Fehler bei der Planungserstellung: {e}"
+
+    def _save_prompt_to_file(self, prompt: str, user_query: str, lva_count: int) -> None:
+        """
+        Saves the generated prompt to a .txt file for debugging and testing in other LLMs.
+        Only saves if SAVE_PROMPTS_TO_FILE is True.
+
+        Args:
+            prompt: The full LLM prompt
+            user_query: The original user query
+            lva_count: Number of retrieved LVAs
+        """
+        # Check if prompt saving is enabled
+        if not SAVE_PROMPTS_TO_FILE:
+            return
+
+        try:
+            from datetime import datetime
+            from pathlib import Path
+
+            # Calculate prompt size
+            prompt_length = len(prompt)
+            prompt_tokens_approx = prompt_length // 4  # Rough estimate: 1 token ≈ 4 chars
+
+            # Create filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"llm_prompt_{timestamp}.txt"
+
+            # Get Desktop path (works on Windows, macOS, Linux)
+            desktop_path = Path.home() / "Desktop"
+            filepath = desktop_path / filename
+
+            # Write to file
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write("="*60 + "\n")
+                f.write("LLM PROMPT FOR SEMESTER PLANNING\n")
+                f.write("="*60 + "\n\n")
+                f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"User Query: {user_query}\n")
+                f.write(f"Retrieved LVAs: {lva_count}\n")
+                f.write(f"Character count: {prompt_length:,}\n")
+                f.write(f"Estimated tokens: ~{prompt_tokens_approx:,}\n")
+                f.write("\n" + "="*60 + "\n")
+                f.write("ACTUAL PROMPT:\n")
+                f.write("="*60 + "\n\n")
+                f.write(prompt)
+
+            print(f"[DEBUG] Prompt saved to Desktop: {filepath}")
+            print(f"[DEBUG] Prompt size: {prompt_length:,} chars (~{prompt_tokens_approx:,} tokens)")
+
+        except Exception as e:
+            print(f"[WARNING] Could not save prompt to file: {e}")
 
     def _format_lvas_for_prompt(self, lvas: List[Dict[str, Any]]) -> str:
         """Formatiert LVA-Liste für LLM-Prompt."""
