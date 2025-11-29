@@ -43,6 +43,7 @@ class PlanningResponse(BaseModel):
     target_ects: float #war int
     preferred_days: List[str]
     mandatory_courses: Optional[str]
+    semester_plan_json: Optional[dict] = None  # LLM-generated semester plan as JSON
     created_at: datetime
     last_modified: datetime
 

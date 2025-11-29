@@ -65,9 +65,9 @@ class StudyPlanningRAG:
         )
         print(f"   Retrieved {len(retrieved_lvas)} LVAs")
 
-        # 5. LLM Planning
-        print("\n4. Generating Semester Plan...")
-        semester_plan = self.planner.create_semester_plan(
+        # 5. LLM Planning (for chat window)
+        print("\n4. Generating Chat Answer...")
+        semester_plan = self.planner.create_chat_answer(
             user_query=user_query,
             retrieved_lvas=retrieved_lvas,
             ects_target=parsed_query["ects_target"] or 15,
