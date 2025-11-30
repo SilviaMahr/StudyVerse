@@ -13,10 +13,16 @@ from ..models import (
 from ..db import init_db_pool
 from ..auth import JWT_SECRET, JWT_ALGORITHM
 from fastapi.security import OAuth2PasswordBearer
+from ..retrieval.rag_pipeline import StudyPlanningRAG
+from ..retrieval.query_parser import parse_user_query, build_metadata_filter
+import json
 
 
 #necessary for session management in every routes file
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# Initialize RAG system
+rag_system = StudyPlanningRAG()
 
 #all endpoints in this router need a valid token!
 router = APIRouter(
@@ -66,7 +72,7 @@ async def get_recent_plannings(
         rows = await conn.fetch(
             """
             SELECT id, title, semester, target_ects, preferred_days,
-                   mandatory_courses, created_at, last_modified
+                   mandatory_courses, semester_plan_json, created_at, last_modified
             FROM plannings
             WHERE user_email = $1
             ORDER BY last_modified DESC
@@ -91,6 +97,7 @@ async def get_recent_plannings(
             target_ects=row["target_ects"],
             preferred_days=row["preferred_days"] or [],
             mandatory_courses=row["mandatory_courses"],
+            semester_plan_json=json.loads(row["semester_plan_json"]) if row["semester_plan_json"] else None,
             created_at=row["created_at"],
             last_modified=row["last_modified"]
         )
@@ -106,6 +113,7 @@ async def create_new_planning(
 ):
     """
     Erstellt eine neue Planning-Session für den eingeloggten User.
+    Generiert automatisch einen Semesterplan mit LLM beim Erstellen.
 
     """
     pool = await init_db_pool()
@@ -118,14 +126,74 @@ async def create_new_planning(
         # Fallback if somehow no data provided
         title = f"Planning {now.strftime('%Y-%m-%d')}"
 
+    print(f"[PLANNING] Creating new planning for {user_email}: {title}")
+
+    # Get user_id for RAG system
     async with pool.acquire() as conn:
-        # add new planning in DB
+        user_id = await conn.fetchval(
+            "SELECT id FROM users WHERE email = $1",
+            user_email
+        )
+
+        if not user_id:
+            raise HTTPException(status_code=404, detail="User not found")
+
+    # Build query for RAG
+    days_str = ", ".join(planning_data.preferred_days) if planning_data.preferred_days else "keine Einschränkungen"
+    query = f"Ich möchte {planning_data.target_ects} ECTS im {planning_data.semester} machen"
+    if planning_data.preferred_days:
+        query += f", an {days_str}"
+    if planning_data.mandatory_courses:
+        query += f". Ich möchte unbedingt folgende LVAs machen: {planning_data.mandatory_courses}"
+
+    print(f"[PLANNING] RAG Query: {query}")
+
+    # Generate semester plan with RAG
+    try:
+        # Parse query
+        parsed_query = parse_user_query(query)
+
+        # Get completed LVAs
+        completed_lvas = rag_system.retriever.get_completed_lvas_for_user(user_id)
+
+        # Build metadata filter
+        metadata_filter = build_metadata_filter(parsed_query)
+
+        # Retrieve relevant LVAs
+        retrieved_lvas = rag_system.retriever.retrieve(
+            query=parsed_query["free_text"],
+            metadata_filter=metadata_filter,
+            top_k=20,
+        )
+
+        print(f"[PLANNING] Retrieved {len(retrieved_lvas)} LVAs")
+
+        # Generate JSON semester plan
+        semester_plan_json = rag_system.planner.create_semester_plan_json(
+            user_query=query,
+            retrieved_lvas=retrieved_lvas,
+            ects_target=parsed_query["ects_target"] or planning_data.target_ects,
+            preferred_days=parsed_query["preferred_days"],
+            completed_lvas=completed_lvas,
+            desired_lvas=parsed_query["desired_lvas"],
+        )
+
+        print(f"[PLANNING] Generated semester plan JSON: {semester_plan_json.keys()}")
+
+    except Exception as e:
+        print(f"[PLANNING ERROR] Failed to generate semester plan: {e}")
+        import traceback
+        traceback.print_exc()
+        semester_plan_json = {"error": str(e)}
+
+    # Insert planning with semester_plan_json
+    async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
             INSERT INTO plannings
-            (title, user_email, semester, target_ects, preferred_days, mandatory_courses, created_at, last_modified)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                RETURNING id, title, semester, target_ects, preferred_days, mandatory_courses, created_at, last_modified
+            (title, user_email, semester, target_ects, preferred_days, mandatory_courses, semester_plan_json, created_at, last_modified)
+            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9)
+                RETURNING id, title, semester, target_ects, preferred_days, mandatory_courses, semester_plan_json, created_at, last_modified
             """,
             title,
             user_email,
@@ -133,9 +201,15 @@ async def create_new_planning(
             planning_data.target_ects,
             planning_data.preferred_days,
             planning_data.mandatory_courses,
+            json.dumps(semester_plan_json),  # Convert dict to JSON string for PostgreSQL
             now,
             now
         )
+
+    print(f"[PLANNING] Created planning with ID: {row['id']}")
+
+    # Parse JSON string back to dict for response
+    semester_plan_dict = json.loads(row["semester_plan_json"]) if row["semester_plan_json"] else None
 
     return PlanningResponse(
         id=row["id"],
@@ -144,6 +218,7 @@ async def create_new_planning(
         target_ects=row["target_ects"],
         preferred_days=row["preferred_days"] or [],
         mandatory_courses=row["mandatory_courses"],
+        semester_plan_json=semester_plan_dict,
         created_at=row["created_at"],
         last_modified=row["last_modified"]
     )
@@ -163,7 +238,7 @@ async def get_planning(
         row = await conn.fetchrow(
             """
             SELECT id, title, semester, target_ects, preferred_days,
-                   mandatory_courses, created_at, last_modified
+                   mandatory_courses, semester_plan_json, created_at, last_modified
             FROM plannings
             WHERE id = $1 AND user_email = $2
             """,
@@ -184,6 +259,7 @@ async def get_planning(
         target_ects=row["target_ects"],
         preferred_days=row["preferred_days"] or [],
         mandatory_courses=row["mandatory_courses"],
+        semester_plan_json=json.loads(row["semester_plan_json"]) if row["semester_plan_json"] else None,
         created_at=row["created_at"],
         last_modified=row["last_modified"]
     )
@@ -268,7 +344,7 @@ async def update_planning(
         row = await conn.fetchrow(
             """
             SELECT id, title, semester, target_ects, preferred_days,
-                   mandatory_courses, created_at, last_modified
+                   mandatory_courses, semester_plan_json, created_at, last_modified
             FROM plannings
             WHERE id = $1
             """,
@@ -281,6 +357,7 @@ async def update_planning(
         target_ects=row["target_ects"],
         preferred_days=row["preferred_days"] or [],
         mandatory_courses=row["mandatory_courses"],
+        semester_plan_json=json.loads(row["semester_plan_json"]) if row["semester_plan_json"] else None,
         created_at=row["created_at"],
         last_modified=row["last_modified"]
     )

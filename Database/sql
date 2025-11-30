@@ -104,3 +104,10 @@ CREATE TABLE IF NOT EXISTS chat_messages (
       content TEXT NOT NULL,
       timestamp TIMESTAMP NOT NULL
   );
+
+-- Add semester_plan column to plannings table
+-- This column stores the LLM-generated semester plan as JSON
+ALTER TABLE plannings
+ADD COLUMN IF NOT EXISTS semester_plan_json JSONB;
+
+

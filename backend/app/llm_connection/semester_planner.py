@@ -47,7 +47,7 @@ class SemesterPlanner:
         self.ideal_plan_loader = IdealPlanLoader()
         self.ideal_plan_context = self.ideal_plan_loader.format_ideal_plan_for_llm()
 
-    def create_semester_plan(
+    def create_chat_answer(
         self,
         user_query: str,
         retrieved_lvas: List[Dict[str, Any]],
@@ -57,7 +57,8 @@ class SemesterPlanner:
         desired_lvas: Optional[List[str]] = None,
     ) -> str:
         """
-        Erstellt einen Semesterplan basierend auf retrieved LVAs und User-Präferenzen.
+        Erstellt eine Text-Antwort für das Chat-Fenster basierend auf retrieved LVAs.
+        (Ehemals create_semester_plan - für Chat-Window-Antworten)
 
         Args:
             user_query: Original User Query
@@ -68,7 +69,7 @@ class SemesterPlanner:
             desired_lvas: Explizit gewünschte LVAs
 
         Returns:
-            Formatierter Semesterplan als String
+            Formatierter Semesterplan als String (für Chat-Anzeige)
         """
         # Format LVA-Liste für Prompt
         lva_list = self._format_lvas_for_prompt(retrieved_lvas)
@@ -96,6 +97,84 @@ class SemesterPlanner:
 
         except Exception as e:
             return f"Fehler bei der Planungserstellung: {e}"
+
+    def create_semester_plan_json(
+        self,
+        user_query: str,
+        retrieved_lvas: List[Dict[str, Any]],
+        ects_target: int,
+        preferred_days: List[str],
+        completed_lvas: Optional[List[str]] = None,
+        desired_lvas: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Erstellt einen Semesterplan als JSON für die Planning-Detail-Ansicht.
+        Wird aufgerufen wenn "Planung starten" Button geklickt wird.
+
+        Args:
+            user_query: Original User Query
+            retrieved_lvas: Liste von LVA-Dictionaries aus Retrieval
+            ects_target: Gewünschte ECTS-Anzahl
+            preferred_days: Liste bevorzugter Wochentage
+            completed_lvas: Bereits absolvierte LVAs
+            desired_lvas: Explizit gewünschte LVAs
+
+        Returns:
+            Dictionary mit Semesterplan-Daten (JSON-kompatibel)
+        """
+        import json
+
+        # Format LVA-Liste für Prompt
+        lva_list = self._format_lvas_for_prompt(retrieved_lvas)
+
+        # Build Prompt mit JSON output format
+        prompt = self._build_planning_prompt_json(
+            user_query=user_query,
+            lva_list=lva_list,
+            ects_target=ects_target,
+            preferred_days=preferred_days,
+            completed_lvas=completed_lvas or [],
+            desired_lvas=desired_lvas or [],
+        )
+
+        # Save prompt to file for debugging/testing in other LLMs
+        self._save_prompt_to_file(prompt, user_query, len(retrieved_lvas))
+
+        # Generate Plan
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config={"temperature": 0.3}
+            )
+
+            # Parse JSON response
+            response_text = response.text.strip()
+
+            # Remove markdown code blocks if present
+            if response_text.startswith("```json"):
+                response_text = response_text[7:]
+            if response_text.startswith("```"):
+                response_text = response_text[3:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+            response_text = response_text.strip()
+
+            # Parse JSON
+            plan_json = json.loads(response_text)
+            return plan_json
+
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] Failed to parse LLM response as JSON: {e}")
+            print(f"[ERROR] Response was: {response.text[:500]}")
+            return {
+                "error": "JSON parsing failed",
+                "raw_response": response.text[:500]
+            }
+        except Exception as e:
+            print(f"[ERROR] Error generating semester plan: {e}")
+            return {
+                "error": str(e)
+            }
 
     def _save_prompt_to_file(self, prompt: str, user_query: str, lva_count: int) -> None:
         """
@@ -257,6 +336,81 @@ Hier ist dein Plan für das [Semester] mit [X] ECTS. Deine Uni-Tage sind [Tage]:
 
         return prompt
 
+    def _build_planning_prompt_json(
+        self,
+        user_query: str,
+        lva_list: str,
+        ects_target: int,
+        preferred_days: List[str],
+        completed_lvas: List[str],
+        desired_lvas: List[str],
+    ) -> str:
+        """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
+
+        prompt = f"""Du bist ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
+
+{self.ideal_plan_context}
+
+**USER-ANFRAGE:**
+{user_query}
+
+**ZIEL-PARAMETER:**
+- ECTS-Ziel: {ects_target} ECTS
+- Bevorzugte Tage: {", ".join(preferred_days) if preferred_days else "Keine Angabe"}
+- Bereits absolvierte LVAs: {", ".join(completed_lvas) if completed_lvas else "Keine"}
+- Gewünschte LVAs: {", ".join(desired_lvas) if desired_lvas else "Keine spezifischen Wünsche"}
+
+**VERFÜGBARE LVAs (aus Vector-Search):**
+{lva_list}
+
+**DEINE AUFGABEN:**
+1. **Wähle die optimalen LVAs** aus der Liste, die:
+   - Das ECTS-Ziel erreichen oder nah dran sind (max. ±3 ECTS Abweichung)
+   - An den bevorzugten Tagen stattfinden
+   - Keine zeitlichen Überschneidungen haben
+   - Voraussetzungen erfüllen (bereits absolvierte LVAs beachten!)
+   - Gewünschte LVAs priorisieren
+   - Den idealtypischen Studienverlauf berücksichtigen
+
+2. **Prüfe Voraussetzungen GRÜNDLICH**:
+   - Nutze die DETAILLIERTEN INFORMATIONEN AUS STUDIENHANDBUCH für jede LVA
+   - Prüfe "Anmeldevoraussetzungen" UND "Erwartete Vorkenntnisse"
+   - Falls Voraussetzungen NICHT erfüllt: NICHT vorschlagen
+
+3. **Prüfe Zeitkonflikte**:
+   - Keine zwei LVAs dürfen zur selben Zeit stattfinden
+
+**OUTPUT-FORMAT:**
+Antworte AUSSCHLIESSLICH mit einem gültigen JSON-Objekt in folgendem Format (KEIN anderer Text):
+
+{{
+  "semester": "{user_query.split()[0] if 'SS' in user_query or 'WS' in user_query else 'SS26'}",
+  "total_ects": 0,
+  "uni_days": [],
+  "lvas": [
+    {{
+      "name": "Voller LVA-Name",
+      "type": "VL/UE/PR",
+      "ects": 0,
+      "day": "Mo./Di./Mi./Do./Fr.",
+      "time": "HH:MM - HH:MM",
+      "instructor": "Name des Leiters",
+      "reason": "Kurze Begründung"
+    }}
+  ],
+  "summary": "Zusammenfassung der Planungsentscheidungen",
+  "warnings": "Hinweise oder leerer String"
+}}
+
+WICHTIG:
+- Antworte NUR mit dem JSON-Objekt
+- Kein Text vor oder nach dem JSON
+- Alle String-Werte in Anführungszeichen
+- Zahlen ohne Anführungszeichen
+"""
+
+        return prompt
+
     def answer_study_question(self, question: str, context_lvas: List[Dict[str, Any]]) -> str:
         """
         Beantwortet allgemeine Studienfragen basierend auf LVA-Daten.
@@ -349,7 +503,7 @@ if __name__ == "__main__":
 
     test_query = "15 ECTS im SS26, Montag und Mittwoch, ich möchte SOFT1 machen"
 
-    plan = planner.create_semester_plan(
+    plan = planner.create_chat_answer(
         user_query=test_query,
         retrieved_lvas=mock_lvas,
         ects_target=15,

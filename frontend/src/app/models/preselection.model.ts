@@ -23,6 +23,7 @@ export interface PlanningResponse {
   mandatory_courses: string;
   created_at: string;
   last_modified: string;
+  semester_plan_json: SemesterPlanJson | null;
 }
 
 export interface RecentPlanningsResponse {

@@ -35,9 +35,45 @@
 
     <div class="form-group">
       <label>Planungsvorschlag:</label>
+      @if (plannedLvas.length > 0 ){
+        <div class="table-responsive">
+          <table class="plan-table">
+            <thead>
+            <tr>
+              <th style="width: 40%">LVA Name</th>
+              <th>Typ</th>
+              <th>Leitung</th>
+              <th>Termin</th>
+              <th class="text-right">ECTS</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (lva of plannedLvas; track $index) {
+                <tr>
+                  <td>
+                    <div class="lva-title">{{ lva.name }}</div>
+                  </td>
+                  <td><span class="lva-type">{{ lva.type }}</span></td>
+                  <td class="lva-meta">{{ lva.instructor }}</td>
+                  <td class="lva-meta">
+                    <span class="day-badge">{{ lva.day }}</span>
+                    {{ lva.time }}
+                  </td>
+                  <td class="text-right font-bold">{{ lva.ects }}</td>
+                </tr>
+              }
+            <tr class="summary-row">
+              <td colspan="4"><strong>Gesamt</strong></td>
+              <td class="text-right"><strong>{{ semesterPlan?.total_ects }}</strong></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      } @else {
       <div class="llm-plan-placeholder">
-        (Planungsvorschlag wird hier geladen...)
+        (Für diese Planung liegt leider kein Planungsvorschlag vor)
       </div>
+      }
     </div>
 
     <div class="button-group">

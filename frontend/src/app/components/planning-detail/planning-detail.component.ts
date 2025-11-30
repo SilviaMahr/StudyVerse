@@ -36,6 +36,15 @@ export class PlanningDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  get semesterPlan(): SemesterPlanJson | null {
+    if (!this.planning?.semester_plan_json) return null;
+    return this.planning.semester_plan_json as unknown as SemesterPlanJson;
+  }
+
+  get plannedLvas(): LvaItem [] {
+    return this.semesterPlan?.lvas || [];
+  }
+
   startRagAnalysis(): void {
     if (!this.planning) return;
 
