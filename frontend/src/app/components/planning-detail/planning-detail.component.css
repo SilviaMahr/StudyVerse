@@ -8,6 +8,8 @@
   position: relative;
   color: white;
   box-sizing: border-box;
+
+  max-width: 650px;
 }
 
 .planning-header {
@@ -118,6 +120,146 @@
 }
 .save-button:hover {
   background-color: var(--preselection-button-hover-bg);
+}
+.warning-box {
+  background-color: #fff9db; /* Helles Gelb */
+  border: 1px solid #ffe066;
+  color: #e67700;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.summary-box {
+  background-color: #e7f5ff; /* Helles Blau */
+  border-left: 4px solid #339af0;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  color: #1864ab;
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* =========================================
+   5. Tabelle (Der Kern)
+   ========================================= */
+/* =========================================
+   5. Tabelle (Der Kern) – MODIFIZIERT
+   ========================================= */
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  margin-top: 0.5rem;
+  background-color: white; /* Tabelle weiß hinterlegt */
+}
+
+.plan-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  background-color: white; /* Weißer Hintergrund */
+  color: black;            /* Schwarze Schrift */
+  font-size: 0.8rem;       /* Schrift verkleinert */
+}
+
+/* Tabellenkopf */
+.plan-table th {
+  background-color: #ffffff; /* Weiß */
+  color: black;              /* Schwarzer Text */
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
+  font-size: 0.8rem;         /* kleiner */
+}
+
+/* Tabellenzellen */
+.plan-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f3f5;
+  vertical-align: top;
+  color: black;               /* Schwarz */
+  background-color: white;    /* Keine Hover-Änderung */
+}
+
+/* Keine Hover-Farbanpassung mehr */
+.plan-table tr:hover td {
+  background-color: white !important;
+}
+
+/* Letzte Zeile */
+.plan-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Spezifische Spalten-Styles --- */
+
+.lva-title {
+  font-weight: 600;
+  color: black;
+  font-size: 0.9rem; /* minimal kleiner */
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.lva-reason {
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.lva-type {
+  display: inline-block;
+  padding: 3px 6px;
+  background-color: #e9ecef;
+  color: #333;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.day-badge {
+  display: inline-block;
+  background-color: #e3fafc;
+  color: #0c8599;
+  border: 1px solid #99e9f2;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.lva-meta {
+  font-size: 0.75rem;
+  color: #333;
+  white-space: nowrap;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.summary-row td {
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+  font-weight: bold;
+  color: black;
 }
 
 .llm-plan-placeholder {
