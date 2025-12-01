@@ -47,6 +47,7 @@ class SemesterPlanner:
         self.ideal_plan_loader = IdealPlanLoader()
         self.ideal_plan_context = self.ideal_plan_loader.format_ideal_plan_for_llm()
 
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def create_chat_answer(
         self,
         user_query: str,
@@ -56,6 +57,7 @@ class SemesterPlanner:
         completed_lvas: Optional[List[str]],
         desired_lvas: Optional[List[str]],
         existing_plan_json: Dict[str, Any],
+        filtered_lvas: Optional[List[Dict[str, Any]]] = None,  # NEU
     ) -> str:
         """
         Erstellt eine Text-Antwort für das Chat-Fenster basierend auf einem existierenden Semesterplan.
@@ -69,6 +71,7 @@ class SemesterPlanner:
             existing_plan_json: Bereits erstellter Semesterplan aus create_semester_plan_json() (REQUIRED)
             completed_lvas: Bereits absolvierte LVAs
             desired_lvas: Explizit gewünschte LVAs
+            filtered_lvas: LVAs die aufgrund fehlender Voraussetzungen gefiltert wurden (optional)
 
         Returns:
             Chat-Antwort als String basierend auf dem existierenden Plan
@@ -85,6 +88,7 @@ class SemesterPlanner:
             completed_lvas=completed_lvas or [],
             desired_lvas=desired_lvas or [],
             existing_plan_json=existing_plan_json,
+            filtered_lvas=filtered_lvas or [],  # NEU
         )
 
         # Save prompt to file for debugging/testing in other LLMs

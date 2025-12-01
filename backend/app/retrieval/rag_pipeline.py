@@ -148,6 +148,7 @@ class StudyPlanningRAG:
         existing_plan_json: Dict[str, Any],
         user_id: int,
         top_k: int = 10,
+        check_prerequisites: bool = False,  # NEU: Optional für neue Pläne
     ) -> str:
         """
         Beantwortet Fragen basierend auf einem existierenden Semesterplan.
@@ -157,6 +158,7 @@ class StudyPlanningRAG:
             existing_plan_json: Bereits erstellter Semesterplan
             user_id: User ID für completed LVAs
             top_k: Anzahl LVAs für Kontext
+            check_prerequisites: Falls True, werden Voraussetzungen geprüft (für neue Pläne)
 
         Returns:
             Antwort als String
@@ -178,6 +180,20 @@ class StudyPlanningRAG:
 
         print(f"Retrieved {len(retrieved_lvas)} LVAs for context")
 
+        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+        # Optional: Filter nach Voraussetzungen (falls User neuen Plan will)
+        filtered_lvas = []
+        if check_prerequisites:
+            print("Filtering by prerequisites (new plan requested)...")
+            filter_result = self.retriever.filter_by_prerequisites(
+                retrieved_lvas=retrieved_lvas,
+                completed_lvas=completed_lvas
+            )
+            retrieved_lvas = filter_result["eligible"]
+            filtered_lvas = filter_result["filtered"]
+            print(f"   Eligible: {len(retrieved_lvas)} LVAs")
+            print(f"   Filtered: {len(filtered_lvas)} LVAs")
+
         # LLM Answer basierend auf existierendem Plan
         answer = self.planner.create_chat_answer(
             user_query=question,
@@ -187,6 +203,7 @@ class StudyPlanningRAG:
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query.get("desired_lvas", []),
             existing_plan_json=existing_plan_json,
+            filtered_lvas=filtered_lvas if check_prerequisites else [],
         )
 
         return answer
