@@ -56,7 +56,7 @@ export class ChatComponent implements OnInit{
           // Show welcome message if no planning ID
           this.messages = [{
             sender: 'UNI',
-            text: "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+            text: "Hallo! Ich bin UNI, dein Planungsassistent. Du kannst mir Fragen zum Plan oder den LVAs stellen."
           }];
         }
       }
