@@ -331,20 +331,34 @@ class HybridRetriever:
         """
         results = {}
 
+        print(f"[PREREQ DEBUG] Checking prerequisites: {prerequisite_names}")
+
         for prereq in prerequisite_names:
             is_met = False
+            best_match = None
+            best_score = 0.0
 
             # Prüfe gegen jede completed LVA
             for completed in completed_lvas:
-                # Fuzzy Match (Threshold 80%)
-                if self._fuzzy_match(prereq, completed, threshold=0.80):
+                # Fuzzy Match (Threshold 75%)
+                ratio = SequenceMatcher(None, prereq.lower(), completed.lower()).ratio()
+                if ratio > best_score:
+                    best_score = ratio
+                    best_match = completed
+
+                if ratio >= 0.75:
                     is_met = True
+                    print(f"[PREREQ DEBUG]   ✓ '{prereq}' MATCHED '{completed}' (score: {ratio:.2f})")
                     break
 
                 # Falls prereq ein Code ist (z.B. "SOFT1"), checke ob in completed enthalten
                 if len(prereq) <= 6 and prereq.upper() in completed.upper():
                     is_met = True
+                    print(f"[PREREQ DEBUG]   ✓ '{prereq}' FOUND IN '{completed}' (substring match)")
                     break
+
+            if not is_met:
+                print(f"[PREREQ DEBUG]   ✗ '{prereq}' NOT MATCHED (best: '{best_match}', score: {best_score:.2f})")
 
             results[prereq] = is_met
 
