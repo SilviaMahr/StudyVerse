@@ -357,7 +357,7 @@ class HybridRetriever:
         completed_lvas: List[str]
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Filtert LVAs basierend auf Voraussetzungen.
+        Filtert LVAs basierend auf Voraussetzungen UND bereits absolvierten LVAs.
 
         Args:
             retrieved_lvas: Retrieved documents von retrieve()
@@ -379,12 +379,42 @@ class HybridRetriever:
         eligible_lvas = []
         filtered_lvas = []
 
+        print(f"[FILTER DEBUG] Starting filter with {len(completed_lvas)} completed LVAs:")
+        for comp_lva in completed_lvas:
+            print(f"  ✓ {comp_lva}")
+
         for lva_doc in retrieved_lvas:
             metadata = lva_doc.get("metadata", {})
+            lva_name = metadata.get("lva_name", "Unknown")
+            lva_nr = metadata.get("lva_nr", "")
             anmeldevoraussetzungen = metadata.get("anmeldevoraussetzungen", "")
 
+            # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+            # 1. CHECK: Ist die LVA bereits absolviert?
+            is_already_completed = False
+            for completed in completed_lvas:
+                # Fuzzy Match gegen completed LVAs
+                if self._fuzzy_match(lva_name, completed, threshold=0.75):
+                    is_already_completed = True
+                    break
+                # Exakte Substring-Prüfung für LVA-Nr
+                if lva_nr and lva_nr in completed:
+                    is_already_completed = True
+                    break
+
+            if is_already_completed:
+                print(f"[FILTER DEBUG] ❌ FILTERED (bereits absolviert): {lva_name} ({lva_nr})")
+                filtered_lvas.append({
+                    "lva": lva_doc,
+                    "missing_prerequisites": [],
+                    "reason": f"Bereits absolviert"
+                })
+                continue
+
+            # 2. CHECK: Voraussetzungen prüfen
             # Falls keine Voraussetzungen oder "keine" → direkt eligible
             if not anmeldevoraussetzungen or anmeldevoraussetzungen.strip().lower() == "keine":
+                print(f"[FILTER DEBUG] ✅ ELIGIBLE (keine Voraussetzungen): {lva_name} ({lva_nr})")
                 eligible_lvas.append(lva_doc)
                 continue
 
@@ -393,6 +423,7 @@ class HybridRetriever:
 
             if not prerequisite_names:
                 # Konnte nichts parsen → erstmal eligible (sicherer)
+                print(f"[FILTER DEBUG] ✅ ELIGIBLE (Voraussetzungen nicht parsebar): {lva_name} ({lva_nr})")
                 eligible_lvas.append(lva_doc)
                 continue
 
@@ -403,6 +434,8 @@ class HybridRetriever:
 
             if missing:
                 # Nicht alle Voraussetzungen erfüllt
+                print(f"[FILTER DEBUG] ❌ FILTERED (fehlende Voraussetzungen): {lva_name} ({lva_nr})")
+                print(f"              Fehlend: {', '.join(missing)}")
                 filtered_lvas.append({
                     "lva": lva_doc,
                     "missing_prerequisites": missing,
@@ -410,6 +443,7 @@ class HybridRetriever:
                 })
             else:
                 # Alle Voraussetzungen erfüllt
+                print(f"[FILTER DEBUG] ✅ ELIGIBLE (Voraussetzungen erfüllt): {lva_name} ({lva_nr})")
                 eligible_lvas.append(lva_doc)
 
         return {
