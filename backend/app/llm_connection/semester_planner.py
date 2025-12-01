@@ -359,7 +359,7 @@ Formuliere deine Antwort **kurz** und freundlich.
    - An den bevorzugten Tagen stattfinden
    - Voraussetzungen erfüllen
    - Bereits absolvierte Kurse dürfen **keinesfalls** im Plan vorkommen
-   - jeder Kurs darf im Plan nur **einmal** vorkommen
+   - jede LVA darf im Plan nur **einmal** vorkommen, LVA+Type ist die LVA id
    - Gewünschte LVAs priorisieren
 
 2. **Prüfe Voraussetzungen GRÜNDLICH**:
