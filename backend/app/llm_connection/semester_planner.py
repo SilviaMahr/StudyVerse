@@ -105,6 +105,7 @@ class SemesterPlanner:
         except Exception as e:
             return f"Fehler bei der Planungserstellung: {e}"
 
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def create_semester_plan_json(
         self,
         user_query: str,
@@ -113,6 +114,7 @@ class SemesterPlanner:
         preferred_days: List[str],
         completed_lvas: Optional[List[str]] = None,
         desired_lvas: Optional[List[str]] = None,
+        filtered_lvas: Optional[List[Dict[str, Any]]] = None,  # NEU
     ) -> Dict[str, Any]:
         """
         Erstellt einen Semesterplan als JSON für die Planning-Detail-Ansicht.
@@ -125,6 +127,7 @@ class SemesterPlanner:
             preferred_days: Liste bevorzugter Wochentage
             completed_lvas: Bereits absolvierte LVAs
             desired_lvas: Explizit gewünschte LVAs
+            filtered_lvas: LVAs die aufgrund fehlender Voraussetzungen gefiltert wurden (optional)
 
         Returns:
             Dictionary mit Semesterplan-Daten (JSON-kompatibel)
@@ -142,6 +145,7 @@ class SemesterPlanner:
             preferred_days=preferred_days,
             completed_lvas=completed_lvas or [],
             desired_lvas=desired_lvas or [],
+            filtered_lvas=filtered_lvas or [],  # NEU
         )
 
         # Save prompt to file for debugging/testing in other LLMs
