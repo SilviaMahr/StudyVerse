@@ -118,6 +118,55 @@ class StudyPlanningRAG:
 
         return answer
 
+    def answer_question_with_plan(
+        self,
+        question: str,
+        existing_plan_json: Dict[str, Any],
+        user_id: int,
+        top_k: int = 10,
+    ) -> str:
+        """
+        Beantwortet Fragen basierend auf einem existierenden Semesterplan.
+
+        Args:
+            question: User-Frage
+            existing_plan_json: Bereits erstellter Semesterplan
+            user_id: User ID für completed LVAs
+            top_k: Anzahl LVAs für Kontext
+
+        Returns:
+            Antwort als String
+        """
+        print(f"Answering question with existing plan: {question}")
+
+        # Parse question to extract parameters (falls nötig für Kontext)
+        parsed_query = parse_user_query(question)
+
+        # Fetch completed LVAs
+        completed_lvas = self.retriever.get_completed_lvas_for_user(user_id)
+
+        # Retrieval für zusätzlichen Kontext
+        retrieved_lvas = self.retriever.retrieve(
+            query=question,
+            metadata_filter=None,
+            top_k=top_k,
+        )
+
+        print(f"Retrieved {len(retrieved_lvas)} LVAs for context")
+
+        # LLM Answer basierend auf existierendem Plan
+        answer = self.planner.create_chat_answer(
+            user_query=question,
+            retrieved_lvas=retrieved_lvas,
+            ects_target=parsed_query.get("ects_target", 15),
+            preferred_days=parsed_query.get("preferred_days", []),
+            completed_lvas=completed_lvas,
+            desired_lvas=parsed_query.get("desired_lvas", []),
+            existing_plan_json=existing_plan_json,
+        )
+
+        return answer
+
     def search_lva_by_name(self, lva_name: str) -> List[Dict[str, Any]]:
         """
         Sucht eine spezifische LVA nach Name oder Alias.

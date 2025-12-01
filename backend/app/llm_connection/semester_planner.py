@@ -53,23 +53,25 @@ class SemesterPlanner:
         retrieved_lvas: List[Dict[str, Any]],
         ects_target: int,
         preferred_days: List[str],
-        completed_lvas: Optional[List[str]] = None,
-        desired_lvas: Optional[List[str]] = None,
+        completed_lvas: Optional[List[str]],
+        desired_lvas: Optional[List[str]],
+        existing_plan_json: Dict[str, Any],
     ) -> str:
         """
-        Erstellt eine Text-Antwort für das Chat-Fenster basierend auf retrieved LVAs.
-        (Ehemals create_semester_plan - für Chat-Window-Antworten)
+        Erstellt eine Text-Antwort für das Chat-Fenster basierend auf einem existierenden Semesterplan.
+        Diese Methode wird nach create_semester_plan_json() aufgerufen.
 
         Args:
             user_query: Original User Query
             retrieved_lvas: Liste von LVA-Dictionaries aus Retrieval
             ects_target: Gewünschte ECTS-Anzahl
             preferred_days: Liste bevorzugter Wochentage
+            existing_plan_json: Bereits erstellter Semesterplan aus create_semester_plan_json() (REQUIRED)
             completed_lvas: Bereits absolvierte LVAs
             desired_lvas: Explizit gewünschte LVAs
 
         Returns:
-            Formatierter Semesterplan als String (für Chat-Anzeige)
+            Chat-Antwort als String basierend auf dem existierenden Plan
         """
         # Format LVA-Liste für Prompt
         lva_list = self._format_lvas_for_prompt(retrieved_lvas)
@@ -82,6 +84,7 @@ class SemesterPlanner:
             preferred_days=preferred_days,
             completed_lvas=completed_lvas or [],
             desired_lvas=desired_lvas or [],
+            existing_plan_json=existing_plan_json,
         )
 
         # Save prompt to file for debugging/testing in other LLMs
@@ -272,68 +275,55 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
         preferred_days: List[str],
         completed_lvas: List[str],
         desired_lvas: List[str],
+        existing_plan_json: Dict[str, Any],
     ) -> str:
-        """Erstellt den LLM-Prompt für Semesterplanung."""
+        """
+        Erstellt den LLM-Prompt für Chat-Antworten basierend auf einem existierenden Semesterplan.
 
-        prompt = f"""Du bist ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
+        Args:
+            user_query: User-Anfrage
+            lva_list: Formatierte LVA-Liste für Kontext
+            ects_target: ECTS-Ziel
+            preferred_days: Bevorzugte Tage
+            completed_lvas: Absolvierte LVAs
+            desired_lvas: Gewünschte LVAs
+            existing_plan_json: Bereits erstellter Semesterplan (REQUIRED)
 
-{self.ideal_plan_context}
+        Returns:
+            LLM-Prompt als String
+        """
+        import json
+        plan_str = json.dumps(existing_plan_json, indent=2, ensure_ascii=False)
+
+        prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
 **USER-ANFRAGE:**
 {user_query}
 
+**BEREITS ERSTELLTER SEMESTERPLAN:**
+Der User hat bereits folgenden Semesterplan erstellt:
+
+```json
+{plan_str}
+```
 **ZIEL-PARAMETER:**
 - ECTS-Ziel: {ects_target} ECTS
 - Bevorzugte Tage: {", ".join(preferred_days) if preferred_days else "Keine Angabe"}
 - Bereits absolvierte LVAs: {", ".join(completed_lvas) if completed_lvas else "Keine"}
 - Gewünschte LVAs: {", ".join(desired_lvas) if desired_lvas else "Keine spezifischen Wünsche"}
 
-**VERFÜGBARE LVAs (aus Vector-Search):**
+**VERFÜGBARE LVAs (aus Vector-Search für Kontext):**
 {lva_list}
 
 **DEINE AUFGABEN:**
-1. **Wähle die optimalen LVAs** aus der Liste, die:
-   - Das ECTS-Ziel erreichen oder nah dran sind (max. ±3 ECTS Abweichung)
-   - An den bevorzugten Tagen stattfinden
-   - Keine zeitlichen Überschneidungen haben
-   - Voraussetzungen erfüllen (bereits absolvierte LVAs beachten!)
-   - Gewünschte LVAs priorisieren
-   - Den idealtypischen Studienverlauf berücksichtigen (welche LVAs werden typischerweise in welchem Semester empfohlen?)
-
-2. **Prüfe Voraussetzungen GRÜNDLICH**:
-   - Nutze die DETAILLIERTEN INFORMATIONEN AUS STUDIENHANDBUCH für jede LVA
-   - Prüfe "Anmeldevoraussetzungen" UND "Erwartete Vorkenntnisse"
-   - Prüfe ob verknüpfte LVAs (z.B. VL + UE) zusammen absolviert werden müssen
-   - Falls Voraussetzungen NICHT erfüllt: NICHT vorschlagen und detailliert erklären warum
-   - Beachte Hinweise wie "Diese VL muss mit UE XYZ kombiniert werden"
-
-3. **Prüfe Zeitkonflikte**:
-   - Keine zwei LVAs dürfen zur selben Zeit stattfinden
-   - Berücksichtige Pufferzeiten zwischen LVAs (min. 15 Min)
-
-4. **Erstelle einen strukturierten Semesterplan** mit:
-   - Liste der vorgeschlagenen LVAs (Name, ECTS, Tag, Uhrzeit, Leiter)
-   - Gesamte ECTS-Summe
-   - Kurze Begründung pro LVA (warum vorgeschlagen?)
-   - Hinweise zu nicht berücksichtigten gewünschten LVAs
-   - Warnungen zu fehlenden Voraussetzungen oder Verknüpfungen
+- Beantworte die User-Anfrage im Kontext des bereits existierenden Planes oben
+- Beantworte die Frage **ausschließlich** aufgrund der Informationen des Kontexts
+- Wenn du etwas nicht weißt, verweise auf https://studienhandbuch.jku.at/?lang=de
 
 **OUTPUT-FORMAT:**
-Hier ist dein Plan für das [Semester] mit [X] ECTS. Deine Uni-Tage sind [Tage]:
-
-- [LVA-Name] [Typ] - [ECTS] ECTS, [Tag] [Uhrzeit] ([Leiter])
-- [LVA-Name] [Typ] - [ECTS] ECTS, [Tag] [Uhrzeit] ([Leiter])
-...
-
-**Gesamt: [X] ECTS**
-
-**Begründung:**
-[Erkläre kurz warum diese LVAs gewählt wurden und ob alle Wünsche erfüllt werden konnten]
-
-**Hinweise:**
-[Falls gewünschte LVAs nicht berücksichtigt wurden, erkläre warum (Voraussetzungen, Zeitkonflikte, etc.)]
+Antworte in natürlicher Sprache und beantworte die Frage des Users.
+Formuliere deine Antwort **kurz** und freundlich.
 """
-
         return prompt
 
     def _build_planning_prompt_json(
@@ -347,7 +337,7 @@ Hier ist dein Plan für das [Semester] mit [X] ECTS. Deine Uni-Tage sind [Tage]:
     ) -> str:
         """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
 
-        prompt = f"""Du bist ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
+        prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
 {self.ideal_plan_context}
 
@@ -365,17 +355,18 @@ Hier ist dein Plan für das [Semester] mit [X] ECTS. Deine Uni-Tage sind [Tage]:
 
 **DEINE AUFGABEN:**
 1. **Wähle die optimalen LVAs** aus der Liste, die:
-   - Das ECTS-Ziel erreichen oder nah dran sind (max. ±3 ECTS Abweichung)
+   - Das ECTS-Ziel erreichen, eine Unterschreitung um 3 ECTS ist möglich, eine Überschreitung nicht
    - An den bevorzugten Tagen stattfinden
-   - Keine zeitlichen Überschneidungen haben
-   - Voraussetzungen erfüllen (bereits absolvierte LVAs beachten!)
+   - Voraussetzungen erfüllen
+   - Bereits absolvierte Kurse dürfen **keinesfalls** im Plan vorkommen
+   - jeder Kurs darf im Plan nur **einmal** vorkommen
    - Gewünschte LVAs priorisieren
-   - Den idealtypischen Studienverlauf berücksichtigen
 
 2. **Prüfe Voraussetzungen GRÜNDLICH**:
    - Nutze die DETAILLIERTEN INFORMATIONEN AUS STUDIENHANDBUCH für jede LVA
    - Prüfe "Anmeldevoraussetzungen" UND "Erwartete Vorkenntnisse"
    - Falls Voraussetzungen NICHT erfüllt: NICHT vorschlagen
+   - berücksichtige den idealtypischen Studienverlauf
 
 3. **Prüfe Zeitkonflikte**:
    - Keine zwei LVAs dürfen zur selben Zeit stattfinden
@@ -425,7 +416,7 @@ WICHTIG:
         # Format LVAs
         lva_context = self._format_lvas_for_prompt(context_lvas)
 
-        prompt = f"""Du bist ein **Studienberater** für Bachelor Wirtschaftsinformatik an der JKU.
+        prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
 **FRAGE:**
 {question}
