@@ -65,21 +65,45 @@ class StudyPlanningRAG:
         )
         print(f"   Retrieved {len(retrieved_lvas)} LVAs")
 
+        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+        # 4a. Filter basierend auf Voraussetzungen
+        print("\n3a. Filtering by Prerequisites...")
+        filter_result = self.retriever.filter_by_prerequisites(
+            retrieved_lvas=retrieved_lvas,
+            completed_lvas=completed_lvas
+        )
+
+        eligible_lvas = filter_result["eligible"]
+        filtered_lvas = filter_result["filtered"]
+
+        print(f"   Eligible: {len(eligible_lvas)} LVAs")
+        print(f"   Filtered: {len(filtered_lvas)} LVAs (missing prerequisites)")
+
+        # Debug: Zeige gefilterte LVAs
+        if filtered_lvas:
+            print("\n   Gefilterte LVAs:")
+            for item in filtered_lvas[:5]:  # Nur erste 5 anzeigen
+                lva_name = item["lva"]["metadata"].get("lva_name", "Unknown")
+                reason = item["reason"]
+                print(f"     - {lva_name}: {reason}")
+
         # 5. LLM Planning (for chat window)
         print("\n4. Generating Chat Answer...")
         semester_plan = self.planner.create_chat_answer(
             user_query=user_query,
-            retrieved_lvas=retrieved_lvas,
+            retrieved_lvas=eligible_lvas,  # Nur eligible LVAs für Planung
             ects_target=parsed_query["ects_target"] or 15,
             preferred_days=parsed_query["preferred_days"],
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query["desired_lvas"],
+            filtered_lvas=filtered_lvas,  # NEU: für Erklärungen
         )
 
         # 6. Return Results
         return {
             "plan": semester_plan,
-            "retrieved_lvas": retrieved_lvas,
+            "retrieved_lvas": eligible_lvas,  # Nur eligible
+            "filtered_lvas": filtered_lvas,   # NEU: für Debugging
             "parsed_query": parsed_query,
             "metadata_filter": metadata_filter,
         }
