@@ -87,7 +87,7 @@ async def send_chat_message(
             # 2. Verify planning exists and belongs to user
             planning = await conn.fetchrow(
                 """
-                SELECT semester, target_ects, preferred_days, mandatory_courses
+                SELECT semester, target_ects, preferred_days, mandatory_courses, semester_plan_json
                 FROM plannings
                 WHERE id = $1 AND user_email = $2
                 """,
@@ -125,47 +125,38 @@ async def send_chat_message(
             )
             print(f"[CHAT] Saved user message with ID: {user_message_id}")
 
-        # 4. Decide: Generate plan OR answer question
-        if message_count == 0:
-            # FIRST MESSAGE -> Generate semester plan
-            print("[CHAT] First message detected -> Generating semester plan with RAG")
+        # 4. Get existing semester plan JSON from database
+        semester_plan_json_raw = planning.get('semester_plan_json')
 
-            # Build query from planning data
-            semester = planning['semester']
-            target_ects = planning['target_ects']
-            preferred_days = planning['preferred_days'] or []
-            mandatory_courses = planning['mandatory_courses']
-
-            days_str = ", ".join(preferred_days) if preferred_days else "keine Einschränkungen"
-
-            query = f"Ich möchte {target_ects} ECTS im {semester} machen"
-            if preferred_days:
-                query += f", an {days_str}"
-            if mandatory_courses:
-                query += f". Ich möchte unbedingt folgende LVAs machen: {mandatory_courses}"
-
-            print(f"[CHAT] Built query: {query}")
-            print(f"[CHAT] User ID: {user_id}")
-
-            # Call RAG Pipeline for semester planning
-            result = rag_system.create_semester_plan(
-                user_query=query,
-                user_id=user_id,
-                top_k=20
+        if not semester_plan_json_raw:
+            raise HTTPException(
+                status_code=400,
+                detail="No semester plan found. Please click 'Planung starten' first."
             )
 
-            llm_response = result["plan"]
-            print(f"[CHAT] Generated semester plan (length: {len(llm_response)})")
-
+        # Parse JSON string to dict if needed
+        import json
+        if isinstance(semester_plan_json_raw, str):
+            semester_plan_json = json.loads(semester_plan_json_raw)
         else:
-            # FOLLOW-UP MESSAGE -> Answer question with RAG Q&A
-            print("[CHAT] Follow-up message detected -> Answering with RAG Q&A")
+            semester_plan_json = semester_plan_json_raw
 
-            llm_response = rag_system.answer_question(
+        print(f"[CHAT] Using existing semester plan with {len(semester_plan_json.get('lvas', []))} LVAs")
+
+        # 5. Answer question based on existing plan
+        try:
+            llm_response = rag_system.answer_question_with_plan(
                 question=request.message,
+                existing_plan_json=semester_plan_json,
+                user_id=user_id,
                 top_k=10
             )
             print(f"[CHAT] Generated answer (length: {len(llm_response)})")
+        except Exception as e:
+            print(f"[CHAT ERROR] {e}")
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=str(e))
 
         # Save assistant response to database
         async with pool.acquire() as conn:
