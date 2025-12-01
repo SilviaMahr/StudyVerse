@@ -350,6 +350,7 @@ Formuliere deine Antwort **kurz** und freundlich.
 """
         return prompt
 
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def _build_planning_prompt_json(
         self,
         user_query: str,
@@ -358,8 +359,21 @@ Formuliere deine Antwort **kurz** und freundlich.
         preferred_days: List[str],
         completed_lvas: List[str],
         desired_lvas: List[str],
+        filtered_lvas: List[Dict[str, Any]] = None,  # NEU
     ) -> str:
         """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
+
+        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+        # Baue Filtered-LVAs-Section
+        filtered_info = ""
+        if filtered_lvas:
+            filtered_info = "\n\n**AUSGESCHLOSSENE LVAs (Voraussetzungen nicht erfüllt):**\n"
+            filtered_info += "Diese LVAs wurden bereits herausgefiltert und sollten NICHT im Plan erscheinen:\n"
+            for item in filtered_lvas:
+                lva_name = item["lva"]["metadata"].get("lva_name", "Unknown")
+                lva_nr = item["lva"]["metadata"].get("lva_nr", "")
+                missing = ", ".join(item["missing_prerequisites"])
+                filtered_info += f"- {lva_name} ({lva_nr}): Fehlende Voraussetzungen: {missing}\n"
 
         prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
@@ -374,8 +388,9 @@ Formuliere deine Antwort **kurz** und freundlich.
 - Bereits absolvierte LVAs: {", ".join(completed_lvas) if completed_lvas else "Keine"}
 - Gewünschte LVAs: {", ".join(desired_lvas) if desired_lvas else "Keine spezifischen Wünsche"}
 
-**VERFÜGBARE LVAs (aus Vector-Search):**
+**VERFÜGBARE LVAs (Voraussetzungen erfüllt):**
 {lva_list}
+{filtered_info}
 
 **DEINE AUFGABEN:**
 1. **Wähle die optimalen LVAs** aus der Liste, die:
