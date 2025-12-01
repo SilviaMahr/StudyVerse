@@ -229,7 +229,7 @@ async def get_chat_history(
 
         # If no messages exist, create and store the greeting message
         if message_count == 0:
-            greeting_message = "Hallo! Ich bin UNI, dein Planungsassistent. Sag mir, wie ich diesen Plan anpassen kann."
+            greeting_message = "Hallo! Ich bin UNI, dein Planungsassistent. Du kannst mir Fragen zum Plan oder den LVAs stellen."
             greeting_id = await conn.fetchval(
                 """
                 INSERT INTO chat_messages (planning_id, role, content, timestamp)
