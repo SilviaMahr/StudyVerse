@@ -4,6 +4,9 @@ import psycopg2
 from typing import List, Dict, Any, Optional
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
+# Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+from difflib import SequenceMatcher
+import re
 
 load_dotenv()
 
@@ -259,6 +262,160 @@ class HybridRetriever:
         except Exception as e:
             print(f"Error during LVA name search: {e}")
             return []
+
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+    def _fuzzy_match(self, text1: str, text2: str, threshold: float = 0.80) -> bool:
+        """
+        Fuzzy String Matching mit konfigurierbarem Threshold.
+
+        Args:
+            text1: Erster String
+            text2: Zweiter String
+            threshold: Minimum Similarity Score (0.0 - 1.0)
+
+        Returns:
+            True wenn Similarity >= threshold
+        """
+        # Normalisiere für besseres Matching
+        text1 = text1.lower().strip()
+        text2 = text2.lower().strip()
+
+        ratio = SequenceMatcher(None, text1, text2).ratio()
+        return ratio >= threshold
+
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+    def _extract_prerequisite_names(self, anmeldevoraussetzungen: str) -> List[str]:
+        """
+        Extrahiert LVA-Namen aus dem Freitext-Feld 'anmeldevoraussetzungen'.
+
+        Beispiele:
+        - "positive Absolvierung von SOFT1 VL" → ["SOFT1"]
+        - "VL Einführung in die Softwareentwicklung" → ["VL Einführung in die Softwareentwicklung"]
+
+        Returns:
+            Liste von extrahierten LVA-Namen/Codes
+        """
+        if not anmeldevoraussetzungen or anmeldevoraussetzungen.strip().lower() == "keine":
+            return []
+
+        prerequisites = []
+
+        # Pattern für LVA-Codes (z.B. SOFT1, ALGO, DKE)
+        lva_code_pattern = r'\b([A-Z]{2,6}\d?)\b'
+        codes = re.findall(lva_code_pattern, anmeldevoraussetzungen)
+        prerequisites.extend(codes)
+
+        # Pattern für vollständige LVA-Namen (z.B. "VL Softwareentwicklung")
+        # Suche nach "VL/UE/PR/..." gefolgt von Text
+        lva_name_pattern = r'((?:VL|UE|PR|SE|KS|KV|PS|PE|PJ|KT)\s+[A-ZÄÖÜ][a-zäöüß\s]+)'
+        names = re.findall(lva_name_pattern, anmeldevoraussetzungen)
+        prerequisites.extend(names)
+
+        return prerequisites
+
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+    def _check_prerequisites_met(
+        self,
+        prerequisite_names: List[str],
+        completed_lvas: List[str]
+    ) -> Dict[str, bool]:
+        """
+        Prüft ob Voraussetzungen erfüllt sind via Fuzzy Matching.
+
+        Args:
+            prerequisite_names: Liste von benötigten LVA-Namen/Codes
+            completed_lvas: Liste von absolvierten LVA-Namen
+
+        Returns:
+            Dict mit {prerequisite_name: is_met}
+        """
+        results = {}
+
+        for prereq in prerequisite_names:
+            is_met = False
+
+            # Prüfe gegen jede completed LVA
+            for completed in completed_lvas:
+                # Fuzzy Match (Threshold 80%)
+                if self._fuzzy_match(prereq, completed, threshold=0.80):
+                    is_met = True
+                    break
+
+                # Falls prereq ein Code ist (z.B. "SOFT1"), checke ob in completed enthalten
+                if len(prereq) <= 6 and prereq.upper() in completed.upper():
+                    is_met = True
+                    break
+
+            results[prereq] = is_met
+
+        return results
+
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+    def filter_by_prerequisites(
+        self,
+        retrieved_lvas: List[Dict[str, Any]],
+        completed_lvas: List[str]
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Filtert LVAs basierend auf Voraussetzungen.
+
+        Args:
+            retrieved_lvas: Retrieved documents von retrieve()
+            completed_lvas: Absolvierte LVAs des Users
+
+        Returns:
+            {
+                "eligible": [...],  # LVAs die alle Voraussetzungen erfüllen
+                "filtered": [       # LVAs die Voraussetzungen NICHT erfüllen
+                    {
+                        "lva": {...},
+                        "missing_prerequisites": ["SOFT1", "ALGO"],
+                        "reason": "Fehlende Voraussetzungen: SOFT1, ALGO"
+                    },
+                    ...
+                ]
+            }
+        """
+        eligible_lvas = []
+        filtered_lvas = []
+
+        for lva_doc in retrieved_lvas:
+            metadata = lva_doc.get("metadata", {})
+            anmeldevoraussetzungen = metadata.get("anmeldevoraussetzungen", "")
+
+            # Falls keine Voraussetzungen oder "keine" → direkt eligible
+            if not anmeldevoraussetzungen or anmeldevoraussetzungen.strip().lower() == "keine":
+                eligible_lvas.append(lva_doc)
+                continue
+
+            # Extrahiere benötigte LVAs
+            prerequisite_names = self._extract_prerequisite_names(anmeldevoraussetzungen)
+
+            if not prerequisite_names:
+                # Konnte nichts parsen → erstmal eligible (sicherer)
+                eligible_lvas.append(lva_doc)
+                continue
+
+            # Prüfe welche Voraussetzungen erfüllt sind
+            prereq_check = self._check_prerequisites_met(prerequisite_names, completed_lvas)
+
+            missing = [name for name, met in prereq_check.items() if not met]
+
+            if missing:
+                # Nicht alle Voraussetzungen erfüllt
+                filtered_lvas.append({
+                    "lva": lva_doc,
+                    "missing_prerequisites": missing,
+                    "reason": f"Fehlende Voraussetzungen: {', '.join(missing)}"
+                })
+            else:
+                # Alle Voraussetzungen erfüllt
+                eligible_lvas.append(lva_doc)
+
+        return {
+            "eligible": eligible_lvas,
+            "filtered": filtered_lvas
+        }
 
     def get_completed_lvas_for_user(self, user_id: int) -> List[str]:
         """
