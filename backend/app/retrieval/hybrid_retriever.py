@@ -18,6 +18,28 @@ class HybridRetriever:
     2. Vector Similarity Search (for free text field)
     """
 
+    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+    # Fallback: Bekannte Voraussetzungsketten (falls Metadaten fehlen/falsch sind)
+    KNOWN_PREREQUISITES = {
+        # SOFT-Kette
+        "Vertiefung Softwareentwicklung": ["Einführung in die Softwareentwicklung"],
+        "Software Engineering": ["Vertiefung Softwareentwicklung"],
+        "PR Software Engineering": ["Software Engineering"],
+
+        # DKE-Kette
+        "Data & Knowledge Engineering": ["Datenmodellierung"],
+        "PR Data & Knowledge Engineering": ["Data & Knowledge Engineering"],
+
+        # COMM-Kette
+        "Communications Engineering": ["Prozess- und Kommunikationsmodellierung"],
+
+        # INFO-Kette
+        "Informationsmanagement": ["Einführung in die Wirtschaftsinformatik"],
+        "IT-Project Engineering & Management": ["Einführung in die Wirtschaftsinformatik"],
+
+        # Weitere bekannte Ketten können hier hinzugefügt werden
+    }
+
     def __init__(self):
         self.db_url = os.getenv("DATABASE_URL")
         if not self.db_url:
@@ -124,7 +146,7 @@ class HybridRetriever:
         self,
         query: str,
         metadata_filter: Optional[Dict[str, Any]] = None,
-        top_k: int = 20,
+        top_k: int = 40,
     ) -> List[Dict[str, Any]]:
         #TODO Check if top k none would make sense, try out later when LLM is ready to go
 
@@ -300,16 +322,29 @@ class HybridRetriever:
 
         prerequisites = []
 
-        # Pattern für LVA-Codes (z.B. SOFT1, ALGO, DKE)
-        lva_code_pattern = r'\b([A-Z]{2,6}\d?)\b'
+        # Stopwörter die KEINE LVA-Codes sind
+        STOPWORDS = {"ODER", "UND", "IT", "VO", "VL", "UE", "PR", "SE", "KS", "KV", "PS", "PE", "PJ", "KT", "IN", "AN", "IM"}
+
+        # Pattern für LVA-Codes MIT Nummer (z.B. SOFT1, ALGO2, DKE3)
+        lva_code_with_number = r'\b([A-Z]{2,6}\d+)\b'
+        codes_with_number = re.findall(lva_code_with_number, anmeldevoraussetzungen)
+        prerequisites.extend(codes_with_number)
+
+        # Pattern für bekannte LVA-Codes OHNE Nummer (z.B. SOFT, ALGO, DKE, BWL)
+        # Nur wenn sie 3-6 Buchstaben haben und NICHT in Stopwords sind
+        lva_code_pattern = r'\b([A-Z]{3,6})\b'
         codes = re.findall(lva_code_pattern, anmeldevoraussetzungen)
-        prerequisites.extend(codes)
+        for code in codes:
+            if code not in STOPWORDS:
+                prerequisites.append(code)
 
         # Pattern für vollständige LVA-Namen (z.B. "VL Softwareentwicklung")
         # Suche nach "VL/UE/PR/..." gefolgt von Text
         lva_name_pattern = r'((?:VL|UE|PR|SE|KS|KV|PS|PE|PJ|KT)\s+[A-ZÄÖÜ][a-zäöüß\s]+)'
         names = re.findall(lva_name_pattern, anmeldevoraussetzungen)
         prerequisites.extend(names)
+
+        print(f"[EXTRACT DEBUG] Raw: '{anmeldevoraussetzungen}' → Extracted: {prerequisites}")
 
         return prerequisites
 
@@ -340,13 +375,16 @@ class HybridRetriever:
 
             # Prüfe gegen jede completed LVA
             for completed in completed_lvas:
-                # Fuzzy Match (Threshold 75%)
+                # Fuzzy Match (Threshold 70% für Namen, 75% für Codes)
                 ratio = SequenceMatcher(None, prereq.lower(), completed.lower()).ratio()
                 if ratio > best_score:
                     best_score = ratio
                     best_match = completed
 
-                if ratio >= 0.75:
+                # Threshold abhängig von prereq-Länge (Namen sind länger als Codes)
+                threshold = 0.65 if len(prereq) > 10 else 0.75
+
+                if ratio >= threshold:
                     is_met = True
                     print(f"[PREREQ DEBUG]   ✓ '{prereq}' MATCHED '{completed}' (score: {ratio:.2f})")
                     break
@@ -355,6 +393,12 @@ class HybridRetriever:
                 if len(prereq) <= 6 and prereq.upper() in completed.upper():
                     is_met = True
                     print(f"[PREREQ DEBUG]   ✓ '{prereq}' FOUND IN '{completed}' (substring match)")
+                    break
+
+                # Checke auch ob completed den prereq enthält (für volle Namen)
+                if len(prereq) > 10 and prereq.lower() in completed.lower():
+                    is_met = True
+                    print(f"[PREREQ DEBUG]   ✓ '{prereq}' SUBSTRING IN '{completed}'")
                     break
 
             if not is_met:
@@ -426,18 +470,21 @@ class HybridRetriever:
                 continue
 
             # 2. CHECK: Voraussetzungen prüfen
-            # Falls keine Voraussetzungen oder "keine" → direkt eligible
-            if not anmeldevoraussetzungen or anmeldevoraussetzungen.strip().lower() == "keine":
-                print(f"[FILTER DEBUG] ✅ ELIGIBLE (keine Voraussetzungen): {lva_name} ({lva_nr})")
-                eligible_lvas.append(lva_doc)
-                continue
+            prerequisite_names = []
 
-            # Extrahiere benötigte LVAs
-            prerequisite_names = self._extract_prerequisite_names(anmeldevoraussetzungen)
+            # Zuerst: Versuche aus Metadaten zu extrahieren
+            if anmeldevoraussetzungen and anmeldevoraussetzungen.strip().lower() != "keine":
+                prerequisite_names = self._extract_prerequisite_names(anmeldevoraussetzungen)
 
+            # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+            # Fallback: Falls nichts extrahiert wurde, checke gegen bekannte Voraussetzungsketten
+            if not prerequisite_names and lva_name in self.KNOWN_PREREQUISITES:
+                prerequisite_names = self.KNOWN_PREREQUISITES[lva_name]
+                print(f"[FILTER DEBUG] 🔄 Using KNOWN prerequisites for '{lva_name}': {prerequisite_names}")
+
+            # Falls immer noch keine Voraussetzungen → eligible
             if not prerequisite_names:
-                # Konnte nichts parsen → erstmal eligible (sicherer)
-                print(f"[FILTER DEBUG] ✅ ELIGIBLE (Voraussetzungen nicht parsebar): {lva_name} ({lva_nr})")
+                print(f"[FILTER DEBUG] ✅ ELIGIBLE (keine Voraussetzungen): {lva_name} ({lva_nr})")
                 eligible_lvas.append(lva_doc)
                 continue
 
