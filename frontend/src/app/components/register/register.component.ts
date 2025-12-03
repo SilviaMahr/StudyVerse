@@ -1,6 +1,13 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService} from '../../../services/auth.service';
@@ -35,8 +42,20 @@ export class RegisterComponent {
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required],
       studiengang: ['Bachelor Wirtschaftsinformatik']
-    });
+    }, {validators: this.passwordMatchValidator});
+  }
+
+  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password');
+    const confirmPassword = control.get('confirmPassword');
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    return password.value === confirmPassword.value ? null: { passwordMismatch: true };
   }
 
   async onRegisterSubmit() {
@@ -47,14 +66,15 @@ export class RegisterComponent {
 
     this.isLoading = true;
     this.error = null;
-    const formValue = this.registerForm.value;
+    const { confirmPassword, ...registerData } = this.registerForm.value;
+    //const formValue = this.registerForm.value;
 
     try {
-      await firstValueFrom(this.authService.register(formValue));
+      await firstValueFrom(this.authService.register(registerData));
 
       await firstValueFrom(this.authService.login({
-        username: formValue.email, // Backend erwartet username als Feld
-        password: formValue.password
+        username: registerData.email, // Backend erwartet username als Feld
+        password: registerData.password
       }));
 
       await this.loadAvailableLvas();
