@@ -9,6 +9,42 @@
   color: white;
 }
 
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input.data-field {
+  width: 100%;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+
+.toggle-visibility {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.toggle-visibility:hover {
+  opacity: 1;
+}
+
+.toggle-visibility:focus {
+  outline: none;
+}
+
 .auth-card {
   background-color: var(--sidebar-bg, #2c3e50); /* Fallback Farbe falls Variable fehlt */
   padding: 2rem 2.5rem;
