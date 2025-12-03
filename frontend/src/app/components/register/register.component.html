@@ -31,7 +31,22 @@
 
         <div class="form-group">
           <label for="password">Passwort</label>
-          <input id="password" type="password" formControlName="password" class="data-field" placeholder="Mindestens 6 Zeichen">
+
+          <div class="password-wrapper">
+          <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              class="data-field"
+              placeholder="Mindestens 6 Zeichen">
+            <button type="button" class="toggle-visibility" (click)="showPassword = !showPassword">
+              @if (showPassword) {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              } @else {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7c.44 0 .87-.03 1.28-.09"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              }
+            </button>
+            </div>
           @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
             <div class="validation-hint">
               Passwort muss mind. 6 Zeichen lang sein.
@@ -46,12 +61,23 @@
         }
         <div class="form-group">
           <label for="confirmPassword">Passwort wiederholen</label>
+
+          <div class="password-wrapper">
           <input
             id="confirmPassword"
-            type="password"
+            [type]="showConfirmPassword ? 'text' : 'password'"
             formControlName="confirmPassword"
             class="data-field"
             placeholder="Passwort erneut eingeben">
+
+            <button type="button" class="toggle-visibility" (click)="showConfirmPassword = !showConfirmPassword">
+              @if (showConfirmPassword) {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              } @else {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7c.44 0 .87-.03 1.28-.09"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+              }
+            </button>
+          </div>
 
           @if (registerForm.get('confirmPassword')?.touched && registerForm.errors?.['passwordMismatch']) {
             <div class="validation-hint">

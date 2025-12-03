@@ -28,13 +28,15 @@ export class RegisterComponent {
   isLoading = false;
   error: string | null = null;
 
-  availableModules: LVAModule[] = []; // Typisiert mit deinem Model
-  selectedLvas: number[] = [];        // Liste der ausgewählten IDs
+  availableModules: LVAModule[] = [];
+  selectedLvas: number[] = [];
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private profileService: ProfileService, // Hier nutzen wir jetzt deinen ProfileService
+    private profileService: ProfileService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
@@ -67,13 +69,12 @@ export class RegisterComponent {
     this.isLoading = true;
     this.error = null;
     const { confirmPassword, ...registerData } = this.registerForm.value;
-    //const formValue = this.registerForm.value;
 
     try {
       await firstValueFrom(this.authService.register(registerData));
 
       await firstValueFrom(this.authService.login({
-        username: registerData.email, // Backend erwartet username als Feld
+        username: registerData.email,
         password: registerData.password
       }));
 
