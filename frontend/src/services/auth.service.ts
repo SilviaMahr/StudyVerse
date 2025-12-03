@@ -12,7 +12,7 @@ export class AuthService {
   private readonly API_URL = 'http://127.0.0.1:8000/auth';
 
   private isBrowser: boolean;
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.checkInitialToken());
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
 
   public isAuthenticated$ =this.isAuthenticatedSubject.asObservable();
 
@@ -23,8 +23,8 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(this.platformId);
 
     if (this.isBrowser) {
-      const hasToken = !!localStorage.getItem(this.TOKEN_KEY);
-      this.isAuthenticatedSubject.next(hasToken);
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      this.isAuthenticatedSubject.next(!!token);
     }
   }
 
@@ -70,12 +70,5 @@ export class AuthService {
       localStorage.removeItem(this.TOKEN_KEY);
       this.isAuthenticatedSubject.next(false);
     }
-  }
-
-  private checkInitialToken(): boolean {
-    if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem(this.TOKEN_KEY);
-    }
-    return false;
   }
 }
