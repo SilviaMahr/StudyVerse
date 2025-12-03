@@ -1,7 +1,7 @@
 <a (click)="openModal()" class="logout-link">
 
   <img
-    src="assets/logoutIcon.png"
+    [src]="themeService.logoutIconPath$ | async"
     alt="Logout"
     class="sidebar-icon"
     onerror="this.style.display='none'">

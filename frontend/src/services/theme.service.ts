@@ -25,6 +25,12 @@ export class ThemeService {
       : this.assetPath + "moonEmpty.png")
   );
 
+  public logoutIconPath$ = this.mode$.pipe(
+    map(mode => mode === 'dark'
+      ? this.assetPath + "darkLogoutIcon.png"
+      : this.assetPath + "logoutIcon.png")
+  );
+
   constructor(
     private rendererFactory: RendererFactory2,
     @Inject(PLATFORM_ID) private platformId: Object
