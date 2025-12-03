@@ -17,7 +17,7 @@ DOMAIN_BASE = "https://studienhandbuch.jku.at/"
 STUDIENHANDBUCH_URL = DOMAIN_BASE + "curr/1193?id=1193&lang=de"
 KUSSS_BASE_URL = "https://kusss.jku.at/kusss/"
 WIN_ROOT_URL = (
-    "https://www.kusss.jku.at/kusss/coursecatalogue-get-segments.action?curId=204&set.listsubjects-overview.treeView.expandedNodes=&set.listsubjects-overview.treeView.expandAll=true"
+    KUSSS_BASE_URL + "coursecatalogue-get-segments.action?curId=204&set.listsubjects-overview.treeView.expandedNodes=&set.listsubjects-overview.treeView.expandAll=true"
 )
 
 def load_pages_from_pdf(file_path: str) -> List[Document]:
@@ -153,20 +153,12 @@ def extract_lva_links_for_course(html):
     }
 
 
-def extract_win_bsc_info():
-    return fetch_content_from_div(WIN_ROOT_URL), WIN_ROOT_URL
-
-
 def extract_win_bsc_info_with_semester(semester: str = "WS"):
-    """
-    Extrahiert WIN BSc Daten für ein bestimmtes Semester mit Playwright.
+    return extract_info_with_semester(WIN_ROOT_URL, semester)
 
-    Args:
-        semester: "WS" oder "SS"
 
-    Returns:
-        (html_content, url) tuple
-    """
+def extract_info_with_semester(url: str, semester: str):
+    # Extract data from URL using semester info
     try:
         with sync_playwright() as p:
             # Browser starten (headless = True für Hintergrund-Ausführung)
@@ -219,15 +211,15 @@ def extract_win_bsc_info_with_semester(semester: str = "WS"):
                 )
 
                 browser.close()
-                return combined_html, WIN_ROOT_URL
+                return combined_html, url
             else:
                 print("ERROR: Could not find content div")
                 browser.close()
-                return None, WIN_ROOT_URL
+                return None, url
 
     except Exception as e:
         print(f"ERROR extracting with Playwright: {e}")
-        return None, WIN_ROOT_URL
+        return None, url
 
 
 def extract_semester_info(html):
