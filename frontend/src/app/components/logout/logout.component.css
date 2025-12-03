@@ -14,6 +14,9 @@
   padding: 0.6em 0.9em;
 }
 
+:host-context(.dark-mode) .logout-link {
+  color: black;
+}
 .logout-link:hover {
   background-color: rgba(255, 255, 255, 0.2);
   opacity: 1;

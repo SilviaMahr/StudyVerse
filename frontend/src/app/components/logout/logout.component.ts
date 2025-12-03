@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {AuthService} from '../../../services/auth.service';
 import {Router} from '@angular/router';
+import {ThemeService} from '../../../services/theme.service';
 
 @Component({
   selector: 'app-logout',
@@ -16,7 +17,8 @@ export class LogoutComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    public themeService: ThemeService
   ) { }
 
   openModal(): void {
