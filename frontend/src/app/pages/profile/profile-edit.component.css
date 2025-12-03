@@ -80,7 +80,7 @@
 }
 
 .secondary-button {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem;
   background-color: white;
   color: black;
   border: 1px solid var(--button-bg);
@@ -90,6 +90,17 @@
   text-align: left;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.secondary-button .edit-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 1;
 }
 
 
@@ -136,3 +147,59 @@
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
   transition: filter 0.3s ease;
 }
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.input-with-icon .edit-icon {
+  position: absolute;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  stroke: black;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.input-wrapper input:focus + .edit-icon {
+  opacity: 1;
+}
+
+.edit-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+
+.edit-container input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.edit-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+  margin-left: 8px;
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  stroke: #777;
+  color: #777;
+}
+
+.edit-container:hover .edit-icon {
+  opacity: 1;
+}
+
