@@ -66,11 +66,12 @@ class StudyPlanningRAG:
         print(f"   Retrieved {len(retrieved_lvas)} LVAs")
 
         # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
-        # 4a. Filter basierend auf Voraussetzungen
-        print("\n3a. Filtering by Prerequisites...")
+        # 4a. Filter basierend auf Voraussetzungen, Wahlfächer UND Semester
+        print("\n3a. Filtering by Prerequisites, Wahlfächer, and Semester...")
         filter_result = self.retriever.filter_by_prerequisites(
             retrieved_lvas=retrieved_lvas,
-            completed_lvas=completed_lvas
+            completed_lvas=completed_lvas,
+            target_semester=parsed_query["semester"]  # NEU: Semester-Filter
         )
 
         eligible_lvas = filter_result["eligible"]
@@ -78,6 +79,17 @@ class StudyPlanningRAG:
 
         print(f"   Eligible: {len(eligible_lvas)} LVAs")
         print(f"   Filtered: {len(filtered_lvas)} LVAs (missing prerequisites)")
+
+        # DEBUG: Show eligible LVAs
+        if eligible_lvas:
+            print("\n   Eligible LVAs (will be sent to LLM):")
+            for lva in eligible_lvas[:10]:  # Show first 10
+                lva_meta = lva.get("metadata", {})
+                lva_name = lva_meta.get("lva_name", "Unknown")
+                lva_type = lva_meta.get("lva_type", "N/A")
+                lva_sem = lva_meta.get("semester", "N/A")
+                lva_nr = lva_meta.get("lva_nr", "N/A")
+                print(f"     - {lva_name} ({lva_type}) | Sem: {lva_sem} | Nr: {lva_nr}")
 
         # Debug: Zeige gefilterte LVAs
         if filtered_lvas:
@@ -187,7 +199,8 @@ class StudyPlanningRAG:
             print("Filtering by prerequisites (new plan requested)...")
             filter_result = self.retriever.filter_by_prerequisites(
                 retrieved_lvas=retrieved_lvas,
-                completed_lvas=completed_lvas
+                completed_lvas=completed_lvas,
+                target_semester=parsed_query.get("semester")  # NEU: Semester-Filter
             )
             retrieved_lvas = filter_result["eligible"]
             filtered_lvas = filter_result["filtered"]

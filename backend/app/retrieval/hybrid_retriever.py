@@ -204,19 +204,29 @@ class HybridRetriever:
             cur.execute(base_query, final_params)
             rows = cur.fetchall()
 
-            # remove duplicates and only keep the first (best) chunk from each lva
-            # to keep it clear
-            seen_lvas = set()
+            # remove duplicates and only keep the first (best) chunk from each (lva_name, lva_type)
+            # Different time slots (different lva_nr) of the same course should be deduplicated
+            seen_lvas = set()  # stores (lva_name, lva_type) tuples
             unique_results = []
 
             for row in rows:
                 metadata = row[2]
+                lva_name = metadata.get("lva_name")
+                lva_type = metadata.get("lva_type")
                 lva_nr = metadata.get("lva_nr")
 
-                # also keep chunks without lva nr (e.g. vor Curicculum data)
-                if lva_nr is None or lva_nr not in seen_lvas:
-                    if lva_nr:
-                        seen_lvas.add(lva_nr)
+                # Create unique key: (lva_name, lva_type)
+                # This ensures we only get ONE entry per course type (e.g. only one "VL Datenmodellierung")
+                # regardless of different time slots (lva_nr 258.100, 258.101, etc.)
+                if lva_name and lva_type:
+                    lva_key = (lva_name, lva_type)
+                else:
+                    # For entries without name/type (curriculum docs), use lva_nr or ID
+                    lva_key = lva_nr if lva_nr else row[0]
+
+                # Only add if we haven't seen this (name, type) combination yet
+                if lva_key not in seen_lvas:
+                    seen_lvas.add(lva_key)
 
                     unique_results.append({
                         "id": row[0],
@@ -412,12 +422,14 @@ class HybridRetriever:
     def filter_by_prerequisites(
         self,
         retrieved_lvas: List[Dict[str, Any]],
-        completed_lvas: List[str]
+        completed_lvas: List[str],
+        target_semester: Optional[str] = None
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Filtert LVAs basierend auf Voraussetzungen, bereits absolvierten LVAs UND Wahlfächern.
+        Filtert LVAs basierend auf Voraussetzungen, bereits absolvierten LVAs, Wahlfächern UND Semester.
 
         Filterkriterien (in dieser Reihenfolge):
+        0. FALSCHES SEMESTER → wird gefiltert (falls target_semester angegeben)
         1. WAHLFACH → wird gefiltert (nicht vorgeschlagen)
         2. Bereits absolviert → wird gefiltert
         3. Voraussetzungen nicht erfüllt → wird gefiltert
@@ -425,6 +437,7 @@ class HybridRetriever:
         Args:
             retrieved_lvas: Retrieved documents von retrieve()
             completed_lvas: Absolvierte LVAs des Users
+            target_semester: Gewünschtes Semester (z.B. "SS", "WS") - optional
 
         Returns:
             {
@@ -446,6 +459,9 @@ class HybridRetriever:
         for comp_lva in completed_lvas:
             print(f"  ✓ {comp_lva}")
 
+        if target_semester:
+            print(f"[FILTER DEBUG] Target semester: {target_semester}")
+
         # Lade alle Wahlfächer aus der Datenbank (einmalig für alle LVAs)
         print(f"[FILTER DEBUG] Loading Wahlfächer from database...")
         wahlfaecher_names = self._get_wahlfaecher_names()
@@ -454,7 +470,32 @@ class HybridRetriever:
             metadata = lva_doc.get("metadata", {})
             lva_name = metadata.get("lva_name", "Unknown")
             lva_nr = metadata.get("lva_nr", "")
+            lva_semester = metadata.get("semester", None)
             anmeldevoraussetzungen = metadata.get("anmeldevoraussetzungen", "")
+
+            # CHECK -1: SEMESTER-Filter (falls target_semester angegeben)
+            if target_semester:
+                # Falls die LVA einen Namen hat (ist eine konkrete LVA):
+                if lva_name and lva_name != "Unknown":
+                    # Fall A: LVA hat KEIN Semester-Feld → Curriculum-Eintrag → FILTERN
+                    if not lva_semester:
+                        print(f"[FILTER DEBUG] ❌ FILTERED (kein Semester-Info): {lva_name} - Curriculum-Eintrag")
+                        filtered_lvas.append({
+                            "lva": lva_doc,
+                            "missing_prerequisites": [],
+                            "reason": f"Kein Semester-Info (Curriculum-Eintrag, nicht für konkrete Planung)"
+                        })
+                        continue
+
+                    # Fall B: LVA hat falsches Semester → FILTERN
+                    if lva_semester != target_semester and lva_semester != f"{target_semester}+":
+                        print(f"[FILTER DEBUG] ❌ FILTERED (falsches Semester): {lva_name} ({lva_nr}) - Semester: {lva_semester}, Target: {target_semester}")
+                        filtered_lvas.append({
+                            "lva": lva_doc,
+                            "missing_prerequisites": [],
+                            "reason": f"Nur für {lva_semester} verfügbar (nicht {target_semester})"
+                        })
+                        continue
 
             # CHECK 0: Ist die LVA ein WAHLFACH?
             if self._is_wahlfach(lva_name, wahlfaecher_names):
@@ -564,19 +605,18 @@ class HybridRetriever:
 
     def _get_wahlfaecher_names(self) -> List[str]:
         """
-        Holt alle Wahlfach-Namen aus der lvas Tabelle.
+        Holt alle Wahlfach-Namen aus der wahlfach Tabelle.
 
         Returns:
-            Liste von Wahlfach-Namen (z.B., ["VL Einführung in die VWL", "UE Buchhaltung"])
+            Liste von Wahlfach-Namen (z.B., ["Data Mining", "Service Engineering"])
         """
         try:
             conn = psycopg2.connect(self.db_url)
             cur = conn.cursor()
 
             query = """
-                SELECT name, hierarchielevel2
-                FROM lvas
-                WHERE hierarchielevel0 = 'Wahlfach'
+                SELECT lva_name
+                FROM wahlfach
             """
             cur.execute(query)
             rows = cur.fetchall()
@@ -587,16 +627,16 @@ class HybridRetriever:
             cur.close()
             conn.close()
 
-            print(f"[WAHLFACH DEBUG] Loaded {len(wahlfaecher)} Wahlfächer from database")
+            print(f"[WAHLFACH DEBUG] Loaded {len(wahlfaecher)} Wahlfächer from wahlfach table")
             return wahlfaecher
 
         except Exception as e:
-            print(f"Error fetching Wahlfächer: {e}")
+            print(f"Error fetching Wahlfächer from wahlfach table: {e}")
             return []
 
     def _is_wahlfach(self, lva_name: str, wahlfaecher_names: List[str]) -> bool:
         """
-        Checkt ob eine LVA ein Wahlfach ist via Fuzzy Matching.
+        Checkt ob eine LVA ein Wahlfach ist via Fuzzy Matching UND Substring-Matching.
 
         Args:
             lva_name: Name der zu prüfenden LVA
@@ -605,9 +645,23 @@ class HybridRetriever:
         Returns:
             True wenn die LVA ein Wahlfach ist
         """
+        lva_name_lower = lva_name.lower()
+
+        # Check 1: Direkt "Wahlfach" oder "Freie Studienleistungen" im Namen
+        if "wahlfach" in lva_name_lower or "freie studienleistungen" in lva_name_lower:
+            print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED (contains 'wahlfach' or 'freie studienleistungen')")
+            return True
+
+        # Check 2: Fuzzy Matching gegen Wahlfach-Namen aus DB (mit niedrigerem Threshold wegen Nummern)
         for wahlfach_name in wahlfaecher_names:
-            # Verwende etwas höheren Threshold (0.80) für Wahlfach-Matching
-            if self._fuzzy_match(lva_name, wahlfach_name, threshold=0.80):
-                print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}'")
+            # Verwende niedrigeren Threshold (0.70) weil Wahlfächer Nummern haben ("Wahlfach1" vs "Wahlfach")
+            if self._fuzzy_match(lva_name, wahlfach_name, threshold=0.70):
+                print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}' (fuzzy)")
                 return True
+
+            # Check 3: Substring-Match (z.B. "Wahlfach Wirtschaftsinformatik" in "Wahlfach Wirtschaftsinformatik1")
+            if lva_name_lower in wahlfach_name.lower() or wahlfach_name.lower() in lva_name_lower:
+                print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}' (substring)")
+                return True
+
         return False
