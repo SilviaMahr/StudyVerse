@@ -146,7 +146,7 @@ class HybridRetriever:
         self,
         query: str,
         metadata_filter: Optional[Dict[str, Any]] = None,
-        top_k: int = 40,
+        top_k: int = 100,
     ) -> List[Dict[str, Any]]:
         #TODO Check if top k none would make sense, try out later when LLM is ready to go
 
@@ -415,7 +415,12 @@ class HybridRetriever:
         completed_lvas: List[str]
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Filtert LVAs basierend auf Voraussetzungen UND bereits absolvierten LVAs.
+        Filtert LVAs basierend auf Voraussetzungen, bereits absolvierten LVAs UND Wahlfächern.
+
+        Filterkriterien (in dieser Reihenfolge):
+        1. WAHLFACH → wird gefiltert (nicht vorgeschlagen)
+        2. Bereits absolviert → wird gefiltert
+        3. Voraussetzungen nicht erfüllt → wird gefiltert
 
         Args:
             retrieved_lvas: Retrieved documents von retrieve()
@@ -423,8 +428,8 @@ class HybridRetriever:
 
         Returns:
             {
-                "eligible": [...],  # LVAs die alle Voraussetzungen erfüllen
-                "filtered": [       # LVAs die Voraussetzungen NICHT erfüllen
+                "eligible": [...],  # LVAs die alle Kriterien erfüllen
+                "filtered": [       # LVAs die gefiltert wurden
                     {
                         "lva": {...},
                         "missing_prerequisites": ["SOFT1", "ALGO"],
@@ -441,11 +446,25 @@ class HybridRetriever:
         for comp_lva in completed_lvas:
             print(f"  ✓ {comp_lva}")
 
+        # Lade alle Wahlfächer aus der Datenbank (einmalig für alle LVAs)
+        print(f"[FILTER DEBUG] Loading Wahlfächer from database...")
+        wahlfaecher_names = self._get_wahlfaecher_names()
+
         for lva_doc in retrieved_lvas:
             metadata = lva_doc.get("metadata", {})
             lva_name = metadata.get("lva_name", "Unknown")
             lva_nr = metadata.get("lva_nr", "")
             anmeldevoraussetzungen = metadata.get("anmeldevoraussetzungen", "")
+
+            # CHECK 0: Ist die LVA ein WAHLFACH?
+            if self._is_wahlfach(lva_name, wahlfaecher_names):
+                print(f"[FILTER DEBUG] ❌ FILTERED (Wahlfach): {lva_name} ({lva_nr})")
+                filtered_lvas.append({
+                    "lva": lva_doc,
+                    "missing_prerequisites": [],
+                    "reason": "Wahlfächer werden nicht vorgeschlagen"
+                })
+                continue
 
             # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
             # 1. CHECK: Ist die LVA bereits absolviert?
@@ -542,3 +561,53 @@ class HybridRetriever:
         except Exception as e:
             print(f"Error fetching completed LVAs: {e}")
             return []
+
+    def _get_wahlfaecher_names(self) -> List[str]:
+        """
+        Holt alle Wahlfach-Namen aus der lvas Tabelle.
+
+        Returns:
+            Liste von Wahlfach-Namen (z.B., ["VL Einführung in die VWL", "UE Buchhaltung"])
+        """
+        try:
+            conn = psycopg2.connect(self.db_url)
+            cur = conn.cursor()
+
+            query = """
+                SELECT name, hierarchielevel2
+                FROM lvas
+                WHERE hierarchielevel0 = 'Wahlfach'
+            """
+            cur.execute(query)
+            rows = cur.fetchall()
+
+            # Return list of Wahlfach names
+            wahlfaecher = [row[0] for row in rows]
+
+            cur.close()
+            conn.close()
+
+            print(f"[WAHLFACH DEBUG] Loaded {len(wahlfaecher)} Wahlfächer from database")
+            return wahlfaecher
+
+        except Exception as e:
+            print(f"Error fetching Wahlfächer: {e}")
+            return []
+
+    def _is_wahlfach(self, lva_name: str, wahlfaecher_names: List[str]) -> bool:
+        """
+        Checkt ob eine LVA ein Wahlfach ist via Fuzzy Matching.
+
+        Args:
+            lva_name: Name der zu prüfenden LVA
+            wahlfaecher_names: Liste aller Wahlfach-Namen aus der DB
+
+        Returns:
+            True wenn die LVA ein Wahlfach ist
+        """
+        for wahlfach_name in wahlfaecher_names:
+            # Verwende etwas höheren Threshold (0.80) für Wahlfach-Matching
+            if self._fuzzy_match(lva_name, wahlfach_name, threshold=0.80):
+                print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}'")
+                return True
+        return False
