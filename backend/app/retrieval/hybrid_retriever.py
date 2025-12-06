@@ -173,27 +173,31 @@ class HybridRetriever:
                 content,
                 metadata,
                 url,
-                1 - (embedding <=> %s::vector) AS similarity  
+                1 - (embedding <=> %s::vector) AS similarity
             FROM studyverse_data
         """
                 #similarty = 1 - distance
         if where_clause:
             base_query += f" WHERE {where_clause}"
 
+        # For semester planning: We want ALL LVAs matching the metadata filter, not just the most similar ones
+        # So we sort by similarity but don't limit too aggressively
         base_query += """
             ORDER BY embedding <=> %s::vector
-            LIMIT %s
         """
 
-        # if top k is limited to eg. 15 best lvas - then generate more lvas to provide the llm
-        #with more context, if we chose none, do nothing other then get the retrieved lvas
+        # Determine fetch limit
+        # For semester planning we need ALL matching LVAs, so use a very high limit or no limit
         if top_k is not None:
-            fetch_limit = top_k * 20
+            # Fetch many more to ensure we get all matching LVAs
+            # After deduplication (by lva_name+type), we'll have fewer anyway
+            fetch_limit = max(top_k * 50, 5000)  # At least 5000 to get comprehensive results
         else:
-            fetch_limit = None
+            fetch_limit = 10000  # Very high default to get all matches
 
+        base_query += " LIMIT %s"
 
-# Parameters: [query_embedding + metadata_params + query_embedding, fetch_limit (Order by clause]
+        # Parameters: [query_embedding + metadata_params + query_embedding + fetch_limit]
         final_params = [query_embedding] + params + [query_embedding, fetch_limit]
 
         # run query
@@ -203,6 +207,8 @@ class HybridRetriever:
 
             cur.execute(base_query, final_params)
             rows = cur.fetchall()
+
+            print(f"[RETRIEVAL DEBUG] Fetched {len(rows)} documents from Vector DB (before deduplication)")
 
             # remove duplicates and only keep the first (best) chunk from each (lva_name, lva_type)
             # Different time slots (different lva_nr) of the same course should be deduplicated
@@ -236,12 +242,14 @@ class HybridRetriever:
                         "similarity": float(row[4]) if row[4] else 0.0,
                     })
 
-                    # stop, if enough unique lvas were retrieved
-                    if len(unique_results) >= top_k:
-                        break
+                    # Don't break early - we want ALL matching LVAs for comprehensive semester planning
+                    # The top_k limit is only for the initial fetch, not for the final results
 
             cur.close()
             conn.close()
+
+            print(f"[RETRIEVAL DEBUG] After deduplication: {len(unique_results)} unique LVAs")
+            print(f"[RETRIEVAL DEBUG] Seen combinations: {len(seen_lvas)}")
 
             return unique_results
 
