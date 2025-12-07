@@ -425,7 +425,9 @@ class HybridRetriever:
         self,
         retrieved_lvas: List[Dict[str, Any]],
         completed_lvas: List[str],
-        target_semester: Optional[str] = None
+        target_semester: Optional[str] = None,
+        user_query: Optional[str] = None,
+        excluded_wahlfaecher: Optional[List[str]] = None
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Filtert LVAs basierend auf Voraussetzungen, bereits absolvierten LVAs, Wahlfächern UND Semester.
@@ -433,6 +435,7 @@ class HybridRetriever:
         Filterkriterien (in dieser Reihenfolge):
         0. FALSCHES SEMESTER → wird gefiltert (falls target_semester angegeben)
         1. WAHLFACH → wird gefiltert (nicht vorgeschlagen)
+           AUSNAHME: Wahlfächer in excluded_wahlfaecher oder im user_query erwähnt werden NICHT gefiltert
         2. Bereits absolviert → wird gefiltert
         3. Voraussetzungen nicht erfüllt → wird gefiltert
 
@@ -440,6 +443,8 @@ class HybridRetriever:
             retrieved_lvas: Retrieved documents von retrieve()
             completed_lvas: Absolvierte LVAs des Users
             target_semester: Gewünschtes Semester (z.B. "SS", "WS") - optional
+            user_query: User-Query um explizit gewünschte Wahlfächer zu erkennen - optional
+            excluded_wahlfaecher: Liste von Wahlfach-Namen, die NICHT gefiltert werden sollen - optional
 
         Returns:
             {
@@ -467,6 +472,23 @@ class HybridRetriever:
         # Lade alle Wahlfächer aus der Datenbank (einmalig für alle LVAs)
         print(f"[FILTER DEBUG] Loading Wahlfächer from database...")
         wahlfaecher_names = self._get_wahlfaecher_names()
+
+        # Baue Liste von Wahlfächern, die NICHT gefiltert werden sollen
+        final_excluded_wahlfaecher = []
+        if excluded_wahlfaecher:
+            final_excluded_wahlfaecher.extend(excluded_wahlfaecher)
+
+        # Extrahiere Wahlfach-Namen aus user_query (falls vorhanden)
+        if user_query:
+            user_query_lower = user_query.lower()
+            for wahlfach_name in wahlfaecher_names:
+                # Checke ob der Wahlfach-Name im User-Query vorkommt
+                if wahlfach_name.lower() in user_query_lower:
+                    final_excluded_wahlfaecher.append(wahlfach_name)
+                    print(f"[FILTER DEBUG] User erwähnt Wahlfach '{wahlfach_name}' → wird NICHT gefiltert")
+
+        if final_excluded_wahlfaecher:
+            print(f"[FILTER DEBUG] Wahlfächer die NICHT gefiltert werden: {final_excluded_wahlfaecher}")
 
         for lva_doc in retrieved_lvas:
             metadata = lva_doc.get("metadata", {})
@@ -500,7 +522,7 @@ class HybridRetriever:
                         continue
 
             # CHECK 0: Ist die LVA ein WAHLFACH?
-            if self._is_wahlfach(lva_name, wahlfaecher_names):
+            if self._is_wahlfach(lva_name, wahlfaecher_names, final_excluded_wahlfaecher):
                 print(f"[FILTER DEBUG] ❌ FILTERED (Wahlfach): {lva_name} ({lva_nr})")
                 filtered_lvas.append({
                     "lva": lva_doc,
@@ -634,34 +656,50 @@ class HybridRetriever:
             print(f"Error fetching Wahlfächer from wahlfach table: {e}")
             return []
 
-    def _is_wahlfach(self, lva_name: str, wahlfaecher_names: List[str]) -> bool:
+    def _is_wahlfach(self, lva_name: str, wahlfaecher_names: List[str], excluded_wahlfaecher: Optional[List[str]] = None) -> bool:
         """
-        Checkt ob eine LVA ein Wahlfach ist via Fuzzy Matching UND Substring-Matching.
+        Checkt ob eine LVA ein Wahlfach ist via LIKE-ähnlichem Substring-Matching.
+        Verwendet KEIN Fuzzy Matching mehr für präziseres Filtern.
 
         Args:
             lva_name: Name der zu prüfenden LVA
             wahlfaecher_names: Liste aller Wahlfach-Namen aus der DB
+            excluded_wahlfaecher: Liste von Wahlfächern, die NICHT gefiltert werden sollen
+                                  (vom User explizit gewünscht)
 
         Returns:
-            True wenn die LVA ein Wahlfach ist
+            True wenn die LVA ein Wahlfach ist UND NICHT in excluded_wahlfaecher
         """
-        lva_name_lower = lva_name.lower()
+        lva_name_lower = lva_name.lower().strip()
+
+        # Check 0: Ist dieses Wahlfach vom User explizit gewünscht?
+        if excluded_wahlfaecher:
+            for excluded in excluded_wahlfaecher:
+                excluded_lower = excluded.lower().strip()
+                # Exakte Übereinstimmung oder Substring-Match
+                if excluded_lower in lva_name_lower or lva_name_lower in excluded_lower:
+                    print(f"[WAHLFACH DEBUG]   [!] '{lva_name}' ist vom User gewuenscht -> NICHT filtern")
+                    return False
 
         # Check 1: Direkt "Wahlfach" oder "Freie Studienleistungen" im Namen
         if "wahlfach" in lva_name_lower or "freie studienleistungen" in lva_name_lower:
-            print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED (contains 'wahlfach' or 'freie studienleistungen')")
+            print(f"[WAHLFACH DEBUG]   [+] '{lva_name}' MATCHED (contains 'wahlfach' or 'freie studienleistungen')")
             return True
 
-        # Check 2: Fuzzy Matching gegen Wahlfach-Namen aus DB (mit niedrigerem Threshold wegen Nummern)
+        # Check 2: LIKE-ähnliches Substring-Matching gegen Wahlfach-Namen aus DB
+        # Nur noch präzises Substring-Matching, KEIN Fuzzy Matching
         for wahlfach_name in wahlfaecher_names:
-            # Verwende niedrigeren Threshold (0.70) weil Wahlfächer Nummern haben ("Wahlfach1" vs "Wahlfach")
-            if self._fuzzy_match(lva_name, wahlfach_name, threshold=0.70):
-                print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}' (fuzzy)")
+            wahlfach_lower = wahlfach_name.lower().strip()
+
+            # Exakte Übereinstimmung
+            if lva_name_lower == wahlfach_lower:
+                print(f"[WAHLFACH DEBUG]   [+] '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}' (exact match)")
                 return True
 
-            # Check 3: Substring-Match (z.B. "Wahlfach Wirtschaftsinformatik" in "Wahlfach Wirtschaftsinformatik1")
-            if lva_name_lower in wahlfach_name.lower() or wahlfach_name.lower() in lva_name_lower:
-                print(f"[WAHLFACH DEBUG]   ✓ '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}' (substring)")
+            # Substring-Match (ähnlich zu SQL LIKE '%name%')
+            # LVA-Name enthält Wahlfach-Name ODER umgekehrt
+            if wahlfach_lower in lva_name_lower or lva_name_lower in wahlfach_lower:
+                print(f"[WAHLFACH DEBUG]   [+] '{lva_name}' MATCHED as Wahlfach: '{wahlfach_name}' (substring/LIKE)")
                 return True
 
         return False

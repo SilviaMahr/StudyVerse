@@ -70,7 +70,8 @@ class StudyPlanningRAG:
         filter_result = self.retriever.filter_by_prerequisites(
             retrieved_lvas=retrieved_lvas,
             completed_lvas=completed_lvas,
-            target_semester=parsed_query["semester"]  # NEU: Semester-Filter
+            target_semester=parsed_query["semester"],  # NEU: Semester-Filter
+            user_query=user_query  # NEU: User-Query für Wahlfach-Erkennung
         )
 
         eligible_lvas = filter_result["eligible"]
@@ -198,7 +199,8 @@ class StudyPlanningRAG:
             filter_result = self.retriever.filter_by_prerequisites(
                 retrieved_lvas=retrieved_lvas,
                 completed_lvas=completed_lvas,
-                target_semester=parsed_query.get("semester")  # NEU: Semester-Filter
+                target_semester=parsed_query.get("semester"),  # NEU: Semester-Filter
+                user_query=question  # NEU: User-Query für Wahlfach-Erkennung
             )
             retrieved_lvas = filter_result["eligible"]
             filtered_lvas = filter_result["filtered"]
