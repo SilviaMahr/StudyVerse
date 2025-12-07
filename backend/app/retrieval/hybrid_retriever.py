@@ -215,6 +215,13 @@ class HybridRetriever:
 
             for row in rows:
                 metadata = row[2]
+
+                # FIX: Prüfe ob metadata ein gültiges Dictionary ist
+                if not isinstance(metadata, dict):
+                    # Skip Einträge mit fehlerhaftem metadata (None oder String)
+                    print(f"[RETRIEVAL WARNING] Skipping entry with invalid metadata (ID: {row[0]}, type: {type(metadata).__name__})")
+                    continue
+
                 lva_name = metadata.get("lva_name")
                 lva_type = metadata.get("lva_type")
                 lva_nr = metadata.get("lva_nr")
@@ -492,6 +499,12 @@ class HybridRetriever:
 
         for lva_doc in retrieved_lvas:
             metadata = lva_doc.get("metadata", {})
+
+            # FIX: Prüfe ob metadata ein gültiges Dictionary ist
+            if not isinstance(metadata, dict):
+                print(f"[FILTER WARNING] Skipping LVA with invalid metadata (type: {type(metadata).__name__})")
+                continue
+
             lva_name = metadata.get("lva_name", "Unknown")
             lva_nr = metadata.get("lva_nr", "")
             lva_semester = metadata.get("semester", None)
