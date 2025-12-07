@@ -65,7 +65,6 @@ class StudyPlanningRAG:
         )
         print(f"   Retrieved {len(retrieved_lvas)} LVAs")
 
-        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
         # 4a. Filter basierend auf Voraussetzungen, Wahlfächer UND Semester
         print("\n3a. Filtering by Prerequisites, Wahlfächer, and Semester...")
         filter_result = self.retriever.filter_by_prerequisites(
@@ -192,7 +191,6 @@ class StudyPlanningRAG:
 
         print(f"Retrieved {len(retrieved_lvas)} LVAs for context")
 
-        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
         # Optional: Filter nach Voraussetzungen (falls User neuen Plan will)
         filtered_lvas = []
         if check_prerequisites:

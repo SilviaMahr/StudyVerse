@@ -350,7 +350,7 @@ Formuliere deine Antwort **kurz** und freundlich.
 """
         return prompt
 
-    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+    #changes made by Marlene -> because delivered data changed (due to pre-filtering)
     def _build_planning_prompt_json(
         self,
         user_query: str,
@@ -363,8 +363,7 @@ Formuliere deine Antwort **kurz** und freundlich.
     ) -> str:
         """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
 
-        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
-        # Baue Filtered-LVAs-Section
+        #changes made by Marlene -> because delivered data changed (due to pre-filtering)         # Baue Filtered-LVAs-Section
         filtered_info = ""
         if filtered_lvas:
             filtered_info = "\n\n**AUSGESCHLOSSENE LVAs (Voraussetzungen nicht erfüllt):**\n"
