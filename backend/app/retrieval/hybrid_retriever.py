@@ -104,6 +104,7 @@ class HybridRetriever:
             helper function for _build_metadata_sql_filter
             - called for every single condition in $and, $or or standalone condition
             - parses one condition at a time
+            - NOW SUPPORTS NESTED $and/$or
         """
         if not condition:
             return "", []
@@ -112,8 +113,28 @@ class HybridRetriever:
         params = []
 
         for field, constraint in condition.items():
-            if field in ["$and", "$or"]: #$and and $or can are not handled here - will be
-                continue                #returning once in for loop treated as single cond.
+            # FIX: Handle nested $and/$or recursively
+            if field == "$and":
+                and_conditions = []
+                for sub_condition in constraint:
+                    clause, param = self._parse_condition(sub_condition)
+                    if clause:
+                        and_conditions.append(clause)
+                        params.extend(param)
+                if and_conditions:
+                    conditions.append(f"({' AND '.join(and_conditions)})")
+                continue
+
+            elif field == "$or":
+                or_conditions = []
+                for sub_condition in constraint:
+                    clause, param = self._parse_condition(sub_condition)
+                    if clause:
+                        or_conditions.append(clause)
+                        params.extend(param)
+                if or_conditions:
+                    conditions.append(f"({' OR '.join(or_conditions)})")
+                continue
 
             #case A: constraint is a dictionary
             if isinstance(constraint, dict):
@@ -365,7 +386,7 @@ class HybridRetriever:
         names = re.findall(lva_name_pattern, anmeldevoraussetzungen)
         prerequisites.extend(names)
 
-        print(f"[EXTRACT DEBUG] Raw: '{anmeldevoraussetzungen}' → Extracted: {prerequisites}")
+        print(f"[EXTRACT DEBUG] Raw: '{anmeldevoraussetzungen}' -> Extracted: {prerequisites}")
 
         return prerequisites
 
@@ -406,23 +427,23 @@ class HybridRetriever:
 
                 if ratio >= threshold:
                     is_met = True
-                    print(f"[PREREQ DEBUG]   ✓ '{prereq}' MATCHED '{completed}' (score: {ratio:.2f})")
+                    print(f"[PREREQ DEBUG]   [+] '{prereq}' MATCHED '{completed}' (score: {ratio:.2f})")
                     break
 
                 # Falls prereq ein Code ist (z.B. "SOFT1"), checke ob in completed enthalten
                 if len(prereq) <= 6 and prereq.upper() in completed.upper():
                     is_met = True
-                    print(f"[PREREQ DEBUG]   ✓ '{prereq}' FOUND IN '{completed}' (substring match)")
+                    print(f"[PREREQ DEBUG]   [+] '{prereq}' FOUND IN '{completed}' (substring match)")
                     break
 
                 # Checke auch ob completed den prereq enthält (für volle Namen)
                 if len(prereq) > 10 and prereq.lower() in completed.lower():
                     is_met = True
-                    print(f"[PREREQ DEBUG]   ✓ '{prereq}' SUBSTRING IN '{completed}'")
+                    print(f"[PREREQ DEBUG]   [+] '{prereq}' SUBSTRING IN '{completed}'")
                     break
 
             if not is_met:
-                print(f"[PREREQ DEBUG]   ✗ '{prereq}' NOT MATCHED (best: '{best_match}', score: {best_score:.2f})")
+                print(f"[PREREQ DEBUG]   [-] '{prereq}' NOT MATCHED (best: '{best_match}', score: {best_score:.2f})")
 
             results[prereq] = is_met
 
@@ -471,7 +492,7 @@ class HybridRetriever:
 
         print(f"[FILTER DEBUG] Starting filter with {len(completed_lvas)} completed LVAs:")
         for comp_lva in completed_lvas:
-            print(f"  ✓ {comp_lva}")
+            print(f"  [+] {comp_lva}")
 
         if target_semester:
             print(f"[FILTER DEBUG] Target semester: {target_semester}")
@@ -492,7 +513,7 @@ class HybridRetriever:
                 # Checke ob der Wahlfach-Name im User-Query vorkommt
                 if wahlfach_name.lower() in user_query_lower:
                     final_excluded_wahlfaecher.append(wahlfach_name)
-                    print(f"[FILTER DEBUG] User erwähnt Wahlfach '{wahlfach_name}' → wird NICHT gefiltert")
+                    print(f"[FILTER DEBUG] User erwähnt Wahlfach '{wahlfach_name}' -> wird NICHT gefiltert")
 
         if final_excluded_wahlfaecher:
             print(f"[FILTER DEBUG] Wahlfächer die NICHT gefiltert werden: {final_excluded_wahlfaecher}")
@@ -516,7 +537,7 @@ class HybridRetriever:
                 if lva_name and lva_name != "Unknown":
                     # Fall A: LVA hat KEIN Semester-Feld → Curriculum-Eintrag → FILTERN
                     if not lva_semester:
-                        print(f"[FILTER DEBUG] ❌ FILTERED (kein Semester-Info): {lva_name} - Curriculum-Eintrag")
+                        print(f"[FILTER DEBUG] [X] FILTERED (kein Semester-Info): {lva_name} - Curriculum-Eintrag")
                         filtered_lvas.append({
                             "lva": lva_doc,
                             "missing_prerequisites": [],
@@ -526,7 +547,7 @@ class HybridRetriever:
 
                     # Fall B: LVA hat falsches Semester → FILTERN
                     if lva_semester != target_semester and lva_semester != f"{target_semester}+":
-                        print(f"[FILTER DEBUG] ❌ FILTERED (falsches Semester): {lva_name} ({lva_nr}) - Semester: {lva_semester}, Target: {target_semester}")
+                        print(f"[FILTER DEBUG] [X] FILTERED (falsches Semester): {lva_name} ({lva_nr}) - Semester: {lva_semester}, Target: {target_semester}")
                         filtered_lvas.append({
                             "lva": lva_doc,
                             "missing_prerequisites": [],
@@ -536,7 +557,7 @@ class HybridRetriever:
 
             # CHECK 0: Ist die LVA ein WAHLFACH?
             if self._is_wahlfach(lva_name, wahlfaecher_names, final_excluded_wahlfaecher):
-                print(f"[FILTER DEBUG] ❌ FILTERED (Wahlfach): {lva_name} ({lva_nr})")
+                print(f"[FILTER DEBUG] [X] FILTERED (Wahlfach): {lva_name} ({lva_nr})")
                 filtered_lvas.append({
                     "lva": lva_doc,
                     "missing_prerequisites": [],
@@ -552,12 +573,12 @@ class HybridRetriever:
                     is_already_completed = True
                     break
                 # Exakte Substring-Prüfung für LVA-Nr
-                if lva_nr and lva_nr in completed:
+                if lva_nr and str(lva_nr) in completed:
                     is_already_completed = True
                     break
 
             if is_already_completed:
-                print(f"[FILTER DEBUG] ❌ FILTERED (bereits absolviert): {lva_name} ({lva_nr})")
+                print(f"[FILTER DEBUG] [X] FILTERED (bereits absolviert): {lva_name} ({lva_nr})")
                 filtered_lvas.append({
                     "lva": lva_doc,
                     "missing_prerequisites": [],
@@ -575,11 +596,11 @@ class HybridRetriever:
             # Fallback: Falls nichts extrahiert wurde, checke gegen bekannte Voraussetzungsketten
             if not prerequisite_names and lva_name in self.KNOWN_PREREQUISITES:
                 prerequisite_names = self.KNOWN_PREREQUISITES[lva_name]
-                print(f"[FILTER DEBUG] 🔄 Using KNOWN prerequisites for '{lva_name}': {prerequisite_names}")
+                print(f"[FILTER DEBUG] [~] Using KNOWN prerequisites for '{lva_name}': {prerequisite_names}")
 
             # Falls immer noch keine Voraussetzungen → eligible
             if not prerequisite_names:
-                print(f"[FILTER DEBUG] ✅ ELIGIBLE (keine Voraussetzungen): {lva_name} ({lva_nr})")
+                print(f"[FILTER DEBUG] [OK] ELIGIBLE (keine Voraussetzungen): {lva_name} ({lva_nr})")
                 eligible_lvas.append(lva_doc)
                 continue
 
@@ -590,7 +611,7 @@ class HybridRetriever:
 
             if missing:
                 # Nicht alle Voraussetzungen erfüllt
-                print(f"[FILTER DEBUG] ❌ FILTERED (fehlende Voraussetzungen): {lva_name} ({lva_nr})")
+                print(f"[FILTER DEBUG] [X] FILTERED (fehlende Voraussetzungen): {lva_name} ({lva_nr})")
                 print(f"              Fehlend: {', '.join(missing)}")
                 filtered_lvas.append({
                     "lva": lva_doc,
@@ -599,7 +620,7 @@ class HybridRetriever:
                 })
             else:
                 # Alle Voraussetzungen erfüllt
-                print(f"[FILTER DEBUG] ✅ ELIGIBLE (Voraussetzungen erfüllt): {lva_name} ({lva_nr})")
+                print(f"[FILTER DEBUG] [OK] ELIGIBLE (Voraussetzungen erfuellt): {lva_name} ({lva_nr})")
                 eligible_lvas.append(lva_doc)
 
         return {
