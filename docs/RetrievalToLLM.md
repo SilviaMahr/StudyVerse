@@ -110,7 +110,7 @@ WHERE cl.user_id = %s
 4. **Voraussetzungen nicht erfüllt** (`hybrid_retriever.py:589-624`)
    - Extrahiert Voraussetzungen aus `anmeldevoraussetzungen`-Feld
    - Fallback: Bekannte Voraussetzungsketten (`KNOWN_PREREQUISITES`)
-   - Fuzzy-Match gegen absolvierte LVAs
+   - LIKE-Abgleich gegen absolvierte LVAs
 
 **Rückgabe:**
 ```python
@@ -241,16 +241,8 @@ Der User hat bereits folgenden Semesterplan erstellt:
 
 1. **Optimale LVA-Auswahl** (`semester_planner.py:401-408`)
    - ✅ ECTS-Ziel erreichen (Unterschreitung max. 3 ECTS, keine Überschreitung)
-   - ✅ Bevorzugte Tage berücksichtigen
    - ✅ Gewünschte LVAs priorisieren
-   - ✅ Keine Duplikate (LVA+Type ist unique ID)
-   - ✅ Keine bereits absolvierten Kurse
-
-2. **Voraussetzungsprüfung** (`semester_planner.py:409-413`)
-   - ✅ "Anmeldevoraussetzungen" aus Metadata prüfen
-   - ✅ "Erwartete Vorkenntnisse" aus Content prüfen
-   - ✅ Idealtypischen Studienverlauf berücksichtigen
-   - ✅ LVAs ohne erfüllte Voraussetzungen ausschließen
+   - ✅ Idealtypischen Studienverlauf berücksichtigen/priorisieren 
 
 3. **Zeitkonfliktprüfung** (`semester_planner.py:415-416`)
    - ✅ Keine zwei LVAs zur selben Zeit
