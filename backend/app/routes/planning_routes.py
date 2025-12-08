@@ -172,7 +172,9 @@ async def create_new_planning(
         # Filter basierend auf Voraussetzungen
         filter_result = rag_system.retriever.filter_by_prerequisites(
             retrieved_lvas=retrieved_lvas,
-            completed_lvas=completed_lvas
+            completed_lvas=completed_lvas,
+            target_semester=parsed_query.get("semester"),
+            user_query=query  # NEU: User-Query für Wahlfach-Erkennung
         )
 
         eligible_lvas = filter_result["eligible"]

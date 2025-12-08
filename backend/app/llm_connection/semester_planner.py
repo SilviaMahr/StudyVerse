@@ -47,7 +47,6 @@ class SemesterPlanner:
         self.ideal_plan_loader = IdealPlanLoader()
         self.ideal_plan_context = self.ideal_plan_loader.format_ideal_plan_for_llm()
 
-    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def create_chat_answer(
         self,
         user_query: str,
@@ -105,7 +104,6 @@ class SemesterPlanner:
         except Exception as e:
             return f"Fehler bei der Planungserstellung: {e}"
 
-    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def create_semester_plan_json(
         self,
         user_query: str,
@@ -213,8 +211,16 @@ class SemesterPlanner:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"llm_prompt_{timestamp}.txt"
 
-            # Get Desktop path (works on Windows, macOS, Linux)
-            desktop_path = Path.home() / "Desktop"
+            # Get Desktop path (handles OneDrive and other configurations)
+            try:
+                import winreg
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                    r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+                desktop_path = Path(winreg.QueryValueEx(key, 'Desktop')[0])
+            except:
+                # Fallback to standard path
+                desktop_path = Path.home() / "Desktop"
+
             filepath = desktop_path / filename
 
             # Write to file
