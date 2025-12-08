@@ -24,8 +24,7 @@ Das System extrahiert aus der natürlichsprachlichen User-Anfrage:
 - `"soft1"` → `"Einführung in die Softwareentwicklung"`
 - `"algo"` → `"Algorithmen und Datenstrukturen"`
 - `"dm"` → `"Datenmodellierung"`
-- etc.
-- Sollte das Alias nicht bekannt sein z.B. User gibt ein: SE1 muss das LLM nachfragen
+- etc. **Sollte das Alias nicht bekannt sein z.B. User gibt ein: SE1 muss das LLM nachfragen**
 
 ---
 
@@ -34,7 +33,7 @@ Das System extrahiert aus der natürlichsprachlichen User-Anfrage:
 **Datei:** `backend/app/retrieval/hybrid_retriever.py:164-284`
 
 Das System führt eine **Hybrid-Suche** durch, die kombiniert:
-1. **Vector Similarity Search** (semantische Suche via Embeddings) (für Freitextsuche und Userfragen
+1. **Vector Similarity Search** (semantische Suche via Embeddings) (für Freitextsuche und Userfragen) 
 2. **Metadata Filtering** (harte Constraints wie Semester, Tage, ECTS)
 
 #### Für jede LVA werden folgende Informationen abgerufen:
