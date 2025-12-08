@@ -37,7 +37,7 @@ class IdealPlanLoader:
             cur.execute("""
                 SELECT DISTINCT *
                 FROM ideal_study_plan
-                WHERE study_mode = 'Teilzeit' AND study_start_mode = 'Start_WS'
+                WHERE study_mode = 'Vollzeit' AND study_start_mode = 'Start_WS'
                 ORDER BY semester_num, lva_name
             """)
 
