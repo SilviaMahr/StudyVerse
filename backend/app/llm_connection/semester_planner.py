@@ -47,7 +47,6 @@ class SemesterPlanner:
         self.ideal_plan_loader = IdealPlanLoader()
         self.ideal_plan_context = self.ideal_plan_loader.format_ideal_plan_for_llm()
 
-    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def create_chat_answer(
         self,
         user_query: str,
@@ -105,7 +104,6 @@ class SemesterPlanner:
         except Exception as e:
             return f"Fehler bei der Planungserstellung: {e}"
 
-    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def create_semester_plan_json(
         self,
         user_query: str,

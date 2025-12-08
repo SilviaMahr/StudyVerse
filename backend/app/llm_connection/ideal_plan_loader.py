@@ -35,8 +35,9 @@ class IdealPlanLoader:
 
             # Hole alle Daten aus ideal_study_plan
             cur.execute("""
-                SELECT *
+                SELECT DISTINCT *
                 FROM ideal_study_plan
+                WHERE study_mode = 'Teilzeit'
                 ORDER BY semester_num, lva_name
             """)
 
