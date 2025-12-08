@@ -168,14 +168,28 @@ async def create_new_planning(
 
         print(f"[PLANNING] Retrieved {len(retrieved_lvas)} LVAs")
 
+        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
+        # Filter basierend auf Voraussetzungen
+        filter_result = rag_system.retriever.filter_by_prerequisites(
+            retrieved_lvas=retrieved_lvas,
+            completed_lvas=completed_lvas
+        )
+
+        eligible_lvas = filter_result["eligible"]
+        filtered_lvas = filter_result["filtered"]
+
+        print(f"[PLANNING] Eligible: {len(eligible_lvas)} LVAs")
+        print(f"[PLANNING] Filtered: {len(filtered_lvas)} LVAs (missing prerequisites)")
+
         # Generate JSON semester plan
         semester_plan_json = rag_system.planner.create_semester_plan_json(
             user_query=query,
-            retrieved_lvas=retrieved_lvas,
+            retrieved_lvas=eligible_lvas,  # Nur eligible LVAs
             ects_target=parsed_query["ects_target"] or planning_data.target_ects,
             preferred_days=parsed_query["preferred_days"],
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query["desired_lvas"],
+            filtered_lvas=filtered_lvas,  # NEU: für Erklärungen
         )
 
         print(f"[PLANNING] Generated semester plan JSON: {semester_plan_json.keys()}")

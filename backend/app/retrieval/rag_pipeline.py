@@ -65,21 +65,56 @@ class StudyPlanningRAG:
         )
         print(f"   Retrieved {len(retrieved_lvas)} LVAs")
 
+        # 4a. Filter basierend auf Voraussetzungen, Wahlfächer UND Semester
+        print("\n3a. Filtering by Prerequisites, Wahlfächer, and Semester...")
+        filter_result = self.retriever.filter_by_prerequisites(
+            retrieved_lvas=retrieved_lvas,
+            completed_lvas=completed_lvas,
+            target_semester=parsed_query["semester"]  # NEU: Semester-Filter
+        )
+
+        eligible_lvas = filter_result["eligible"]
+        filtered_lvas = filter_result["filtered"]
+
+        print(f"   Eligible: {len(eligible_lvas)} LVAs")
+        print(f"   Filtered: {len(filtered_lvas)} LVAs (missing prerequisites)")
+
+        # DEBUG: Show eligible LVAs
+        if eligible_lvas:
+            print("\n   Eligible LVAs (will be sent to LLM):")
+            for lva in eligible_lvas[:10]:  # Show first 10
+                lva_meta = lva.get("metadata", {})
+                lva_name = lva_meta.get("lva_name", "Unknown")
+                lva_type = lva_meta.get("lva_type", "N/A")
+                lva_sem = lva_meta.get("semester", "N/A")
+                lva_nr = lva_meta.get("lva_nr", "N/A")
+                print(f"     - {lva_name} ({lva_type}) | Sem: {lva_sem} | Nr: {lva_nr}")
+
+        # Debug: Zeige gefilterte LVAs
+        if filtered_lvas:
+            print("\n   Gefilterte LVAs:")
+            for item in filtered_lvas[:5]:  # Nur erste 5 anzeigen
+                lva_name = item["lva"]["metadata"].get("lva_name", "Unknown")
+                reason = item["reason"]
+                print(f"     - {lva_name}: {reason}")
+
         # 5. LLM Planning (for chat window)
         print("\n4. Generating Chat Answer...")
         semester_plan = self.planner.create_chat_answer(
             user_query=user_query,
-            retrieved_lvas=retrieved_lvas,
+            retrieved_lvas=eligible_lvas,  # Nur eligible LVAs für Planung
             ects_target=parsed_query["ects_target"] or 15,
             preferred_days=parsed_query["preferred_days"],
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query["desired_lvas"],
+            filtered_lvas=filtered_lvas,  # NEU: für Erklärungen
         )
 
         # 6. Return Results
         return {
             "plan": semester_plan,
-            "retrieved_lvas": retrieved_lvas,
+            "retrieved_lvas": eligible_lvas,  # Nur eligible
+            "filtered_lvas": filtered_lvas,   # NEU: für Debugging
             "parsed_query": parsed_query,
             "metadata_filter": metadata_filter,
         }
@@ -124,6 +159,7 @@ class StudyPlanningRAG:
         existing_plan_json: Dict[str, Any],
         user_id: int,
         top_k: int = 10,
+        check_prerequisites: bool = False,  # NEU: Optional für neue Pläne
     ) -> str:
         """
         Beantwortet Fragen basierend auf einem existierenden Semesterplan.
@@ -133,6 +169,7 @@ class StudyPlanningRAG:
             existing_plan_json: Bereits erstellter Semesterplan
             user_id: User ID für completed LVAs
             top_k: Anzahl LVAs für Kontext
+            check_prerequisites: Falls True, werden Voraussetzungen geprüft (für neue Pläne)
 
         Returns:
             Antwort als String
@@ -154,6 +191,20 @@ class StudyPlanningRAG:
 
         print(f"Retrieved {len(retrieved_lvas)} LVAs for context")
 
+        # Optional: Filter nach Voraussetzungen (falls User neuen Plan will)
+        filtered_lvas = []
+        if check_prerequisites:
+            print("Filtering by prerequisites (new plan requested)...")
+            filter_result = self.retriever.filter_by_prerequisites(
+                retrieved_lvas=retrieved_lvas,
+                completed_lvas=completed_lvas,
+                target_semester=parsed_query.get("semester")  # NEU: Semester-Filter
+            )
+            retrieved_lvas = filter_result["eligible"]
+            filtered_lvas = filter_result["filtered"]
+            print(f"   Eligible: {len(retrieved_lvas)} LVAs")
+            print(f"   Filtered: {len(filtered_lvas)} LVAs")
+
         # LLM Answer basierend auf existierendem Plan
         answer = self.planner.create_chat_answer(
             user_query=question,
@@ -163,6 +214,7 @@ class StudyPlanningRAG:
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query.get("desired_lvas", []),
             existing_plan_json=existing_plan_json,
+            filtered_lvas=filtered_lvas if check_prerequisites else [],
         )
 
         return answer
