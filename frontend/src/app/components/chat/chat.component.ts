@@ -3,6 +3,7 @@ import {FormsModule, NgForm} from '@angular/forms';
 import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {PlanningStateService} from '../../../services/planning-state.service';
 import {ChatService} from '../../../services/chat.service';
+import {TextPipe} from '../../pipes/text.pipe';
 
 interface ChatMessage {
   sender: 'user' | 'UNI';
@@ -12,7 +13,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TextPipe],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
