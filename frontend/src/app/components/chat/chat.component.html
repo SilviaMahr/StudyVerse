@@ -25,7 +25,7 @@
             class="llm-avatar"
             onerror="this.style.display='none'">
 
-          <p class="message-bubble">{{ msg.text }}</p>
+          <p class="message-bubble" [innerHTML]="msg.text | formatedText"></p>
         </div>
       }
     }
