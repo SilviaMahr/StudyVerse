@@ -34,7 +34,6 @@ class SemesterPlanner:
         genai.configure(api_key=api_key)
 
         # ============================================================================
-        # TODO: Talk as a team which Gemini model should be used
         # Silvia: my key only works with gemini-2.5-flash-lite
         # Marlene: Currently using gemini-2.0-flash-exp (only model available with this API key)
         # NOTE: This model has strict free-tier limits (15 requests/min, 1500/day)
@@ -267,7 +266,9 @@ class SemesterPlanner:
 
             # Format als Stichpunkte mit vollständigem Content
             formatted_lva = f"""
+================================================================\n
 LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
+================================================================\n
   - ECTS: {lva_info['ECTS']}
   - Semester: {lva_info['Semester']}
   - Wochentag: {lva_info['Tag']} um {lva_info['Uhrzeit']}
@@ -372,39 +373,41 @@ Formuliere deine Antwort **kurz** und freundlich.
         #changes made by Marlene -> because delivered data changed (due to pre-filtering)         # Baue Filtered-LVAs-Section
         filtered_info = ""
         if filtered_lvas:
-            filtered_info = "\n\n**AUSGESCHLOSSENE LVAs (Voraussetzungen nicht erfüllt):**\n"
-            filtered_info += "Diese LVAs wurden bereits herausgefiltert und sollten NICHT im Plan erscheinen:\n"
+            #filtered_info = "\n\n**AUSGESCHLOSSENE LVAs (Voraussetzungen nicht erfüllt):**\n"
+            #filtered_info += "Diese LVAs wurden bereits herausgefiltert und sollten NICHT im Plan erscheinen:\n"
             for item in filtered_lvas:
                 lva_name = item["lva"]["metadata"].get("lva_name", "Unknown")
-                lva_nr = item["lva"]["metadata"].get("lva_nr", "")
-                missing = ", ".join(item["missing_prerequisites"])
-                filtered_info += f"- {lva_name} ({lva_nr}): Fehlende Voraussetzungen: {missing}\n"
+                #lva_nr = item["lva"]["metadata"].get("lva_nr", "")
+                #missing = ", ".join(item["missing_prerequisites"])
+                filtered_info += (f"- {lva_name} \n"
+                                  #({lva_nr}): Fehlende Voraussetzungen: {missing}\n"
+                                  )
 
         prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
-
-{self.ideal_plan_context}
 
 **USER-ANFRAGE:**
 {user_query}
 
 **ZIEL-PARAMETER:**
-- ECTS-Ziel: {ects_target} ECTS
+- maximales ECTS-Ziel: {ects_target} ECTS
 - Bevorzugte Tage: {", ".join(preferred_days) if preferred_days else "Keine Angabe"}
 - Bereits absolvierte LVAs: {", ".join(completed_lvas) if completed_lvas else "Keine"}
 - Gewünschte LVAs: {", ".join(desired_lvas) if desired_lvas else "Keine spezifischen Wünsche"}
 
-**VERFÜGBARE LVAs (Voraussetzungen erfüllt):**
+**VERFÜGBARE LVAs:**
 {lva_list}
+
+**Blacklist: diese LVAs dürfen NICHT im Plan aufscheinen: **\n 
 {filtered_info}
 
 **DEINE AUFGABEN:**
-1. **Wähle die optimalen LVAs** aus der Liste, die:
+1. **Wähle die optimalen LVAs** aus den verfügbaren LVAs, die:
    - Das ECTS-Ziel erreichen, eine Unterschreitung um 3 ECTS ist möglich, eine Überschreitung nicht
    - An den bevorzugten Tagen stattfinden
-   - Voraussetzungen erfüllen
+   - plane den Typ "VL" und "UE" einer LVA immer im selben Semester
    - Bereits absolvierte Kurse dürfen **keinesfalls** im Plan vorkommen
    - jede LVA darf im Plan nur **einmal** vorkommen, LVA+Type ist die LVA id
-   - Gewünschte LVAs priorisieren
+   - priorisiere gewünschte LVAs
 
 2. **Prüfe Voraussetzungen GRÜNDLICH**:
    - Nutze die DETAILLIERTEN INFORMATIONEN AUS STUDIENHANDBUCH für jede LVA
@@ -414,6 +417,11 @@ Formuliere deine Antwort **kurz** und freundlich.
 
 3. **Prüfe Zeitkonflikte**:
    - Keine zwei LVAs dürfen zur selben Zeit stattfinden
+
+4. **Reihenfolge ähnlich wie idealtypischer Studienplan**
+    - plane die Reihenfolge der Kurs ähnlich wie im idealtypischen Studienplan
+    - priorisiere Kurse, die in niedrigeren Semestern vorkommen 
+    \n {self.ideal_plan_context}
 
 **OUTPUT-FORMAT:**
 Antworte AUSSCHLIESSLICH mit einem gültigen JSON-Objekt in folgendem Format (KEIN anderer Text):
