@@ -54,39 +54,41 @@ class SemesterPlanner:
         preferred_days: List[str],
         completed_lvas: Optional[List[str]],
         desired_lvas: Optional[List[str]],
-        existing_plan_json: Dict[str, Any],
-        filtered_lvas: Optional[List[Dict[str, Any]]] = None,  # NEU
+        filtered_lvas: Optional[List[Dict[str, Any]]] = None,
     ) -> str:
         """
-        Erstellt eine Text-Antwort für das Chat-Fenster basierend auf einem existierenden Semesterplan.
-        Diese Methode wird nach create_semester_plan_json() aufgerufen.
+        Erstellt eine Text-Antwort für das Chat-Fenster.
 
         Args:
             user_query: Original User Query
             retrieved_lvas: Liste von LVA-Dictionaries aus Retrieval
             ects_target: Gewünschte ECTS-Anzahl
             preferred_days: Liste bevorzugter Wochentage
-            existing_plan_json: Bereits erstellter Semesterplan aus create_semester_plan_json() (REQUIRED)
             completed_lvas: Bereits absolvierte LVAs
             desired_lvas: Explizit gewünschte LVAs
             filtered_lvas: LVAs die aufgrund fehlender Voraussetzungen gefiltert wurden (optional)
 
         Returns:
-            Chat-Antwort als String basierend auf dem existierenden Plan
+            Chat-Antwort als String
         """
         # Format LVA-Liste für Prompt
         lva_list = self._format_lvas_for_prompt(retrieved_lvas)
 
-        # Build Prompt
-        prompt = self._build_planning_prompt(
+        # First build the JSON prompt
+        json_prompt = self._build_planning_prompt_json(
             user_query=user_query,
             lva_list=lva_list,
             ects_target=ects_target,
             preferred_days=preferred_days,
             completed_lvas=completed_lvas or [],
             desired_lvas=desired_lvas or [],
-            existing_plan_json=existing_plan_json,
-            filtered_lvas=filtered_lvas or [],  # NEU
+            filtered_lvas=filtered_lvas or [],
+        )
+
+        # Build chat prompt using the JSON prompt
+        prompt = self._build_planning_prompt(
+            user_query=user_query,
+            json_prompt=json_prompt,
         )
 
         # Save prompt to file for debugging/testing in other LLMs
@@ -282,77 +284,34 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
 
         return "\n\n".join(formatted)
 
-    # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
     def _build_planning_prompt(
         self,
         user_query: str,
-        lva_list: str,
-        ects_target: int,
-        preferred_days: List[str],
-        completed_lvas: List[str],
-        desired_lvas: List[str],
-        existing_plan_json: Dict[str, Any],
-        filtered_lvas: List[Dict[str, Any]] = None,  # NEU
+        json_prompt: str,
     ) -> str:
         """
-        Erstellt den LLM-Prompt für Chat-Antworten basierend auf einem existierenden Semesterplan.
+        Erstellt den LLM-Prompt für Chat-Antworten basierend auf dem JSON-Prompt.
 
         Args:
             user_query: User-Anfrage
-            lva_list: Formatierte LVA-Liste für Kontext
-            ects_target: ECTS-Ziel
-            preferred_days: Bevorzugte Tage
-            completed_lvas: Absolvierte LVAs
-            desired_lvas: Gewünschte LVAs
-            existing_plan_json: Bereits erstellter Semesterplan (REQUIRED)
-            filtered_lvas: Gefilterte LVAs (fehlende Voraussetzungen)
+            json_prompt: Der von _build_planning_prompt_json generierte Prompt
 
         Returns:
             LLM-Prompt als String
         """
-        import json
-        plan_str = json.dumps(existing_plan_json, indent=2, ensure_ascii=False)
-
-        # Todo! Test-code from claude, to check if lvas without all prerequists can be eliminated before consulting the llm.
-        # Baue Filtered-LVAs-Section
-        filtered_info = ""
-        if filtered_lvas:
-            filtered_info = "\n\n**AUSGESCHLOSSENE LVAs (Voraussetzungen nicht erfüllt):**\n"
-            for item in filtered_lvas:
-                lva_name = item["lva"]["metadata"].get("lva_name", "Unknown")
-                lva_nr = item["lva"]["metadata"].get("lva_nr", "")
-                missing = ", ".join(item["missing_prerequisites"])
-                filtered_info += f"- {lva_name} ({lva_nr}): Fehlende Voraussetzungen: {missing}\n"
-
         prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
 **USER-ANFRAGE:**
 {user_query}
 
-**BEREITS ERSTELLTER SEMESTERPLAN:**
-Der User hat bereits folgenden Semesterplan erstellt:
-
-```json
-{plan_str}
-```
-**ZIEL-PARAMETER:**
-- ECTS-Ziel: {ects_target} ECTS
-- Bevorzugte Tage: {", ".join(preferred_days) if preferred_days else "Keine Angabe"}
-- Bereits absolvierte LVAs: {", ".join(completed_lvas) if completed_lvas else "Keine"}
-- Gewünschte LVAs: {", ".join(desired_lvas) if desired_lvas else "Keine spezifischen Wünsche"}
-
-**VERFÜGBARE LVAs (Voraussetzungen erfüllt):**
-{lva_list}
-{filtered_info}
-
-**DEINE AUFGABEN:**
-- Beantworte die User-Anfrage im Kontext des bereits existierenden Planes oben
-- Beantworte die Frage **ausschließlich** aufgrund der Informationen des Kontexts
-- Falls LVAs ausgeschlossen wurden (siehe AUSGESCHLOSSENE LVAs), erkläre dies dem User
-- Wenn du etwas nicht weißt, verweise auf https://studienhandbuch.jku.at/?lang=de
+**vorherige Anfrage, die den Studienplan erzeugt hat:**
+{json_prompt}
 
 **OUTPUT-FORMAT:**
-Antworte in natürlicher Sprache und beantworte die Frage des Users.
+Beantworte die Frage des Users in natürlicher Sprache.
+Antworte **ausschließlich** aufgrund Informationen, die dir zur Verfügung stehen. Wenn du Fragen zum Studium Bachelor 
+Wirtschaftinformatik nicht weißt, verweise auf das Studienhandbuch der JKU für unter https://studienhandbuch.jku.at/curr/1193 und 
+für allgemeine Fragen zum Studium an der JKU auf https://www.jku.at/ 
 Formuliere deine Antwort **kurz** und freundlich.
 """
         return prompt

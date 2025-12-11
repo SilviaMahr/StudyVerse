@@ -207,7 +207,7 @@ class StudyPlanningRAG:
             print(f"   Eligible: {len(retrieved_lvas)} LVAs")
             print(f"   Filtered: {len(filtered_lvas)} LVAs")
 
-        # LLM Answer basierend auf existierendem Plan
+        # LLM Answer
         answer = self.planner.create_chat_answer(
             user_query=question,
             retrieved_lvas=retrieved_lvas,
@@ -215,7 +215,6 @@ class StudyPlanningRAG:
             preferred_days=parsed_query.get("preferred_days", []),
             completed_lvas=completed_lvas,
             desired_lvas=parsed_query.get("desired_lvas", []),
-            existing_plan_json=existing_plan_json,
             filtered_lvas=filtered_lvas if check_prerequisites else [],
         )
 
