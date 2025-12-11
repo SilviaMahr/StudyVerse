@@ -49,52 +49,61 @@ class SemesterPlanner:
     def create_chat_answer(
         self,
         user_query: str,
-        retrieved_lvas: List[Dict[str, Any]],
-        ects_target: int,
-        preferred_days: List[str],
-        completed_lvas: Optional[List[str]],
-        desired_lvas: Optional[List[str]],
+        retrieved_lvas: List[Dict[str, Any]] = None,
+        ects_target: int = None,
+        preferred_days: List[str] = None,
+        completed_lvas: Optional[List[str]] = None,
+        desired_lvas: Optional[List[str]] = None,
         filtered_lvas: Optional[List[Dict[str, Any]]] = None,
+        planning_context: Optional[str] = None,
     ) -> str:
         """
         Erstellt eine Text-Antwort für das Chat-Fenster.
 
         Args:
             user_query: Original User Query
-            retrieved_lvas: Liste von LVA-Dictionaries aus Retrieval
-            ects_target: Gewünschte ECTS-Anzahl
-            preferred_days: Liste bevorzugter Wochentage
-            completed_lvas: Bereits absolvierte LVAs
-            desired_lvas: Explizit gewünschte LVAs
+            retrieved_lvas: Liste von LVA-Dictionaries aus Retrieval (optional wenn planning_context vorhanden)
+            ects_target: Gewünschte ECTS-Anzahl (optional wenn planning_context vorhanden)
+            preferred_days: Liste bevorzugter Wochentage (optional wenn planning_context vorhanden)
+            completed_lvas: Bereits absolvierte LVAs (optional)
+            desired_lvas: Explizit gewünschte LVAs (optional)
             filtered_lvas: LVAs die aufgrund fehlender Voraussetzungen gefiltert wurden (optional)
+            planning_context: Gespeicherter Planning-Context aus DB (bevorzugt, wenn vorhanden)
 
         Returns:
             Chat-Antwort als String
         """
-        # Format LVA-Liste für Prompt
-        lva_list = self._format_lvas_for_prompt(retrieved_lvas)
+        # Use stored planning_context if available, otherwise build new one
+        if planning_context:
+            # Use the stored context from DB (best option - exact parameters from plan creation)
+            context = planning_context
+        else:
+            # Fallback: Build new context from parameters (for backwards compatibility)
+            if retrieved_lvas is None or ects_target is None or preferred_days is None:
+                return "Fehler: Entweder planning_context oder alle Parameter (retrieved_lvas, ects_target, preferred_days) müssen angegeben werden."
 
-        # First build the JSON prompt
-        json_prompt = self._build_planning_prompt_json(
-            user_query=user_query,
-            lva_list=lva_list,
-            ects_target=ects_target,
-            preferred_days=preferred_days,
-            completed_lvas=completed_lvas or [],
-            desired_lvas=desired_lvas or [],
-            filtered_lvas=filtered_lvas or [],
-        )
+            lva_list = self._format_lvas_for_prompt(retrieved_lvas)
+            context = self._build_planning_context(
+                user_query=user_query,
+                lva_list=lva_list,
+                ects_target=ects_target,
+                preferred_days=preferred_days,
+                completed_lvas=completed_lvas or [],
+                desired_lvas=desired_lvas or [],
+                filtered_lvas=filtered_lvas or [],
+            )
 
-        # Build chat prompt using the JSON prompt
+        # Build chat prompt using the planning context
         prompt = self._build_planning_prompt(
             user_query=user_query,
-            json_prompt=json_prompt,
+            planning_context=context,
         )
 
         # Save prompt to file for debugging/testing in other LLMs
-        self._save_prompt_to_file(prompt, user_query, len(retrieved_lvas))
+        if retrieved_lvas:
+            self._save_prompt_to_file(prompt, user_query, len(retrieved_lvas))
 
-        # Generate Plan
+        # Generate Answer
         try:
             response = self.model.generate_content(
                 prompt,
@@ -114,7 +123,7 @@ class SemesterPlanner:
         completed_lvas: Optional[List[str]] = None,
         desired_lvas: Optional[List[str]] = None,
         filtered_lvas: Optional[List[Dict[str, Any]]] = None,  # NEU
-    ) -> Dict[str, Any]:
+    ) -> tuple[Dict[str, Any], str]:
         """
         Erstellt einen Semesterplan als JSON für die Planning-Detail-Ansicht.
         Wird aufgerufen wenn "Planung starten" Button geklickt wird.
@@ -129,12 +138,25 @@ class SemesterPlanner:
             filtered_lvas: LVAs die aufgrund fehlender Voraussetzungen gefiltert wurden (optional)
 
         Returns:
-            Dictionary mit Semesterplan-Daten (JSON-kompatibel)
+            Tuple: (plan_json, planning_context)
+            - plan_json: Dictionary mit Semesterplan-Daten (JSON-kompatibel)
+            - planning_context: String mit Planning-Context (für DB-Speicherung und Chat)
         """
         import json
 
         # Format LVA-Liste für Prompt
         lva_list = self._format_lvas_for_prompt(retrieved_lvas)
+
+        # Build Planning Context (wird in DB gespeichert für Chat-Antworten)
+        planning_context = self._build_planning_context(
+            user_query=user_query,
+            lva_list=lva_list,
+            ects_target=ects_target,
+            preferred_days=preferred_days,
+            completed_lvas=completed_lvas or [],
+            desired_lvas=desired_lvas or [],
+            filtered_lvas=filtered_lvas or [],
+        )
 
         # Build Prompt mit JSON output format
         prompt = self._build_planning_prompt_json(
@@ -171,7 +193,7 @@ class SemesterPlanner:
 
             # Parse JSON
             plan_json = json.loads(response_text)
-            return plan_json
+            return plan_json, planning_context
 
         except json.JSONDecodeError as e:
             print(f"[ERROR] Failed to parse LLM response as JSON: {e}")
@@ -179,12 +201,12 @@ class SemesterPlanner:
             return {
                 "error": "JSON parsing failed",
                 "raw_response": response.text[:500]
-            }
+            }, planning_context
         except Exception as e:
             print(f"[ERROR] Error generating semester plan: {e}")
             return {
                 "error": str(e)
-            }
+            }, planning_context
 
     def _save_prompt_to_file(self, prompt: str, user_query: str, lva_count: int) -> None:
         """
@@ -287,37 +309,33 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
     def _build_planning_prompt(
         self,
         user_query: str,
-        json_prompt: str,
+        planning_context: str,
     ) -> str:
         """
-        Erstellt den LLM-Prompt für Chat-Antworten basierend auf dem JSON-Prompt.
+        Erstellt den LLM-Prompt für Chat-Antworten basierend auf dem Planning-Context.
 
         Args:
             user_query: User-Anfrage
-            json_prompt: Der von _build_planning_prompt_json generierte Prompt
+            planning_context: Der Planning-Context (von _build_planning_context oder aus DB)
 
         Returns:
             LLM-Prompt als String
         """
-        prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
+        prompt = f"""{planning_context}
 
-**USER-ANFRAGE:**
+**AKTUELLE USER-ANFRAGE (zu beantworten):**
 {user_query}
-
-**vorherige Anfrage, die den Studienplan erzeugt hat:**
-{json_prompt}
 
 **OUTPUT-FORMAT:**
 Beantworte die Frage des Users in natürlicher Sprache.
-Antworte **ausschließlich** aufgrund Informationen, die dir zur Verfügung stehen. Wenn du Fragen zum Studium Bachelor 
-Wirtschaftinformatik nicht weißt, verweise auf das Studienhandbuch der JKU für unter https://studienhandbuch.jku.at/curr/1193 und 
-für allgemeine Fragen zum Studium an der JKU auf https://www.jku.at/ 
+Antworte **ausschließlich** aufgrund Informationen, die dir zur Verfügung stehen. Wenn du Fragen zum Studium Bachelor
+Wirtschaftinformatik nicht weißt, verweise auf das Studienhandbuch der JKU für unter https://studienhandbuch.jku.at/curr/1193 und
+für allgemeine Fragen zum Studium an der JKU auf https://www.jku.at/
 Formuliere deine Antwort **kurz** und freundlich.
 """
         return prompt
 
-    #changes made by Marlene -> because delivered data changed (due to pre-filtering)
-    def _build_planning_prompt_json(
+    def _build_planning_context(
         self,
         user_query: str,
         lva_list: str,
@@ -325,24 +343,20 @@ Formuliere deine Antwort **kurz** und freundlich.
         preferred_days: List[str],
         completed_lvas: List[str],
         desired_lvas: List[str],
-        filtered_lvas: List[Dict[str, Any]] = None,  # NEU
+        filtered_lvas: List[Dict[str, Any]] = None,
     ) -> str:
-        """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
-
-        #changes made by Marlene -> because delivered data changed (due to pre-filtering)         # Baue Filtered-LVAs-Section
+        """
+        Erstellt den Planning-Context (ohne Output-Format-Anweisungen).
+        Dieser Context wird in DB gespeichert und für Chat-Antworten wiederverwendet.
+        """
+        # Baue Filtered-LVAs-Section
         filtered_info = ""
         if filtered_lvas:
-            #filtered_info = "\n\n**AUSGESCHLOSSENE LVAs (Voraussetzungen nicht erfüllt):**\n"
-            #filtered_info += "Diese LVAs wurden bereits herausgefiltert und sollten NICHT im Plan erscheinen:\n"
             for item in filtered_lvas:
                 lva_name = item["lva"]["metadata"].get("lva_name", "Unknown")
-                #lva_nr = item["lva"]["metadata"].get("lva_nr", "")
-                #missing = ", ".join(item["missing_prerequisites"])
-                filtered_info += (f"- {lva_name} \n"
-                                  #({lva_nr}): Fehlende Voraussetzungen: {missing}\n"
-                                  )
+                filtered_info += f"- {lva_name} \n"
 
-        prompt = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
+        context = f"""Du bist UNI, ein **Studienplanungs-Assistent** für Bachelor Wirtschaftsinformatik an der JKU.
 
 **USER-ANFRAGE:**
 {user_query}
@@ -356,7 +370,7 @@ Formuliere deine Antwort **kurz** und freundlich.
 **VERFÜGBARE LVAs:**
 {lva_list}
 
-**Blacklist: diese LVAs dürfen NICHT im Plan aufscheinen: **\n 
+**Blacklist: diese LVAs dürfen NICHT im Plan aufscheinen: **\n
 {filtered_info}
 
 **DEINE AUFGABEN:**
@@ -379,9 +393,37 @@ Formuliere deine Antwort **kurz** und freundlich.
 
 4. **Reihenfolge ähnlich wie idealtypischer Studienplan**
     - plane die Reihenfolge der Kurs ähnlich wie im idealtypischen Studienplan
-    - priorisiere Kurse, die in niedrigeren Semestern vorkommen 
+    - priorisiere Kurse, die in niedrigeren Semestern vorkommen
     \n {self.ideal_plan_context}
+"""
+        return context
 
+    #changes made by Marlene -> because delivered data changed (due to pre-filtering)
+    def _build_planning_prompt_json(
+        self,
+        user_query: str,
+        lva_list: str,
+        ects_target: int,
+        preferred_days: List[str],
+        completed_lvas: List[str],
+        desired_lvas: List[str],
+        filtered_lvas: List[Dict[str, Any]] = None,  # NEU
+    ) -> str:
+        """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
+
+        # Get the planning context (reusable part)
+        context = self._build_planning_context(
+            user_query=user_query,
+            lva_list=lva_list,
+            ects_target=ects_target,
+            preferred_days=preferred_days,
+            completed_lvas=completed_lvas,
+            desired_lvas=desired_lvas,
+            filtered_lvas=filtered_lvas,
+        )
+
+        # Add JSON output format instructions
+        output_format = f"""
 **OUTPUT-FORMAT:**
 Antworte AUSSCHLIESSLICH mit einem gültigen JSON-Objekt in folgendem Format (KEIN anderer Text):
 
@@ -411,7 +453,7 @@ WICHTIG:
 - Zahlen ohne Anführungszeichen
 """
 
-        return prompt
+        return context + output_format
 
     def answer_study_question(self, question: str, context_lvas: List[Dict[str, Any]]) -> str:
         """
