@@ -159,6 +159,7 @@ class StudyPlanningRAG:
         question: str,
         existing_plan_json: Dict[str, Any],
         user_id: int,
+        planning_context: Optional[str] = None,  # NEU: Stored context from DB (preferred)
         top_k: int = 10,
         check_prerequisites: bool = False,  # NEU: Optional für neue Pläne
     ) -> str:
@@ -169,6 +170,7 @@ class StudyPlanningRAG:
             question: User-Frage
             existing_plan_json: Bereits erstellter Semesterplan
             user_id: User ID für completed LVAs
+            planning_context: Stored planning context from DB (preferred if available)
             top_k: Anzahl LVAs für Kontext
             check_prerequisites: Falls True, werden Voraussetzungen geprüft (für neue Pläne)
 
@@ -176,6 +178,18 @@ class StudyPlanningRAG:
             Antwort als String
         """
         print(f"Answering question with existing plan: {question}")
+
+        # If planning_context is provided, use it directly (best option)
+        if planning_context:
+            print("[RAG] Using stored planning_context from DB")
+            answer = self.planner.create_chat_answer(
+                user_query=question,
+                planning_context=planning_context,
+            )
+            return answer
+
+        # Fallback: Build context from scratch (for backwards compatibility)
+        print("[RAG] No planning_context provided, building from scratch...")
 
         # Parse question to extract parameters (falls nötig für Kontext)
         parsed_query = parse_user_query(question)

@@ -183,8 +183,8 @@ async def create_new_planning(
         print(f"[PLANNING] Eligible: {len(eligible_lvas)} LVAs")
         print(f"[PLANNING] Filtered: {len(filtered_lvas)} LVAs (missing prerequisites)")
 
-        # Generate JSON semester plan
-        semester_plan_json = rag_system.planner.create_semester_plan_json(
+        # Generate JSON semester plan (returns tuple: plan_json, planning_context)
+        semester_plan_json, planning_context = rag_system.planner.create_semester_plan_json(
             user_query=query,
             retrieved_lvas=eligible_lvas,  # Nur eligible LVAs
             ects_target=parsed_query["ects_target"] or planning_data.target_ects,
@@ -195,20 +195,22 @@ async def create_new_planning(
         )
 
         print(f"[PLANNING] Generated semester plan JSON: {semester_plan_json.keys()}")
+        print(f"[PLANNING] Planning context length: {len(planning_context)} chars")
 
     except Exception as e:
         print(f"[PLANNING ERROR] Failed to generate semester plan: {e}")
         import traceback
         traceback.print_exc()
         semester_plan_json = {"error": str(e)}
+        planning_context = ""  # Empty context on error
 
-    # Insert planning with semester_plan_json
+    # Insert planning with semester_plan_json and planning_context
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
             INSERT INTO plannings
-            (title, user_email, semester, target_ects, preferred_days, mandatory_courses, semester_plan_json, created_at, last_modified)
-            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9)
+            (title, user_email, semester, target_ects, preferred_days, mandatory_courses, semester_plan_json, planning_context, created_at, last_modified)
+            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10)
                 RETURNING id, title, semester, target_ects, preferred_days, mandatory_courses, semester_plan_json, created_at, last_modified
             """,
             title,
@@ -218,6 +220,7 @@ async def create_new_planning(
             planning_data.preferred_days,
             planning_data.mandatory_courses,
             json.dumps(semester_plan_json),  # Convert dict to JSON string for PostgreSQL
+            planning_context,  # Store planning context for chat reuse
             now,
             now
         )

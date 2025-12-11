@@ -87,7 +87,7 @@ async def send_chat_message(
             # 2. Verify planning exists and belongs to user
             planning = await conn.fetchrow(
                 """
-                SELECT semester, target_ects, preferred_days, mandatory_courses, semester_plan_json
+                SELECT semester, target_ects, preferred_days, mandatory_courses, semester_plan_json, planning_context
                 FROM plannings
                 WHERE id = $1 AND user_email = $2
                 """,
@@ -143,12 +143,20 @@ async def send_chat_message(
 
         print(f"[CHAT] Using existing semester plan with {len(semester_plan_json.get('lvas', []))} LVAs")
 
+        # Get planning_context from planning (for optimal chat answers)
+        planning_context = planning.get('planning_context')
+        if planning_context:
+            print(f"[CHAT] Using stored planning_context ({len(planning_context)} chars)")
+        else:
+            print("[CHAT] No planning_context found, will build from scratch")
+
         # 5. Answer question based on existing plan
         try:
             llm_response = rag_system.answer_question_with_plan(
                 question=request.message,
                 existing_plan_json=semester_plan_json,
                 user_id=user_id,
+                planning_context=planning_context,  # Pass stored context for exact parameters
                 top_k=10
             )
             print(f"[CHAT] Generated answer (length: {len(llm_response)})")
