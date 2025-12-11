@@ -103,14 +103,14 @@ WHERE cl.user_id = %s
    - LVA ist in der `wahlfach`-Tabelle
    - AUSNAHME: User erwähnt Wahlfach explizit in Query
 
-3. **Bereits absolviert** (`hybrid_retriever.py:568-587`)
-   - Fuzzy-Match gegen `completed_lvas` (Threshold: 0.75)
+3. **Bereits absolviert** (`hybrid_retriever.py:549-570`)
+   - LIKE-ähnliches Substring-Matching gegen `completed_lvas`
    - Substring-Match für LVA-Nummern
 
-4. **Voraussetzungen nicht erfüllt** (`hybrid_retriever.py:589-624`)
+4. **Voraussetzungen nicht erfüllt** (`hybrid_retriever.py:572-606`)
    - Extrahiert Voraussetzungen aus `anmeldevoraussetzungen`-Feld
    - Fallback: Bekannte Voraussetzungsketten (`KNOWN_PREREQUISITES`)
-   - LIKE-Abgleich gegen absolvierte LVAs
+   - LIKE-ähnliches Substring-Matching gegen absolvierte LVAs
 
 **Rückgabe:**
 ```python
@@ -449,8 +449,6 @@ Anwesenheitspflicht in der begleitenden Übung (UE).
 ### ⚠️ Potenzielle Herausforderungen:
 - **Prompt-Size:** ~12,500 tokens (kann bei vielen LVAs Limit erreichen)
 - **LLM-Reliability:** Voraussetzungsprüfung hängt von LLM ab (keine harte Logik)
-- **Fuzzy Matching:** Threshold 0.75 kann False Positives/Negatives erzeugen
-- **Wahlfach-Filter:** Substring-Match könnte zu aggressiv sein
 
 ---
 

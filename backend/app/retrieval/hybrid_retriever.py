@@ -411,39 +411,20 @@ class HybridRetriever:
 
         for prereq in prerequisite_names:
             is_met = False
-            best_match = None
-            best_score = 0.0
+            prereq_lower = prereq.lower().strip()
 
             # Prüfe gegen jede completed LVA
             for completed in completed_lvas:
-                # Fuzzy Match (Threshold 70% für Namen, 75% für Codes)
-                ratio = SequenceMatcher(None, prereq.lower(), completed.lower()).ratio()
-                if ratio > best_score:
-                    best_score = ratio
-                    best_match = completed
+                completed_lower = completed.lower().strip()
 
-                # Threshold abhängig von prereq-Länge (Namen sind länger als Codes)
-                threshold = 0.65 if len(prereq) > 10 else 0.75
-
-                if ratio >= threshold:
+                # LIKE-ähnliches Substring-Matching
+                if prereq_lower in completed_lower or completed_lower in prereq_lower:
                     is_met = True
-                    print(f"[PREREQ DEBUG]   [+] '{prereq}' MATCHED '{completed}' (score: {ratio:.2f})")
-                    break
-
-                # Falls prereq ein Code ist (z.B. "SOFT1"), checke ob in completed enthalten
-                if len(prereq) <= 6 and prereq.upper() in completed.upper():
-                    is_met = True
-                    print(f"[PREREQ DEBUG]   [+] '{prereq}' FOUND IN '{completed}' (substring match)")
-                    break
-
-                # Checke auch ob completed den prereq enthält (für volle Namen)
-                if len(prereq) > 10 and prereq.lower() in completed.lower():
-                    is_met = True
-                    print(f"[PREREQ DEBUG]   [+] '{prereq}' SUBSTRING IN '{completed}'")
+                    print(f"[PREREQ DEBUG]   [+] '{prereq}' MATCHED '{completed}' (substring match)")
                     break
 
             if not is_met:
-                print(f"[PREREQ DEBUG]   [-] '{prereq}' NOT MATCHED (best: '{best_match}', score: {best_score:.2f})")
+                print(f"[PREREQ DEBUG]   [-] '{prereq}' NOT MATCHED")
 
             results[prereq] = is_met
 
@@ -567,9 +548,11 @@ class HybridRetriever:
 
             # 1. CHECK: Ist die LVA bereits absolviert?
             is_already_completed = False
+            lva_name_lower = lva_name.lower().strip()
             for completed in completed_lvas:
-                # Fuzzy Match gegen completed LVAs
-                if self._fuzzy_match(lva_name, completed, threshold=0.75):
+                completed_lower = completed.lower().strip()
+                # LIKE-ähnliches Substring-Matching
+                if lva_name_lower in completed_lower or completed_lower in lva_name_lower:
                     is_already_completed = True
                     break
                 # Exakte Substring-Prüfung für LVA-Nr
