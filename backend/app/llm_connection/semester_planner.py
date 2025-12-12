@@ -434,7 +434,7 @@ Antworte AUSSCHLIESSLICH mit einem gültigen JSON-Objekt in folgendem Format (KE
   "lvas": [
     {{
       "name": "Voller LVA-Name",
-      "type": "VL/UE/PR",
+      "type": "VL|UE|PR|SE|KS|KV|PS|PE|PJ|KT",
       "ects": 0,
       "day": "Mo./Di./Mi./Do./Fr.",
       "time": "HH:MM - HH:MM",
