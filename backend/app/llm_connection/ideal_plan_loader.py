@@ -37,7 +37,7 @@ class IdealPlanLoader:
             cur.execute("""
                 SELECT DISTINCT *
                 FROM ideal_study_plan
-                WHERE study_mode = 'Vollzeit' AND study_start_mode = 'Start_WS'
+                WHERE study_mode = 'Teilzeit' AND study_start_mode = 'Start_WS'
                 ORDER BY semester_num, lva_name
             """)
 
@@ -86,10 +86,11 @@ class IdealPlanLoader:
 
             for lva in lvas:
                 lva_name = lva.get('lva_name', 'N/A')
-                ects = lva.get('ects', 'N/A')
-                semester_type = lva.get('semester_type', 'N/A')
+                #ects = lva.get('ects', 'N/A')
+                #semester_type = lva.get('semester_type', 'N/A')
 
-                formatted += f"  - {lva_name} ({semester_type}) - {ects} ECTS\n"
+                formatted += (f"  - {lva_name} \n")
+                              #({semester_type}) - {ects} ECTS\n")
 
             formatted += "\n"
 
