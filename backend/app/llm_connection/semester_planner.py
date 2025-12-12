@@ -374,10 +374,10 @@ Formuliere deine Antwort **kurz** und freundlich.
 {filtered_info}
 
 **DEINE AUFGABEN:**
-1. **Wähle die optimalen LVAs** aus den verfügbaren LVAs, die:
-   - Das ECTS-Ziel erreichen, eine Unterschreitung um 3 ECTS ist möglich, eine Überschreitung nicht
+1. **Wähle die optimalen LVAs** aus der Liste VERFÜGBARE LVAs, die:
+   - Das ECTS-Ziel erreichen, eine Unterschreitung ist möglich, eine Überschreitung KEINESFALLS
    - An den bevorzugten Tagen stattfinden
-   - plane den Typ "VL" und "UE" einer LVA immer im selben Semester
+   - plane den Typ "VL" und "UE" einer LVA **immer** im selben Semester
    - Bereits absolvierte Kurse dürfen **keinesfalls** im Plan vorkommen
    - jede LVA darf im Plan nur **einmal** vorkommen, LVA+Type ist die LVA id
    - priorisiere gewünschte LVAs
@@ -386,14 +386,14 @@ Formuliere deine Antwort **kurz** und freundlich.
    - Nutze die DETAILLIERTEN INFORMATIONEN AUS STUDIENHANDBUCH für jede LVA
    - Prüfe "Anmeldevoraussetzungen" UND "Erwartete Vorkenntnisse"
    - Falls Voraussetzungen NICHT erfüllt: NICHT vorschlagen
-   - berücksichtige den idealtypischen Studienverlauf
 
 3. **Prüfe Zeitkonflikte**:
    - Keine zwei LVAs dürfen zur selben Zeit stattfinden
 
-4. **Reihenfolge ähnlich wie idealtypischer Studienplan**
-    - plane die Reihenfolge der Kurs ähnlich wie im idealtypischen Studienplan
-    - priorisiere Kurse, die in niedrigeren Semestern vorkommen
+4. **Priorität der Kurse im Plan**
+    - falls die Kurse der STEOP (Studien Eingangs Orientierungs Phase) noch nicht absoviert wurden, müssen diese geplant werden:
+        Einführung in die Softwareentwicklung UE, Einführung in die Softwareentwicklung VL, Grundlagen der BWL, Einführung in die Wirtschaftsinformatik
+    - priorisiere Kurse, die im idealtypischen Studienplan in niedrigeren Semestern vorkommen
     \n {self.ideal_plan_context}
 """
         return context
