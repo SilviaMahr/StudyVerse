@@ -100,8 +100,8 @@ class SemesterPlanner:
         )
 
         # Save prompt to file for debugging/testing in other LLMs
-        if retrieved_lvas:
-            self._save_prompt_to_file(prompt, user_query, len(retrieved_lvas))
+        lva_count = len(retrieved_lvas) if retrieved_lvas else 0
+        self._save_prompt_to_file(prompt, user_query, lva_count)
 
         # Generate Answer
         try:
@@ -321,10 +321,14 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
         Returns:
             LLM-Prompt als String
         """
-        prompt = f"""{planning_context}
-
-**AKTUELLE USER-ANFRAGE (zu beantworten):**
-{user_query}
+        prompt = f""" **AKTUELLE USER-ANFRAGE (zu beantworten):**
+================================
+{user_query}\n
+================================
+**vorherige Anfrage Beginn:**\n
+{planning_context}
+================================        
+**vorherige Anfrage Ende:**
 
 **OUTPUT-FORMAT:**
 Beantworte die Frage des Users in natürlicher Sprache.
@@ -434,7 +438,7 @@ Antworte AUSSCHLIESSLICH mit einem gültigen JSON-Objekt in folgendem Format (KE
   "lvas": [
     {{
       "name": "Voller LVA-Name",
-      "type": "VL/UE/PR",
+      "type": "VL|UE|PR|SE|KS|KV|PS|PE|PJ|KT",
       "ects": 0,
       "day": "Mo./Di./Mi./Do./Fr.",
       "time": "HH:MM - HH:MM",
