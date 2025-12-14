@@ -19,10 +19,6 @@ export interface PflichtfaecherResponse {
   pflichtfaecher: LVAModule[];
 }
 
-/*export interface WahlfaecherResponse {
-  wahlfaecher: LVAModule[];
-}*/
-
 export interface CompletedLVAsUpdate {
   lva_ids: number[];
 }

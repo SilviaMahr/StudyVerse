@@ -1,5 +1,10 @@
 import {Pipe, PipeTransform} from '@angular/core';
 
+/**
+ * Transforms raw text output (e.g., from an LLM) into renderable HTML.
+ * Parses Markdown-style syntax for bold text (**...**) and bullet points (*),
+ * and converts newlines to <br> tags.
+ */
 @Pipe({
     name: 'formatedText',
     standalone: true

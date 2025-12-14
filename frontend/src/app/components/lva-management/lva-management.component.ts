@@ -19,7 +19,6 @@ import {forkJoin} from 'rxjs';
 
 export class LvaManagementComponent implements OnInit {
   pflichtfaecher: LVAModule[] = [];
-  //wahlfaecher: LVAModule[] = [];
 
   isLoading: boolean = true;
   isSaving: boolean = false;
@@ -36,11 +35,9 @@ export class LvaManagementComponent implements OnInit {
 
     forkJoin({
       pflicht: this.profileService.getPflichtfaecher(),
-      //wahl: this.profileService.getWahlfaecher()
     }).subscribe({
       next: (response) => {
         this.pflichtfaecher = response.pflicht.pflichtfaecher;
-        //this.wahlfaecher = response.wahl.wahlfaecher;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -67,16 +64,6 @@ export class LvaManagementComponent implements OnInit {
         }
       });
     });
-
-    // 2. Alle Wahlfach-LVAs durchgehen
-    /*
-    this.wahlfaecher.forEach(module => {
-      module.lvas.forEach(lva => {
-        if (lva.is_completed) {
-          completedIds.push(lva.id);
-        }
-      });
-    });*/
 
     const updateData: CompletedLVAsUpdate = {
       lva_ids: completedIds

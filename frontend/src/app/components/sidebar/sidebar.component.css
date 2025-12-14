@@ -103,7 +103,7 @@ a.plan-link:hover {
 
 .delete-plan-btn:hover {
   opacity: 1;
-  background-color: rgba(255, 0, 0, 0.2); /* Roter Schimmer beim Hover */
+  background-color: rgba(255, 0, 0, 0.2);
 }
 
 .delete-message {
@@ -112,7 +112,7 @@ a.plan-link:hover {
   border-radius: 4px;
   font-weight: 500;
   font-size: 0.9rem;
-  background-color: #d4edda; /* Grün (Erfolg) */
+  background-color: #d4edda;
   color: #155724;
 }
 

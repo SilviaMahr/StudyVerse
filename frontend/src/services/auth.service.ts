@@ -38,7 +38,6 @@ export class AuthService {
     formData.append('password', credentials.password);
 
     return this.http.post(`${this.API_URL}/login`, formData).pipe(
-      // 'tap' führt Seiteneffekte aus, ohne den Datenfluss zu ändern
       tap((response: any) => {
         if (response.access_token) {
           this.saveToken(response.access_token);

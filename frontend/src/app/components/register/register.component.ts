@@ -107,9 +107,6 @@ export class RegisterComponent {
     }
   }
 
-  /**
-   * Klick-Handler für die LVA-Auswahl
-   */
   toggleLva(lvaId: number): void {
     if (this.selectedLvas.includes(lvaId)) {
       this.selectedLvas = this.selectedLvas.filter(id => id !== lvaId);
