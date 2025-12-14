@@ -2,7 +2,6 @@ import {Component, Inject, OnInit, PLATFORM_ID, Renderer2, ViewChild, ElementRef
 import { RouterOutlet } from '@angular/router';
 import {HeaderComponent} from './components/header/header.component';
 import {CommonModule, isPlatformBrowser} from '@angular/common';
-import {APILoginService} from '../services/login/api.login.service';
 
 @Component({
   selector: 'app-root',
@@ -43,7 +42,6 @@ export class App implements OnInit {
 
   generateStars(count: number = 100): void {
     const starfield = this.starContainerRef.nativeElement;
-    // Verhindert doppelte Sterne beim Neuladen
     starfield.innerHTML = '';
 
     for (let i=0; i< count; i++) {
@@ -63,7 +61,6 @@ export class App implements OnInit {
 
   generateRandomPlanets(count: number = 8): void {
     const container = this.planetContainerRef.nativeElement;
-    // Verhindert doppelte Planeten
     container.innerHTML = '';
     const assetPath = 'assets/';
 

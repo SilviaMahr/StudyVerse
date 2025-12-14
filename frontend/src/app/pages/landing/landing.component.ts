@@ -34,14 +34,10 @@ export class LandingComponent implements OnInit {
       next: (profile) => {
         this.username = profile.username;
         this.isLoading = false;
-        console.log(this.username)
-
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Konnte Profil nicht laden', err);
         this.isLoading = false;
-        console.log("Das hat nicht funktioniert")
       }
     });
   }

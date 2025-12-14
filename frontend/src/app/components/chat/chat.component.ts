@@ -79,7 +79,6 @@ export class ChatComponent implements OnInit{
     // Send message to LLM
     this.isLLMLoading = true;
     this.sendMessageToLLM(chatForm.value.message);
-    // OLD CODE: this.addDummyLLMResponse(chatForm.value.message);
 
     chatForm.reset();
   }
@@ -115,17 +114,6 @@ export class ChatComponent implements OnInit{
     });
   }
 
-  // ========== OLD DUMMY CODE (kept for reference) ==========
-  // private addDummyLLMResponse(userText: string): void {
-  //   setTimeout(() => {
-  //     this.isLLMLoading = false;
-  //     this.messages.push({
-  //       sender: 'UNI',
-  //       text: `Okay, ich habe deine Anmerkung "${userText}" zur Kenntnis genommen.`
-  //     });
-  //   }, 500);
-  // }
-
   private loadChatHistory(planningId: number): void {
     this.isLoadingHistory = true;
 
@@ -135,12 +123,10 @@ export class ChatComponent implements OnInit{
       next: (response) => {
         console.log('Chat history loaded:', response);
 
-        let historyMessages: ChatMessage[] = response.messages.map(msg => ({
+        this.messages = response.messages.map(msg => ({
           sender: msg.role === 'user' ? 'user' : 'UNI',
           text: msg.content
         }));
-
-        this.messages = historyMessages;
 
         this.isLoadingHistory = false;
         this.cdr.detectChanges();

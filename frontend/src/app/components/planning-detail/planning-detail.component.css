@@ -122,7 +122,7 @@
   background-color: var(--preselection-button-hover-bg);
 }
 .warning-box {
-  background-color: #fff9db; /* Helles Gelb */
+  background-color: #fff9db;
   border: 1px solid #ffe066;
   color: #e67700;
   padding: 1rem;
@@ -136,7 +136,7 @@
 }
 
 .summary-box {
-  background-color: #e7f5ff; /* Helles Blau */
+  background-color: #e7f5ff;
   border-left: 4px solid #339af0;
   padding: 1rem;
   border-radius: 4px;
