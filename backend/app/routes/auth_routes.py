@@ -22,7 +22,7 @@ async def register(user_data: UserRegister):
         if user:
             raise HTTPException(status_code=400, detail="User already exists")
         hashed = hash_password(user_data.password)
-        await conn.execute("INSERT INTO users (email, password) VALUES ($1, $2)", user_data.email, hashed)
+        await conn.execute("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", user_data.username,user_data.email, hashed)
     return {"message": "User registered successfully"}
 
 @router.post("/login")
