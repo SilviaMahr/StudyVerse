@@ -14,8 +14,7 @@ load_dotenv()
 # ============================================================================
 # DEBUG TOGGLE: Set to True to save prompts to Desktop, False to disable
 # ============================================================================
-#SAVE_PROMPTS_TO_FILE = False  # Change to True to enable prompt logging
-SAVE_PROMPTS_TO_FILE = True
+SAVE_PROMPTS_TO_FILE = False
 
 class SemesterPlanner:
     """
@@ -33,13 +32,8 @@ class SemesterPlanner:
 
         genai.configure(api_key=api_key)
 
-        # ============================================================================
-        # Silvia: my key only works with gemini-2.5-flash-lite
-        # Marlene: Currently using gemini-2.0-flash-exp (only model available with this API key)
-        # NOTE: This model has strict free-tier limits (15 requests/min, 1500/day)
-        # If you hit quota errors during testing, wait ~15 seconds between runs
-        # Other models (gemini-1.5-flash, gemini-1.5-pro) return 404 with this API key
-        # ============================================================================
+        # Using gemini-2.5-flash-lite (free-tier limits: 15 requests/min, 1500/day)
+        # If you hit quota errors, wait ~15 seconds between runs
         self.model = genai.GenerativeModel(model_name="gemini-2.5-flash-lite")
 
         # Load ideal study plan for LLM context
@@ -122,7 +116,7 @@ class SemesterPlanner:
         preferred_days: List[str],
         completed_lvas: Optional[List[str]] = None,
         desired_lvas: Optional[List[str]] = None,
-        filtered_lvas: Optional[List[Dict[str, Any]]] = None,  # NEU
+        filtered_lvas: Optional[List[Dict[str, Any]]] = None,
     ) -> tuple[Dict[str, Any], str]:
         """
         Erstellt einen Semesterplan als JSON für die Planning-Detail-Ansicht.
@@ -144,7 +138,7 @@ class SemesterPlanner:
         """
         import json
 
-        # Format LVA-Liste für Prompt
+        # Format LVA list for prompt
         lva_list = self._format_lvas_for_prompt(retrieved_lvas)
 
         # Build Planning Context (wird in DB gespeichert für Chat-Antworten)
@@ -166,7 +160,7 @@ class SemesterPlanner:
             preferred_days=preferred_days,
             completed_lvas=completed_lvas or [],
             desired_lvas=desired_lvas or [],
-            filtered_lvas=filtered_lvas or [],  # NEU
+            filtered_lvas=filtered_lvas or [],
         )
 
         # Save prompt to file for debugging/testing in other LLMs
@@ -240,8 +234,8 @@ class SemesterPlanner:
                 key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                                     r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
                 desktop_path = Path(winreg.QueryValueEx(key, 'Desktop')[0])
-            except:
-                # Fallback to standard path
+            except (ImportError, OSError, FileNotFoundError):
+                # Fallback to standard path (for non-Windows or registry access issues)
                 desktop_path = Path.home() / "Desktop"
 
             filepath = desktop_path / filename
@@ -290,9 +284,9 @@ class SemesterPlanner:
 
             # Format als Stichpunkte mit vollständigem Content
             formatted_lva = f"""
-================================================================\n
+================================================================
 LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
-================================================================\n
+================================================================
   - ECTS: {lva_info['ECTS']}
   - Semester: {lva_info['Semester']}
   - Wochentag: {lva_info['Tag']} um {lva_info['Uhrzeit']}
@@ -321,13 +315,13 @@ LVA {lva_info['Nr']}: {lva_info['Name']} ({lva_info['Type']})
         Returns:
             LLM-Prompt als String
         """
-        prompt = f""" **AKTUELLE USER-ANFRAGE (zu beantworten):**
+        prompt = f"""**AKTUELLE USER-ANFRAGE (zu beantworten):**
 ================================
-{user_query}\n
+{user_query}
 ================================
-**vorherige Anfrage Beginn:**\n
+**vorherige Anfrage Beginn:**
 {planning_context}
-================================        
+================================
 **vorherige Anfrage Ende:**
 
 **OUTPUT-FORMAT:**
@@ -374,7 +368,7 @@ Formuliere deine Antwort **kurz** und freundlich.
 **VERFÜGBARE LVAs:**
 {lva_list}
 
-**Blacklist: diese LVAs dürfen NICHT im Plan aufscheinen: **\n
+**Blacklist: diese LVAs dürfen NICHT im Plan aufscheinen:**
 {filtered_info}
 
 **DEINE AUFGABEN:**
@@ -398,11 +392,11 @@ Formuliere deine Antwort **kurz** und freundlich.
     - falls die Kurse der STEOP (Studien Eingangs Orientierungs Phase) noch nicht absoviert wurden, müssen diese geplant werden:
         Einführung in die Softwareentwicklung UE, Einführung in die Softwareentwicklung VL, Grundlagen der BWL, Einführung in die Wirtschaftsinformatik
     - priorisiere Kurse, die im idealtypischen Studienplan in niedrigeren Semestern vorkommen
-    \n {self.ideal_plan_context}
+
+{self.ideal_plan_context}
 """
         return context
 
-    #changes made by Marlene -> because delivered data changed (due to pre-filtering)
     def _build_planning_prompt_json(
         self,
         user_query: str,
@@ -411,7 +405,7 @@ Formuliere deine Antwort **kurz** und freundlich.
         preferred_days: List[str],
         completed_lvas: List[str],
         desired_lvas: List[str],
-        filtered_lvas: List[Dict[str, Any]] = None,  # NEU
+        filtered_lvas: List[Dict[str, Any]] = None,
     ) -> str:
         """Erstellt den LLM-Prompt für Semesterplanung mit JSON-Output."""
 
@@ -498,71 +492,3 @@ WICHTIG:
 
         except Exception as e:
             return f"Fehler bei der Beantwortung: {e}"
-
-
-# Test
-if __name__ == "__main__":
-    print("=== Semester Planner Test ===\n")
-
-    planner = SemesterPlanner()
-
-    # Mock-Daten für Test
-    mock_lvas = [
-        {
-            "metadata": {
-                "lva_nr": "256.100",
-                "lva_name": "Einführung in die Softwareentwicklung",
-                "lva_type": "VL",
-                "ects": 3.0,
-                "semester": "SS",
-                "tag": "Mo.",
-                "uhrzeit": "08:30 - 10:00",
-                "lva_leiter": "Wieland Schwinger",
-                "anmeldevoraussetzungen": None,
-            }
-        },
-        {
-            "metadata": {
-                "lva_nr": "256.101",
-                "lva_name": "Einführung in die Softwareentwicklung",
-                "lva_type": "UE",
-                "ects": 3.0,
-                "semester": "SS",
-                "tag": "Mo.",
-                "uhrzeit": "10:15 - 11:45",
-                "lva_leiter": "Wieland Schwinger",
-                "anmeldevoraussetzungen": None,
-            }
-        },
-        {
-            "metadata": {
-                "lva_nr": "258.100",
-                "lva_name": "Prozess- und Kommunikationsmodellierung",
-                "lva_type": "VL",
-                "ects": 3.0,
-                "semester": "SS",
-                "tag": "Mi.",
-                "uhrzeit": "13:45 - 15:15",
-                "lva_leiter": "Udo Kannengiesser",
-                "anmeldevoraussetzungen": None,
-            }
-        },
-    ]
-
-    test_query = "15 ECTS im SS26, Montag und Mittwoch, ich möchte SOFT1 machen"
-
-    plan = planner.create_chat_answer(
-        user_query=test_query,
-        retrieved_lvas=mock_lvas,
-        ects_target=15,
-        preferred_days=["Mo.", "Mi."],
-        completed_lvas=[],
-        desired_lvas=["Einführung in die Softwareentwicklung"],
-    )
-
-    print("USER QUERY:")
-    print(test_query)
-    print("\n" + "="*60)
-    print("GENERATED PLAN:")
-    print("="*60)
-    print(plan)
