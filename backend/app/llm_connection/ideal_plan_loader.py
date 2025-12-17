@@ -86,11 +86,7 @@ class IdealPlanLoader:
 
             for lva in lvas:
                 lva_name = lva.get('lva_name', 'N/A')
-                #ects = lva.get('ects', 'N/A')
-                #semester_type = lva.get('semester_type', 'N/A')
-
                 formatted += (f"  - {lva_name} \n")
-                              #({semester_type}) - {ects} ECTS\n")
 
             formatted += "\n"
 
@@ -102,26 +98,3 @@ sollten aber Voraussetzungen und Abhängigkeiten beachten.
 
         return formatted
 
-
-# Test
-if __name__ == "__main__":
-    print("=== Ideal Study Plan Loader Test ===\n")
-
-    loader = IdealPlanLoader()
-
-    # Load raw data
-    print("1. Loading raw data...")
-    ideal_plan = loader.load_ideal_plan()
-    print(f"Loaded {len(ideal_plan)} entries\n")
-
-    if ideal_plan:
-        print("Sample entries:")
-        for entry in ideal_plan[:3]:
-            print(f"  Semester {entry.get('semester_num')}: {entry.get('lva_name')} ({entry.get('ects')} ECTS)")
-
-    # Format for LLM
-    print("\n" + "="*60)
-    print("2. Formatted for LLM:")
-    print("="*60)
-    formatted = loader.format_ideal_plan_for_llm()
-    print(formatted)
