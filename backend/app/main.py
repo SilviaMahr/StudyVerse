@@ -1,7 +1,6 @@
 #fast api starting point
 #frontend is deployed on localhost:4200
-#backend is deployed on localhost:8000
-#nice to have - install docker container composition?
+#backend is deployed on localhost:8080
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware #needed for angular connection

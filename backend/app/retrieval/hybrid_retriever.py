@@ -167,7 +167,6 @@ class HybridRetriever:
         metadata_filter: Optional[Dict[str, Any]] = None,
         top_k: int = 100,
     ) -> List[Dict[str, Any]]:
-        #TODO Check if top k none would make sense, try out later when all Data is available
 
         """
         Haupt-Retrieval-Funktion: Hybrid Search
@@ -328,25 +327,6 @@ class HybridRetriever:
         except Exception as e:
             print(f"Error during LVA name search: {e}")
             return []
-
-    def _fuzzy_match(self, text1: str, text2: str, threshold: float = 0.80) -> bool:
-        """
-        Fuzzy String Matching mit konfigurierbarem Threshold.
-
-        Args:
-            text1: Erster String
-            text2: Zweiter String
-            threshold: Minimum Similarity Score (0.0 - 1.0)
-
-        Returns:
-            True wenn Similarity >= threshold
-        """
-        # Normalisiere für besseres Matching
-        text1 = text1.lower().strip()
-        text2 = text2.lower().strip()
-
-        ratio = SequenceMatcher(None, text1, text2).ratio()
-        return ratio >= threshold
 
     def _extract_prerequisite_names(self, anmeldevoraussetzungen: str) -> List[str]:
         """
@@ -676,7 +656,6 @@ class HybridRetriever:
     def _is_wahlfach(self, lva_name: str, wahlfaecher_names: List[str], excluded_wahlfaecher: Optional[List[str]] = None) -> bool:
         """
         Checkt ob eine LVA ein Wahlfach ist via LIKE-ähnlichem Substring-Matching.
-        Verwendet KEIN Fuzzy Matching mehr für präziseres Filtern.
 
         Args:
             lva_name: Name der zu prüfenden LVA
@@ -704,7 +683,6 @@ class HybridRetriever:
             return True
 
         # Check 2: LIKE-ähnliches Substring-Matching gegen Wahlfach-Namen aus DB
-        # Nur noch präzises Substring-Matching, KEIN Fuzzy Matching
         for wahlfach_name in wahlfaecher_names:
             wahlfach_lower = wahlfach_name.lower().strip()
 
