@@ -126,26 +126,3 @@ def build_metadata_filter(parsed_query: Dict[str, Any]) -> Dict[str, Any]:
             return {"$and": filter_conditions}
 
     return {}
-
-
-# Test
-if __name__ == "__main__":
-    test_queries = [
-        "Ich möchte 15 ECTS im SS26 machen, an Montag und Mittwoch. Ich möchte unbedingt SOFT1 machen.",
-        "12 ECTS, WS25, nur Dienstag und Donnerstag",
-        "Sommersemester, 18 ECTS, Mo Di Mi, SOFT2 und BWL",
-    ]
-
-    for query in test_queries:
-        print(f"\n{'='*60}")
-        print(f"Query: {query}")
-        print(f"{'='*60}")
-
-        parsed = parse_user_query(query)
-        print("\nParsed Result:")
-        for key, value in parsed.items():
-            print(f"  {key}: {value}")
-
-        filter_dict = build_metadata_filter(parsed)
-        print("\nMetadata Filter:")
-        print(f"  {filter_dict}")
