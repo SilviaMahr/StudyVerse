@@ -6,8 +6,6 @@ from typing import Optional, List
 from enum import Enum
 
 # ========== Planning Models ==========
-# TODO extend this model when RAG can be implemented
-#  (AFTER ETL Component is done)
 
 class DayOfWeek(str, Enum):
     ANY = "keine Einschränkungen"
@@ -25,7 +23,7 @@ class PlanningCreate(BaseModel):
     preferred_days: List[DayOfWeek] = Field(default=[DayOfWeek.ANY], description="Bevorzugte Tage")
     mandatory_courses: Optional[str] = Field(None, description="Freitext für obligatorische LVAs")
 
-#Necessary??? Should it be possible to edit recent plannings?
+
 class PlanningUpdate(BaseModel):
     #to enable editing exisiting plannings
     title: Optional[str] = None
@@ -56,8 +54,6 @@ class RecentPlanningsResponse(BaseModel):
     plannings: List[PlanningResponse]
     total: int #total number of plannings - can stay int
 
-# To start RAG
-#TODO: adapt if necessary as soon as RAG is ready for further implementation
 #starts a RAG session
 class RAGStartRequest(BaseModel):
     planning_id: int
@@ -65,7 +61,6 @@ class RAGStartRequest(BaseModel):
 
 #response model (contains all the data that the backend sends to the client when
 # interacting with the rag
-#TODO: adapt if necessary as soon as RAG is ready for further implementation
 class RAGStartResponse(BaseModel):
     success: bool
     planning_id: int
@@ -73,7 +68,6 @@ class RAGStartResponse(BaseModel):
     session_id: Optional[str] = None
 
 # Chat models
-#TODO: maybe changes necessry later in process
 # ========== Chat Models ==========
 
 class ChatMessage(BaseModel):
@@ -99,6 +93,7 @@ class UserRegister(BaseModel):
     email: str
     password: str
     studiengang: str ="Bachelor Wirtschaftsinformatik"
+
 # ========== Profile models ==========
 
 #user data
