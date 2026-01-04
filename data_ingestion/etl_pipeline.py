@@ -1,5 +1,9 @@
 """
-ETL Pipeline
+This script serves as the main orchestrator for the StudyVerse data ingestion process.
+It coordinates the extraction, transformation, and loading (ETL) of curriculum PDFs,
+KUSSS course data (via web scraping), and Study Manual information into a
+PostgreSQL/Neon vector database.
+
 Writes to studyverse_data_new
 SKIPS courses with a semester_msg (instead of saving them with the wrong semester)
 NOTE: Still not bug-free, but the metadata is complete everywhere.
@@ -20,23 +24,31 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 load_dotenv()
 
+# Specifies the Google AI model used to generate 768-dim vectors.
 GOOGLE_EMBEDDING_MODEL = "models/text-embedding-004"
 GEMINI_API_KEY_VALUE = os.getenv("GEMINI_API_KEY")
 
+# Ensures the Google API key is available in the environment for the generative AI client.
 if GEMINI_API_KEY_VALUE:
     os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY_VALUE
 else:
     pass
 
+# The initialized embedding engine used throughout the pipeline.
 model = GoogleGenerativeAIEmbeddings(
     model=GOOGLE_EMBEDDING_MODEL,
     google_api_key=GEMINI_API_KEY_VALUE
 )
 
-# Use table name
+# Table name: The database table where all processed chunks are stored.
 TARGET_TABLE = "studyverse_data_new"
 
 def check_env_variables(neon_db_url: str) -> bool:
+    """
+    Validates that required environment variables are present before starting.
+    INPUT: neon_db_url (String).
+    OUTPUT: bool - True if both API key and Database URL are found, else False.
+    """
     is_valid = True
 
     if not GEMINI_API_KEY_VALUE or not GEMINI_API_KEY_VALUE.strip():
@@ -50,7 +62,11 @@ def check_env_variables(neon_db_url: str) -> bool:
     return is_valid
 
 def load_data_into_vector_store(conn, chunks: List[Document], embeddings, doc_url):
-    """Load curriculum data into the table"""
+    """
+    Loads curriculum data into the table
+    Performs bulk insertion of PDF-derived chunks into the vector database.
+    INPUT: conn (Database connection), chunks (List of Documents), embeddings (List of vectors), doc_url (Source URL/path).
+    """
     try:
         cur = conn.cursor()
 
@@ -66,10 +82,10 @@ def load_data_into_vector_store(conn, chunks: List[Document], embeddings, doc_ur
             metadata_value = json.dumps(metadata_dict)
 
             data_to_insert.append((
-                chunk.page_content,
-                metadata_value,
-                embeddings[i],
-                doc_url
+                chunk.page_content, # Content from the PDF page segment
+                metadata_value, # Serialized JSON metadata
+                embeddings[i], # Pre-calculated vector embedding
+                doc_url # Reference URL/File path
             ))
 
         cur.executemany(insert_query, data_to_insert)
@@ -87,6 +103,12 @@ def load_data_into_vector_store(conn, chunks: List[Document], embeddings, doc_ur
 
 
 def run_etl_pipeline():
+    """
+    The main control loop that executes the three ETL steps:
+    1. PDF Curriculum processing.
+    2. Dynamic KUSSS scraping for Winter and Summer semesters.
+    3. Study Manual web scraping.
+    """
     neon_db_url = os.getenv("DATABASE_URL")
 
     if not check_env_variables(neon_db_url):
@@ -140,11 +162,12 @@ def run_etl_pipeline():
 
         print(f"Gefunden: {len(course_links)} Kurse für {current_semester}")
 
+        # Navigates from course overview to specific subject and manual pages.
         for course_url in course_links:
-            # the one middle page
+            # The one middle page
             subject_links = extractor.extract_links(url=course_url)
 
-            # check if the links are extracted
+            # Check if the links are extracted
             if not subject_links or len(subject_links) < 2:
                 print(f"WARNUNG: Konnte keine Links für {course_url} extrahieren. Überspringe...")
                 continue
@@ -181,12 +204,16 @@ def run_etl_pipeline():
         store_html_chunks(conn=conn, chunks=subject_chunks, url=url)
 
     print(f"\n{'='*80}")
-    print("ETL-PIPELINE (FIXED VERSION) beendet!")
+    print("ETL-PIPELINE beendet!")
     print(f"{'='*80}\n")
 
 
 def store_html_chunks(conn, chunks, url: str):
-    """Store chunks in the table"""
+    """
+    Store chunks in the table:
+    Specialized loader for web-derived data chunks that already include embeddings.
+    INPUT: conn (Database connection), chunks (List of dictionaries), url (String).
+    """
     try:
         cur = conn.cursor()
 
@@ -200,16 +227,17 @@ def store_html_chunks(conn, chunks, url: str):
         for chunk in chunks:
             metadata_dict = chunk.get("metadata", {})
 
+            # Maps Python None to SQL NULL if metadata dictionary is empty.
             if not metadata_dict:
                 metadata_value = None
             else:
                 metadata_value = json.dumps(metadata_dict)
 
             data_to_insert.append((
-                chunk.get("text"),  # content (TEXT)
-                metadata_value,  # metadata (JSONB or NULL)
-                chunk.get("embedding"),  # embedding (VECTOR)
-                url  # url (VARCHAR)
+                chunk.get("text"),  # Main text content converted from HTML (TEXT)
+                metadata_value,  # Serialized metadata (JSONB or NULL)
+                chunk.get("embedding"),  # Pre-embedded (VECTOR)
+                url  # Web source url (VARCHAR)
             ))
 
         cur.executemany(insert_query, data_to_insert)
