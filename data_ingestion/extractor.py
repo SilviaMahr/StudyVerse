@@ -127,7 +127,7 @@ def extract_lva_links_for_course(html):
     lva_links = []
     lva_nrs = []
 
-    # check if the course is offered in the selected semester
+    # Check if the course is offered in the selected semester
     message_element = soup.select_one("p.message")
 
     if message_element:
@@ -159,53 +159,53 @@ def extract_win_bsc_info():
 
 def extract_win_bsc_info_with_semester(semester: str = "WS"):
     """
-    Extrahiert WIN BSc Daten für ein bestimmtes Semester mit Playwright.
+    Extracts WIN BSc data for a specific semester with Playwright.
 
     Args:
-        semester: "WS" oder "SS"
+        semester: "WS" or "SS"
 
     Returns:
         (html_content, url) tuple
     """
     try:
         with sync_playwright() as p:
-            # Browser starten (headless = True für Hintergrund-Ausführung)
+            # Start Browser (headless = True für Background execution)
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
 
-            # Seite laden
+            # Load page
             page.goto(WIN_ROOT_URL, wait_until="networkidle")
 
-            # Semester-Dropdown finden und ändern
-            # Das Dropdown hat die ID "term"
+            # Search and change Semester-Dropdown
+            # Dropdown has the ID "term"
             if semester == "SS":
-                # Warte bis Dropdown geladen ist
+                # Wait till the dropdown is loaded
                 page.wait_for_selector("#term", timeout=10000)
 
-                # Hole alle Optionen aus dem Dropdown
+                # take all the options from the dropdown
                 options = page.locator("#term option").all()
                 ss_option_value = None
 
                 for option in options:
                     label = option.inner_text()
-                    # Finde die Option die nur "S" enthält (Sommersemester)
-                    # z.B. "2025S" aber nicht "2025W"
+                    # Find the option that contains only "S" (Sommersemester)
+                    # e.g. "2025S" but not "2025W"
                     if "S" in label and "W" not in label:
                         ss_option_value = option.get_attribute("value")
                         print(f"Gefunden: SS-Option mit Label '{label}' und Value '{ss_option_value}'")
                         break
 
                 if ss_option_value:
-                    # Wähle das SS-Semester aus
+                    # Select the SS-Semester
                     page.select_option("#term", value=ss_option_value)
 
-                    # Warte kurz, damit die Seite sich aktualisiert
+                    # Wait till the page is updated
                     page.wait_for_timeout(3000)
                     page.wait_for_load_state("networkidle")
                 else:
                     print("WARNUNG: Konnte SS-Option im Dropdown nicht finden!")
 
-            # HTML Content extrahieren (nur der contentcell div)
+            # Extract HTML Content (only the contentcell div)
             content_div = page.query_selector("td.contentcell > div.contentcell")
             selected_option = page.query_selector("#term option[selected]")
 
@@ -250,7 +250,7 @@ def extract_lva_metadata(html, semester):
     soup = BeautifulSoup(html, 'html.parser')
     metadata = {}
 
-    # --- LVA-Nr. ---
+    # --- Course-Nr. ---
     try:
         lva_nr_element = soup.select_one("tr.priorityhighlighted a.normallinkcyan")
         if lva_nr_element:
@@ -260,7 +260,7 @@ def extract_lva_metadata(html, semester):
     except Exception:
         metadata["lva_nr"] = None
 
-    # --- LVA Type ---
+    # --- Course Type ---
     try:
         lva_type_abbr = soup.select_one("h3 abbr")
         if lva_type_abbr:
@@ -271,7 +271,7 @@ def extract_lva_metadata(html, semester):
     except Exception:
         metadata["lva_type"] = None
 
-    # --- LVA Name ---
+    # --- Course Name ---
     try:
         lva_name_element = soup.select_one("h3 b")
         if lva_name_element:
@@ -281,12 +281,12 @@ def extract_lva_metadata(html, semester):
     except Exception:
         metadata["lva_name"] = None
 
-    # --- ECTS ---
+    # --- ECTS/Credits ---
     try:
         # <td ...> ECTS: X.X | ... </td>
         ects_element = soup.find(lambda tag: tag.name == 'td' and 'ECTS:' in tag.text)
         if ects_element:
-            # the text between "ECTS:" and "|"
+            # The text between "ECTS:" and "|"
             ects_text = ects_element.text.split("ECTS:")[1].split("|")[0].strip()
             metadata["ects"] = float(ects_text.replace(",", "."))
         else:
@@ -297,7 +297,7 @@ def extract_lva_metadata(html, semester):
     # --- Semester (WS/SS) ---
     metadata["semester"] = semester
 
-    # --- LVA-Leiter ---
+    # --- Course Instructor ---
     try:
         leiter_element = soup.select_one("tr.priorityhighlighted td[align='left']")
         if leiter_element:
@@ -313,7 +313,7 @@ def extract_lva_metadata(html, semester):
 
         if first_row:
             try:
-                # --- Tag ---
+                # --- Day ---
                 tag_element = first_row.select_one("td:nth-child(1)")
                 if tag_element:
                     metadata["tag"] = tag_element.text.strip()
@@ -323,7 +323,7 @@ def extract_lva_metadata(html, semester):
                 metadata["tag"] = None
 
             try:
-                # --- Uhrzeit ---
+                # --- Time ---
                 uhrzeit_element = first_row.select_one("td:nth-child(3)")
                 if uhrzeit_element:
                     metadata["uhrzeit"] = uhrzeit_element.text.strip()
@@ -416,24 +416,24 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
     metadata = {}
 
     header_h3 = soup.select_one("td.dotted-bottom h3")
-    # --- LVA Code ---
+    # --- Course Code ---
     try:
         lva_code_element = soup.select_one("#code")
         metadata["lva_code"] = lva_code_element.get_text(strip=True) if lva_code_element else None
     except Exception:
         metadata["lva_code"] = None
 
-    # --- LVA Type und Name ---
+    # --- Course Type und Name ---
     if header_h3:
         header_text = header_h3.get_text(strip=True)
 
-        # Type (Studienfach / Modul)
+        # Type (Study field / Module)
         if "Studienfach" in header_text:
             metadata["lva_type"] = "Studienfach"
         elif "Modul" in header_text:
             metadata["lva_type"] = "Modul"
 
-        # LVA Name
+        # Course Name
         if metadata.get("lva_type"):
             name_part = header_text.split(metadata["lva_type"], 1)[-1]
             metadata["lva_name"] = name_part.replace(f"[ {metadata.get('lva_code', '')} ]", "").strip()
@@ -455,7 +455,7 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
     except Exception:
         metadata["ects"] = None
 
-    #--- VerantwortlicheR ---
+    #--- Person in charge ---
     try:
         leiter_cell = soup.select_one("table tr.darkcell td:nth-child(5)")
 
@@ -466,7 +466,7 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
     except Exception:
         metadata["lva_verantwortlicheR"] = None
 
-    # --- Anmeldevoraussetzungen ---
+    # --- Registration requirements ---
     try:
         voraus_key_cell = soup.find("td", string=lambda t: t and "Anmeldevoraussetzungen" in t)
 
@@ -481,7 +481,7 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
     except Exception:
         metadata["anmeldevoraussetzungen"] = None
 
-    #--- Untergeordnete LVAs ---
+    #--- Subordinate courses ---
     try:
         untergeordnete_lvas = []
 

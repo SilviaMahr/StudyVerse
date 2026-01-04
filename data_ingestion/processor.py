@@ -25,8 +25,8 @@ def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
 
 
 def get_lecture_details(content: str) -> dict:
-    # details von Studienhandbuch extrahieren
-    # z.B.: 526GLWNEWI13 Einführung in die Wirtschaftsinformatik 6
+    # Extract details from Study Manual
+    # e.g. 526GLWNEWI13 Einführung in die Wirtschaftsinformatik 6
     details = {}
 
     lva_code_pattern = r'(526|515)[\w]{6,9}'
@@ -50,9 +50,9 @@ def get_lecture_details(content: str) -> dict:
 def enrich_metadata(data: Document) -> Document:
     content = data.page_content
 
-    # Loader Schlüssel vereinheitlichen
+    # Loader key unification
     if 'file_path' in data.metadata:
-        data.metadata['source_file'] = data.metadata.pop('file_path')  # PDFLoader als URLLoader
+        data.metadata['source_file'] = data.metadata.pop('file_path')  # PDFLoader as URLLoader
 
     if 'source' in data.metadata:
         if not data.metadata.get('source_file'):
@@ -67,11 +67,11 @@ def enrich_metadata(data: Document) -> Document:
     source_file = data.metadata.get('source_file', '')
 
     if '1193_17_BS_Wirtschaftsinformatik.pdf' in source_file:
-        # Pflichtfächer
+        # Compulsory courses
         if 'Fächer und Studienleistungen:' in content:
             data.metadata['retrieval_type'] = 'bachelor_win'
 
-        # Pflichtfächer
+        # Compulsory courses
         if 'Pflichtfächer zu absolvieren:' in content:
             data.metadata['retrieval_type'] = 'obligatory_lvas'
 
@@ -79,11 +79,11 @@ def enrich_metadata(data: Document) -> Document:
         if '§ 6 Studieneingangs- und Orientierungsphase' in content:
             data.metadata['retrieval_type'] = 'steop'
 
-        # Wahlfächer: Regulierung
+        # Electives: Regulation
         if '§ 8 Wahlfächer' in content:
             data.metadata['retrieval_type'] = 'obligatory_elective_lvas'
 
-        # Freie Studienleistungen
+        # Free elective courses
         if '§ 9 Freie Studienleistungen' in content:
             data.metadata['retrieval_type'] = 'free_electives'
 

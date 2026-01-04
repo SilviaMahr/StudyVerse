@@ -1,3 +1,10 @@
+"""
+ETL Pipeline
+Writes to studyverse_data_new
+SKIPS courses with a semester_msg (instead of saving them with the wrong semester)
+NOTE: Still not bug-free, but the metadata is complete everywhere.
+"""
+
 import os
 from dotenv import load_dotenv
 from typing import List
@@ -9,7 +16,6 @@ import psycopg2
 import psycopg2.extras
 import json
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-import data_ingestion.extractor as extractor
 
 
 load_dotenv()
@@ -26,7 +32,9 @@ model = GoogleGenerativeAIEmbeddings(
     model=GOOGLE_EMBEDDING_MODEL,
     google_api_key=GEMINI_API_KEY_VALUE
 )
-NEON_COLLECTION = "studymanual_data"
+
+# Use table name
+TARGET_TABLE = "studyverse_data_new"
 
 def check_env_variables(neon_db_url: str) -> bool:
     is_valid = True
@@ -42,13 +50,14 @@ def check_env_variables(neon_db_url: str) -> bool:
     return is_valid
 
 def load_data_into_vector_store(conn, chunks: List[Document], embeddings, doc_url):
+    """Load curriculum data into the table"""
     try:
         cur = conn.cursor()
 
-        insert_query = """
-                       INSERT INTO studyverse_data
+        insert_query = f"""
+                       INSERT INTO {TARGET_TABLE}
                            (content, metadata, embedding, url)
-                       VALUES (%s, %s, %s, %s); \
+                       VALUES (%s, %s, %s, %s);
                        """
 
         data_to_insert = []
@@ -83,7 +92,10 @@ def run_etl_pipeline():
     if not check_env_variables(neon_db_url):
         return
 
-    print("--> ETL-PIPELINE gestartet... <--")
+    print(f"\n{'='*80}")
+    print(f"ETL-PIPELINE (FIXED VERSION) gestartet")
+    print(f"Target Table: {TARGET_TABLE}")
+    print(f"{'='*80}\n")
 
     conn = psycopg2.connect(neon_db_url)
     conn.autocommit = True
@@ -91,6 +103,7 @@ def run_etl_pipeline():
     ### IDEAL_PLAN DATA ETL (already manually done)
 
     ### CURRICULUM DATA ETL
+    print("\n[1/3] Processing CURRICULUM data...")
     (curriculum_data, doc_url) = extractor.load_curriculum_data()
     if not curriculum_data:
         print("Pipeline beendet: Keine Quelldokumente gefunden.")
@@ -104,7 +117,8 @@ def run_etl_pipeline():
     load_data_into_vector_store(conn, processed_curriculum_chunks, curriculum_embeddings, doc_url)
 
 
-    ### KUSSS DATA ETL - BEIDE SEMESTER (WS + SS)
+    ### KUSSS DATA ETL - BOTH SEMESTERS (WS + SS)
+    print("\n[2/3] Processing KUSSS data for both semesters...")
     semesters_to_process = ["WS", "SS"]
 
     for current_semester in semesters_to_process:
@@ -112,7 +126,7 @@ def run_etl_pipeline():
         print(f"EXTRAHIERE DATEN FÜR {current_semester}")
         print(f"{'='*80}\n")
 
-        # Nutze Playwright um das richtige Semester zu laden
+        # Use Playwright to extract the correct semester
         (root_html, root_url) = extractor.extract_win_bsc_info_with_semester(current_semester)
 
         if not root_html:
@@ -130,7 +144,7 @@ def run_etl_pipeline():
             # the one middle page
             subject_links = extractor.extract_links(url=course_url)
 
-            # Prüfe ob Links extrahiert wurden
+            # check if the links are extracted
             if not subject_links or len(subject_links) < 2:
                 print(f"WARNUNG: Konnte keine Links für {course_url} extrahieren. Überspringe...")
                 continue
@@ -145,37 +159,41 @@ def run_etl_pipeline():
             semester_msg = course_data["semester_msg"]
 
             if lva_links:
+                # Course is offered in this semester -> process all LVAs
                 for lva_url in lva_links:
                     lva_html = extractor.fetch_content_from_div(lva_url)
                     lva_chunks = processor.process_html_page(lva_html, sm_subject_html, semester, model)
                     store_html_chunks(conn=conn, chunks=lva_chunks, url=lva_url)
             elif semester_msg:
-                # Kurs wird in diesem Semester nicht angeboten
-                # Markiere mit dem anderen Semester
-                other_semester = "SS" if current_semester == "WS" else "WS"
-                lva_chunks = processor.process_html_page(subject_html, sm_subject_html, other_semester, model)
-                store_html_chunks(conn=conn, chunks=lva_chunks, url=subject_url)
+                # Course NOT offered in this semester -> SKIP
+                # It will be crawled when processing the correct semester
+                print(f"  [SKIP] Kurs nicht im {current_semester} angeboten: {subject_url}")
+                continue  # Skip this course
 
         print(f"\n{current_semester}-Daten erfolgreich extrahiert!\n")
 
     ### STUDY MANUAL DATA ETL (part 2)
+    print("\n[3/3] Processing STUDY MANUAL data...")
     study_manual_links = extractor.get_links_from_study_manual()
     for url in study_manual_links:
         subject_html = extractor.fetch_content_from_div(url)
         subject_chunks = processor.process_sm_html(subject_html, model)
         store_html_chunks(conn=conn, chunks=subject_chunks, url=url)
 
-    print("\n--> ETL-PIPELINE beendet! <--")
+    print(f"\n{'='*80}")
+    print("ETL-PIPELINE (FIXED VERSION) beendet!")
+    print(f"{'='*80}\n")
 
 
 def store_html_chunks(conn, chunks, url: str):
+    """Store chunks in the table"""
     try:
         cur = conn.cursor()
 
-        insert_query = """
-                       INSERT INTO studyverse_data
+        insert_query = f"""
+                       INSERT INTO {TARGET_TABLE}
                            (content, metadata, embedding, url)
-                       VALUES (%s, %s, %s, %s); \
+                       VALUES (%s, %s, %s, %s);
                        """
 
         data_to_insert = []
@@ -197,7 +215,7 @@ def store_html_chunks(conn, chunks, url: str):
         cur.executemany(insert_query, data_to_insert)
 
         conn.commit()
-        print(f"--> {len(data_to_insert)} Chunks für {url} gespeichert.")
+        print(f"--> {len(data_to_insert)} Chunks für {url} in {TARGET_TABLE} gespeichert.")
 
     except psycopg2.Error as e:
         print(f"PostgreSQL Fehler beim Speichern: {e}")
@@ -207,22 +225,6 @@ def store_html_chunks(conn, chunks, url: str):
         print(f"Allgemeiner Fehler beim Speichern: {e}")
 
 
-def print_debug(chunks, url):
-    # DEBUG PRINT BEFORE STORING
-    print("\n================ DEBUG ================")
-    print("URL:", url)
-    print("Number of chunks:", len(chunks))
-    print("---------------------------------------")
-
-    for i, chunk in enumerate(chunks):
-        print(f"\n--- CHUNK {i} ---")
-        print(chunk)  # first 500 chars to keep log readable
-        print("---------------------------------------")
-
-    #print("Embeddings shape:", embeddings.shape)
-    #print("=======================================\n")
-
 if __name__ == "__main__":
     load_dotenv()
-
     run_etl_pipeline()

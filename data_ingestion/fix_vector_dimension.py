@@ -1,6 +1,6 @@
 """
-Skript zum Anpassen der Vektordimension in der Datenbank von 1536 auf 768.
-Google's text-embedding-004 Modell liefert 768-dimensionale Embeddings.
+Script for adjusting the vector dimensions in the database from 1536 to 768.
+Google's text-embedding-004 model provides 768-dimensional embeddings.
 """
 
 import os
