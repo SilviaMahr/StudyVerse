@@ -1,3 +1,11 @@
+"""
+This script serves as the 'Transform' layer of the ETL pipeline. It focuses on:
+1. Cleaning raw data (HTML to Text conversion).
+2. Segmenting documents and text into manageable pieces (Chunking).
+3. Enriching data with metadata (LVA codes, ECTS, retrieval types).
+4. Generating vector embeddings using a provided model.
+"""
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import List
 from langchain_core.documents import Document
@@ -11,6 +19,11 @@ from data_ingestion.extractor import (load_curriculum_data,
 
 
 def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
+    """
+    Splits large document pages into smaller text segments.
+    INPUT: documents (List[Document]) - List of raw document pages.
+    OUTPUT: List[Document] - List of chunked document segments.
+    """
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=2000,
         chunk_overlap=100,
@@ -25,10 +38,15 @@ def split_pages_into_chunks(documents: List[Document]) -> List[Document]:
 
 
 def get_lecture_details(content: str) -> dict:
-    # Extract details from Study Manual
-    # e.g. 526GLWNEWI13 Einführung in die Wirtschaftsinformatik 6
+    """
+    Extracts details from Study Manual: Uses regex to extract LVA code, name, and ECTS from raw text.
+    INPUT: content (String) - The text of a chunk.
+    OUTPUT: dict - Extracted keys (lva_code, lva_name, ects).
+    e.g., 526GLWNEWI13 Einführung in die Wirtschaftsinformatik 6
+    """
     details = {}
 
+    # Matches JKU-specific course codes starting with 526 or 515.
     lva_code_pattern = r'(526|515)[\w]{6,9}'
     lva_details_match = re.search(
         rf'(?P<lva_code>{lva_code_pattern}) (?P<lva_name>.+?) (?P<ects>\d{{1,2}})',
@@ -48,9 +66,14 @@ def get_lecture_details(content: str) -> dict:
 
 
 def enrich_metadata(data: Document) -> Document:
+    """
+    Standardizes source paths and assigns 'retrieval_type' based on text keywords.
+    INPUT: data (Document) - A single document chunk.
+    OUTPUT: Document - The chunk with updated metadata.
+    """
     content = data.page_content
 
-    # Loader key unification
+    # Loader key unification: Unifies metadata keys from different loaders
     if 'file_path' in data.metadata:
         data.metadata['source_file'] = data.metadata.pop('file_path')  # PDFLoader as URLLoader
 
@@ -59,6 +82,7 @@ def enrich_metadata(data: Document) -> Document:
             data.metadata['source_file'] = data.metadata['source']
         data.metadata.pop('source')
 
+    # retrieval_type - Labels the chunk for targeted RAG retrieval (e.g., 'steop', 'free_electives').
     data.metadata['retrieval_type'] = 'curriculum_facts'
 
     extracted_details = get_lecture_details(content)
@@ -91,6 +115,11 @@ def enrich_metadata(data: Document) -> Document:
 
 
 def process_documents(documents: List[Document], model) -> (List[Document], List[List[float]]):
+    """
+    Complete processing pipeline for PDF documents.
+    INPUT: documents (List[Document]), model (Embedding Model).
+    OUTPUT: (List[Document], List[List[float]]) - Processed chunks and their vectors.
+    """
     chunks = split_pages_into_chunks(documents)
 
     processed_chunks = []
@@ -103,6 +132,7 @@ def process_documents(documents: List[Document], model) -> (List[Document], List
         chunks_text.append(enriched_chunk.page_content)
 
     try:
+        # Generates vector representations for all chunks in a single batch call.
         embeddings = model.embed_documents(chunks_text)
     except Exception as e:
         print(f"FATALER FEHLER bei der Vektorisierung: {e}")
@@ -112,6 +142,11 @@ def process_documents(documents: List[Document], model) -> (List[Document], List
     return processed_chunks, embeddings
 
 def html_to_text(html):
+    """
+    Converts raw HTML into clean, readable Markdown-like text.
+    INPUT: html (String).
+    OUTPUT: str - Cleaned text.
+    """
     converter = HTML2Text()
     converter.ignore_links = False
     converter.ignore_images = True
@@ -119,11 +154,21 @@ def html_to_text(html):
     return converter.handle(html)
 
 def chunk_text(text):
+    """
+    Simple text splitter for raw strings.
+    INPUT: text (String).
+    OUTPUT: List[str] - List of text strings.
+    """
     splitter = RecursiveCharacterTextSplitter(chunk_size=2500, chunk_overlap=200)
     return splitter.split_text(text)
 
 
 def chunk_text_with_metadata(text, metadata):
+    """
+    Splits text and attaches a specific metadata object to every resulting chunk.
+    INPUT: text (String), metadata (Dictionary).
+    OUTPUT: List[dict] - List of dictionaries containing "text" and "metadata".
+    """
     splitter = RecursiveCharacterTextSplitter(chunk_size=2500, chunk_overlap=500)
     chunks = splitter.split_text(text)
 
@@ -138,6 +183,11 @@ def chunk_text_with_metadata(text, metadata):
 
 
 def process_html_page(kusss_html, sm_html, semester, model):
+    """
+    Processes Course (LVA) data by combining KUSSS and Study Manual HTML.
+    INPUT: kusss_html, sm_html, semester, model.
+    OUTPUT: List[dict] - List of chunks containing text, metadata, and embeddings.
+    """
     kusss_metadata = extract_lva_metadata(kusss_html, semester)
     sm_metadata = extract_metadata_from_sm(sm_html)
     kusss_metadata.update(sm_metadata)
@@ -156,6 +206,11 @@ def process_html_page(kusss_html, sm_html, semester, model):
 
 
 def process_sm_html(sm_html, model):
+    """
+    Processes standalone Study Manual HTML pages.
+    INPUT: sm_html, model.
+    OUTPUT: List[dict] - Chunks enriched with manual metadata and embeddings.
+    """
     sm_metadata = extract_lva_metadata_from_manual(sm_html)
     text = html_to_text(sm_html)
     chunks = chunk_text_with_metadata(text, sm_metadata)
@@ -171,6 +226,11 @@ def process_sm_html(sm_html, model):
 
 
 def process_main_page(html, model):
+    """
+    Processes generic HTML pages (e.g., landing pages) without specific metadata extraction.
+    INPUT: html, model.
+    OUTPUT: List[dict] - Raw text chunks with empty metadata and embeddings.
+    """
     text = html_to_text(html)
     chunks_text = chunk_text(text)
     try:
