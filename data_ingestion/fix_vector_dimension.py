@@ -1,14 +1,18 @@
 """
-Script for adjusting the vector dimensions in the database from 1536 to 768.
+This script synchronizes the database schema with the 'text-embedding-004'
+models by adjusting the 'embedding' column dimension from 1536 to 768.
 Google's text-embedding-004 model provides 768-dimensional embeddings.
+It performs a safe migration by backing up existing data before recreating the table.
 """
 
 import os
 import psycopg2
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
 
+# VARIABLE: Connection string for the Neon PostgreSQL database
 neon_db_url = os.getenv("DATABASE_URL")
 
 if not neon_db_url:
@@ -16,6 +20,9 @@ if not neon_db_url:
     exit(1)
 
 try:
+    # Establish database connection
+    # INPUT: neon_db_url (String)
+    # OUTPUT: conn (Connection Object), cur (Cursor Object)
     conn = psycopg2.connect(neon_db_url)
     cur = conn.cursor()
 
@@ -74,6 +81,7 @@ try:
     """)
     print("   [OK] Index erstellt")
 
+    # Commit all changes to the database
     conn.commit()
     print("\n[ERFOLG] Datenbank wurde auf 768 Dimensionen angepasst.")
     print("\nHinweis: Die alten Daten wurden in 'studyverse_data_backup' gesichert.")
@@ -82,10 +90,11 @@ try:
 except psycopg2.Error as e:
     print(f"[FEHLER] PostgreSQL Fehler: {e}")
     if conn:
-        conn.rollback()
+        conn.rollback() # Rollback changes if any SQL error occurs
 except Exception as e:
     print(f"[FEHLER] Allgemeiner Fehler: {e}")
 finally:
+    # Ensure cursor and connection are closed regardless of success or failure.
     if cur:
         cur.close()
     if conn:
