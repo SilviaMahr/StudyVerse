@@ -1,3 +1,11 @@
+"""
+This script handles the extraction of data from multiple sources:
+1. Local PDF documents using PyPDFLoader.
+2. Web scraping JKU Studienhandbuch (Study Manual) using BeautifulSoup.
+3. Dynamic web scraping of KUSSS course catalogues using Playwright (browser automation).
+It serves as the 'Extract' layer of the ETL pipeline, gathering raw HTML and PDF content.
+"""
+
 from langchain_community.document_loaders import PyPDFLoader, UnstructuredURLLoader
 from typing import List, Set
 from langchain_core.documents import Document
@@ -21,6 +29,11 @@ WIN_ROOT_URL = (
 )
 
 def load_pages_from_pdf(file_path: str) -> List[Document]:
+    """
+    Loads content from a local PDF file.
+    INPUT: file_path (String) - Path to the PDF.
+    OUTPUT: List[Document] - A list of LangChain Document objects (one per page).
+    """
     try:
         print(f"Pfad für PDF: {file_path}")
         loader = PyPDFLoader(file_path)
@@ -33,6 +46,11 @@ def load_pages_from_pdf(file_path: str) -> List[Document]:
 
 
 def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document]:
+    """
+    Scrapes module and course links from the JKU Study Manual overview page.
+    INPUT: url (String) - The URL of the study manual overview.
+    OUTPUT: List[str] - A list of absolute URLs found in the 'Übersicht' table.
+    """
     embedded_links = []
 
     try:
@@ -68,10 +86,19 @@ def get_links_from_study_manual(url: str = STUDIENHANDBUCH_URL) -> List[Document
 
 
 def load_curriculum_data():
+    """
+    Wrapper to load the specific Business Informatics curriculum PDF.
+    OUTPUT: (List[Document], String) - The loaded pages and the source URL.
+    """
     return load_pages_from_pdf(CURRICULUM_PDF_PATH), CURRICULUM_URL
 
 
 def fetch_content_from_div(url: str) -> Optional[str]:
+    """
+    Fetches the primary content div from a specific study manual URL.
+    INPUT: url (String) - Targeted webpage.
+    OUTPUT: Optional[str] - HTML string of the relevant div + semester info, or None.
+    """
     try:
         response = requests.get(url, timeout=15)
         response.raise_for_status()
@@ -99,6 +126,11 @@ def fetch_content_from_div(url: str) -> Optional[str]:
 
 
 def extract_links(**kwargs):
+    """
+    Identifies Course and Study Manual links within an HTML block.
+    INPUT: kwargs (url: String OR html: String).
+    OUTPUT: List[str] - List of discovered KUSSS and Study Manual URLs.
+    """
     html = ""
     if kwargs.get("url"):
         html = fetch_content_from_div(kwargs.get("url"))
@@ -123,6 +155,11 @@ def extract_links(**kwargs):
 
 
 def extract_lva_links_for_course(html):
+    """
+    Extracts direct KUSSS links for individual course offerings.
+    INPUT: html (String) - HTML content of a course segment.
+    OUTPUT: Dict - Contains 'lva_links' (List[str]) and 'semester_msg' (String).
+    """
     soup = BeautifulSoup(html, 'html.parser')
     lva_links = []
     lva_nrs = []
@@ -154,18 +191,18 @@ def extract_lva_links_for_course(html):
 
 
 def extract_win_bsc_info():
+    """
+    Fetches the root course catalogue for Business Informatics.
+    OUTPUT: (String, String) - HTML content and the root URL.
+    """
     return fetch_content_from_div(WIN_ROOT_URL), WIN_ROOT_URL
 
 
 def extract_win_bsc_info_with_semester(semester: str = "WS"):
     """
-    Extracts WIN BSc data for a specific semester with Playwright.
-
-    Args:
-        semester: "WS" or "SS"
-
-    Returns:
-        (html_content, url) tuple
+    Extracts WIN BSc data for a specific semester from a KUSSS page with Playwright.
+    INPUT: semester: "WS" or "SS"
+    OUTPUT: (html_content, url) - The dynamic HTML content and source URL
     """
     try:
         with sync_playwright() as p:
@@ -231,6 +268,11 @@ def extract_win_bsc_info_with_semester(semester: str = "WS"):
 
 
 def extract_semester_info(html):
+    """
+    Helper to identify the semester type (WS/SS) from a scraped div.
+    INPUT: html (String).
+    OUTPUT: Optional[str] - e.g., "WS" or "SS".
+    """
     soup = BeautifulSoup(html, 'html.parser')
     div_element = soup.select_one("div.semester-tobe-planned")
 
@@ -247,10 +289,15 @@ def extract_semester_info(html):
 
 
 def extract_lva_metadata(html, semester):
+    """
+    Parses detailed course metadata (No, Type, Name, ECTS, Instructor, Time) from KUSSS.
+    INPUT: html (String), semester (String).
+    OUTPUT: Dict[str, Any] - Structured metadata dictionary.
+    """
     soup = BeautifulSoup(html, 'html.parser')
     metadata = {}
 
-    # --- Course-Nr. ---
+    # --- Course-No. ---
     try:
         lva_nr_element = soup.select_one("tr.priorityhighlighted a.normallinkcyan")
         if lva_nr_element:
@@ -357,6 +404,11 @@ def extract_lva_metadata(html, semester):
 
 
 def extract_metadata_from_sm(html)-> Dict[str, Any]:
+    """
+    Extracts metadata from the Study Manual pages.
+    INPUT: html (String).
+    OUTPUT: Dict[str, Any] - Contains code, person in charge, requirements, and language.
+    """
     soup = BeautifulSoup(html, 'html.parser')
     metadata = {}
 
@@ -412,6 +464,11 @@ def extract_metadata_from_sm(html)-> Dict[str, Any]:
 
 
 def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
+    """
+    Comprehensive parser for Study Manual HTML (Module/Course details).
+    INPUT: html (String)
+    OUTPUT: Dict[str, Any] - Detailed info including registration requirements and subordinate modules
+    """
     soup = BeautifulSoup(html, 'html.parser')
     metadata = {}
 
@@ -507,7 +564,7 @@ def extract_lva_metadata_from_manual(html)-> Dict[str, Any]:
     return metadata
 
 
-# Test
+# Test to verify PDF loading functionality
 if __name__ == "__main__":
     all_docs, curriculum_url = load_curriculum_data()
     if all_docs:
