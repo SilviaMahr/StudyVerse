@@ -1,5 +1,5 @@
 # Playbook: StudyVerse Walkthrough
-## .1 Nutzverwaltung & Onboarding
+## 1. Nutzverwaltung & Onboarding
 Ziel: Sicherstellen, dass Authentifizierung und Profileinstellung funktionieren.
 ### 1.1 Neuen User anlegen
 Auf "Registrieren" klicken.
@@ -14,3 +14,10 @@ Bereits absolvierte Fächer auswählen.
 
 Auf "Speichern & Fertig" klicken.
 **erwartetes Ergebnis:** User wird eingeloggt und auf das Dashboard/Onboarding weitergeleitet.
+
+## 1.2 Userdaten bearbeiten
+Klick auf "Profil bearbeiten" in der Sidebar links.
+![img.png](playbook_images/editProfile.png)
+Bearbeite den Usernamen.
+Speichere die Änderungen mit Klick auf "Änderungen speichern"
+![img.png](img.png)
