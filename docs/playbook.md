@@ -1,4 +1,4 @@
-# Playbook: StudyVerse Walkthrough
+# Playbook:StudyVerse Walkthrough
 
 Dieses Dokument führt durch die Kernfunktionen der Anwendung.
 
@@ -19,13 +19,19 @@ Dieses Dokument führt durch die Kernfunktionen der Anwendung.
 4. Bereits absolvierte Fächer auswählen.
 5. Auf **"Speichern & Fertig"** klicken.
 
-**Erwartetes Ergebnis:** User wird eingeloggt und auf das Dashboard/Onboarding weitergeleitet.
+**Erwartetes Ergebnis:** 
+User wird eingeloggt und auf das Dashboard/Onboarding weitergeleitet.
 ---
-## 1.2 Userdaten bearbeiten
+### 1.2 Userdaten bearbeiten
 Klick auf "Profil bearbeiten" in der Sidebar links.
 ![Profil bearbeiten](playbook_images/editProfile.png)
-Bearbeite den Usernamen und 
-Speichere die Änderungen mit Klick auf "Änderungen speichern"
+Ändere den Benutzernamen durch Klick auf den bestehenden Benutzernamen.
+Speichere die Änderungen mit Klick auf "Änderungen speichern".
+
+**Erwartetes Ergebnis:** Die soeben durchgeführten Änderungen der Benutzerdaten werden gespeichert.
+
+### 1.3 Absolvierte Lehrveranstaltungen bearbeiten
+
 ---
 ## 2 Akademische Historie
 Ziel: Datenbasis für die Pläne korrekt setzen.
@@ -41,8 +47,15 @@ Ziel: Datenbasis für die Pläne korrekt setzen.
 4. Bestätige die Änderung mit Klick auf den Button "Änderungen speichern"
 
 ![Absolvierte LVAs speichern](playbook_images/absolvierteLVAs2.png)
-**Erwartetes Ergebnis:** Die Liste der absolvierten Lehrveranstaltungen ist aktualisiert.
+**Erwartetes Ergebnis:**
+Die Liste der absolvierten Lehrveranstaltungen ist aktualisiert.
 ---
 
-### 3 Chat und Planung
+## 3 Chat und Planung
+### 3.1 Erstellen eines neuen Plans
+
+
+## 4 Nebenfunktionen
+### 4.1 Sidebar einklappen
+### 4.2 Theme ändern
 
