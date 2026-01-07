@@ -49,11 +49,12 @@ User wird eingeloggt und auf das Dashboard/Onboarding weitergeleitet.
 >**Hinweis:** Die Liste der Lehrveranstaltungen ist in Gruppen gegliedert. Mit Klick auf die Gruppe können die dazugehörigen Lehrveranstaltungen ein- oder ausgeblendet werden.
 
 **Erwartetes Ergebnis:** Die soeben durchgeführten Änderungen der Benutzerdaten werden gespeichert.
-
 ### 1.3 Absolvierte Lehrveranstaltungen bearbeiten
+
 ---
 ## Nutzerverwaltung
-> In den bereits absolvierten Lehrveranstaltungen kann der User auswählen welche Lehrveranstaltungen bereits positiv absolviert (oder angerechnet) wurden. Lehrveranstaltungen die in dieser Liste als absolviert ausgewählt sind, werden in der Planung von UNI nicht vorgeschlagen. Außerdem werden die Lehrveranstaltungen bei Voraussetzungsketten für Lehrveranstaltungen die noch abzulegen sind berücksichtigt.
+In den bereits absolvierten Lehrveranstaltungen kann der User auswählen welche Lehrveranstaltungen bereits positiv absolviert (oder angerechnet) wurden. Lehrveranstaltungen die in dieser Liste als absolviert ausgewählt sind, werden in der Planung von UNI nicht vorgeschlagen. Außerdem werden die Lehrveranstaltungen bei Voraussetzungsketten für Lehrveranstaltungen die noch abzulegen sind berücksichtigt.
+
 ---
 ### 2.1 Absolvierte LVAs verwalten
 1. Klick auf "Profil bearbeiten" in der Sidebar links.
@@ -117,8 +118,49 @@ Die Liste der absolvierten Lehrveranstaltungen ist aktualisiert.
 ![Chatfenster mit Antwort](playbook_images/chatWithText.png)
 
 > **Hinweis:** Die Nachrichten im Chat werden gespeichert. Öffnet man den Chat, zu der jeweiligen Planung, sind alle bisherigen Nachrichten sichtbar.
+---
+
+### 3.4 Planung löschen
+1. Wähle in der Sidebar die Planung die gelöscht werden soll.
+2. Neben der Planung gibt es ein **Mülleimer-Symbol**.
+
+![Planung löschen](playbook_images/deletePlanning.png)
+
+3. Klicke auf das **Mülleimer-Symbol**. Es öffnet sich ein Dialogfeld.
+4. Bestätige das Löschen der Planung mit Klick auf "**Löschen**".
+
+![confirmDeletion.png](playbook_images/confirmDeletion.png)
+**Erwartetes Ergebnis:** Die Planung ist nicht mehr in der Sidebar sichtbar.
+
 
 ## 4 Nebenfunktionen
-### 4.1 Sidebar ein- und ausklappen
+### 4.1 Sidebar
+In der Sidebar können
+ - neue Planungen erstellt
+ - das Benutzerprofil bearbeitet
+ - die Hilfeseite angerufen
+ - die aktuellen Planungen abgerufen
+ - und das Theme geändert werden.
+
+#### 4.1.1 Sidebar einklappen
+1. Klicke in der Sidebar auf das **<<**-Symbol.
+
+![Sidebar einklappen](playbook_images/sidebar.png)
+
+**Erwartetes Ergebnis:** Die Sidebar ist nun eingeklappt.
+#### 4.1.2 Sidebar ausklappen
+1. Klicke auf das **>>**-Symbol am linken Rand des Bildschirms.
+
+**Erwartetes Ergebnis:** Die Sidebar ist nun ausgeklappt.
+
+![Sidebar ausklappen](playbook_images/sidebarCollapsed.png)
+
 ### 4.2 Theme ändern
+1. Klicke auf das **Sonnen**- oder das **Mondsymbol** in der Sidebar.
+
+![Theme ändern](playbook_images/toggleTheme.png)
+
+**Erwartetes Ergebnis:** Das Theme der Anwendung ändert sich in den Tag- oder Nachtmodus.
+
+![Nachtmodus](playbook_images/darkTheme.png)
 
