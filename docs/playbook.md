@@ -156,6 +156,8 @@ In der Sidebar können
 ![Sidebar ausklappen](playbook_images/sidebarCollapsed.png)
 
 ### 4.2 Theme ändern
+Studyverse bietet ein helles und ein dunkles Erscheinungsbild.
+
 1. Klicke auf das **Sonnen**- oder das **Mondsymbol** in der Sidebar.
 
 ![Theme ändern](playbook_images/toggleTheme.png)
