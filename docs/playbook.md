@@ -39,17 +39,17 @@ User wird eingeloggt und auf das Dashboard/Onboarding weitergeleitet.
 2. Ändere die E-Mail-Adresse
 3. Speichere die Änderungen mit Klick auf **"Änderungen speichern"**
 
-#### 1.2.3 Bereits absolvierte LVAs bearbeiten
-2. Klicke auf das Feld **"Absolvierte LVAs bearbeiten"**
-3. Es öffnet sich eine Liste an Lehrveranstaltungen die im gewählten Studiengang absolviert werden müssen. Mit Klick auf die jeweilige Lehrveranstaltung kann diese ausgewählt werden.
-4. Speichere die Änderung mit Klick auf **"Änderungen speichern"**.
+### 1.3 Absolvierte Lehrveranstaltungen bearbeiten
+1. Klicke auf das Feld **"Absolvierte LVAs bearbeiten"**
+2. Es öffnet sich eine Liste an Lehrveranstaltungen die im gewählten Studiengang absolviert werden müssen. Mit Klick auf die jeweilige Lehrveranstaltung kann diese ausgewählt werden.
+3. Speichere die Änderung mit Klick auf **"Änderungen speichern"**.
 
 ![editLVAs.png](playbook_images/editLVAs.png)
 
->**Hinweis:** Die Liste der Lehrveranstaltungen ist in Gruppen gegliedert. Mit Klick auf die Gruppe können die dazugehörigen Lehrveranstaltungen ein- oder ausgeblendet werden.
+> **Hinweis:** Die Liste der Lehrveranstaltungen ist in Gruppen gegliedert. Mit Klick auf die Gruppe können die dazugehörigen Lehrveranstaltungen ein- oder ausgeblendet werden.
 
-**Erwartetes Ergebnis:** Die soeben durchgeführten Änderungen der Benutzerdaten werden gespeichert.
-### 1.3 Absolvierte Lehrveranstaltungen bearbeiten
+**Erwartetes Ergebnis:**
+Die soeben durchgeführten Änderungen der Benutzerdaten werden gespeichert.
 
 ---
 ## Nutzerverwaltung
@@ -102,19 +102,25 @@ Die Liste der absolvierten Lehrveranstaltungen ist aktualisiert.
 
 ![Bestehende Planung öffnen](playbook_images/openLastPlanning.png)
 
-**Erwartetes Ergebnis:** Die Details der ausgewählten Planung sind sichtbar.
+**Erwartetes Ergebnis:**
+Die Details der ausgewählten Planung sind sichtbar.
 ---
 ### 3.3 Chat mit UNI
 1. Öffne eine bestehende Planung 
 > **Hinweis:** Man kann den Chat auch gleich nach dem Erstellen eines neuen Plans öffnen
 2. Klicke auf **"Chat öffnen"**
 
-![Chatfenster öffnen](playbook_images/openChat.png)
+![Chat öffnen](playbook_images/openChat.png)
 
-3. Es öffnet sich ein Chatfenster. Innerhalb des Fensters unten gibt es ein Eingabefeld. Stelle hier deine Fragen zum erstellen Plan.
+3. Es öffnet sich ein Chatfenster. Innerhalb des Fensters unten gibt es ein Eingabefeld. Stelle hier deine Fragen zum erstellten Plan.
+
 ![Chatfenster](playbook_images/chatWindow.png)
 
+5. Klicke auf den Button "**Senden**". 
+
+
 **Erwartetes Ergebnis:** UNI gibt eine passende Antwort auf die Frage und die Nachricht ist im Chatfenster sichtbar. Es können weitere Fragen gestellt werden.
+
 ![Chatfenster mit Antwort](playbook_images/chatWithText.png)
 
 > **Hinweis:** Die Nachrichten im Chat werden gespeichert. Öffnet man den Chat, zu der jeweiligen Planung, sind alle bisherigen Nachrichten sichtbar.
@@ -130,6 +136,7 @@ Die Liste der absolvierten Lehrveranstaltungen ist aktualisiert.
 4. Bestätige das Löschen der Planung mit Klick auf "**Löschen**".
 
 ![confirmDeletion.png](playbook_images/confirmDeletion.png)
+
 **Erwartetes Ergebnis:** Die Planung ist nicht mehr in der Sidebar sichtbar.
 
 
@@ -156,13 +163,14 @@ In der Sidebar können
 ![Sidebar ausklappen](playbook_images/sidebarCollapsed.png)
 
 ### 4.2 Theme ändern
-Studyverse bietet ein helles und ein dunkles Erscheinungsbild.
+StudyVerse bietet ein helles und ein dunkles Erscheinungsbild.
 
 1. Klicke auf das **Sonnen**- oder das **Mondsymbol** in der Sidebar.
 
 ![Theme ändern](playbook_images/toggleTheme.png)
 
-**Erwartetes Ergebnis:** Das Theme der Anwendung ändert sich in den Tag- oder Nachtmodus.
+**Erwartetes Ergebnis:**
+Das Erscheinungsbild der Anwendung ändert sich in den Tag- oder Nachtmodus.
 
 ![Nachtmodus](playbook_images/darkTheme.png)
 
