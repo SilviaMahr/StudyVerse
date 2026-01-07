@@ -53,7 +53,33 @@ Die Liste der absolvierten Lehrveranstaltungen ist aktualisiert.
 
 ## 3 Chat und Planung
 ### 3.1 Erstellen eines neuen Plans
-
+1. Klicke auf **"neue Planung"** in der Sidebar links.
+![Neue Planung starten](playbook_images/startNewPlanning.png)
+2. Es öffnet sich eine Eingabemaske, fülle dort alle Felder aus. Sobald alle Felder mit validen Eingabewerten befüllt sind, wird **"Planung starten"** klickbar.
+![Planungsdaten ausfüllen](playbook_images/preselectionDetails.png)
+> **Hinweis:** Bei ungültigen Eingabewerten gibt die UI eine entsprechende Rückmeldung.
+![Invalide Eingabedaten](playbook_images/invalidInput.png)
+3. Klicke auf **"Planung starten"**. UNI beginnt nun die Planung mit den angegebenen Daten. Die Erstellung des Planes kann etwas Zeit in Anspruch nehmen.
+![Valide Eingabedaten](playbook_images/validInput.png)
+**Erwartetes Ergebnis:** Es wird ein Plan in Tabellenform angezeigt, die alle geforderten Angaben des Users berücksichtigt.
+![Fertige Planung](playbook_images/planningDetails.png)
+---
+### 3.2 Bestehende Planung ansehen
+1. Klicke auf eine vergangene Planung. Diese sind in der Sidebar links unter der Überschrift **"Letzte Planungen"** zu finden.
+2. Es öffnet sich die ausgewählte Planung.
+![Bestehende Planung öffnen](playbook_images/openLastPlanning.png)
+**Erwartetes Ergebnis:** Die Details der ausgewählten Planung sind sichtbar.
+---
+### 3.3 Chat mit UNI
+1. Öffne eine bestehende Planung 
+> **Hinweis:** Man kann den Chat auch gleich nach dem Erstellen eines neuen Plans öffnen
+2. Klicke auf **"Chat öffnen"**
+![Chatfenster öffnen](playbook_images/openChat.png)
+3. Es öffnet sich ein Chatfenster. Innerhalb des Fensters unten gibt es ein Eingabefeld. Stelle hier deine Fragen zum erstellen Plan.
+![Chatfenster](playbook_images/chatWindow.png)
+**Erwartetes Ergebnis:** UNI gibt eine passende Antwort auf die Frage und die Nachricht ist im Chatfenster sichtbar. Es können weitere Fragen gestellt werden.
+![Chatfenster mit Antwort](playbook_images/chatWithText.png)
+> **Hinweis:** Die Nachrichten im Chat werden gespeichert. Öffnet man den Chat zu der jeweiligen Planung sind alle bisherigen Nachrichten sichtbar.
 
 ## 4 Nebenfunktionen
 ### 4.1 Sidebar einklappen
