@@ -30,7 +30,7 @@ Sicherstellung, dass sich ein registrierter User sich mit gültiger E-Mail-Adres
 5. Auswahl von bereits absolvierten Lehrveranstaltungen.
 6. Klick auf den Button "Speichern & Fertig".
 
-**Erwartetes Ergebnis:** Benutzer*in wird erfolgreich registriert und wird automatisch auf die "Help"-Seite weitergeleitet. Die Auswahl der Lehrveranstaltungen wurde in den Profildaten gespeichert.
+**Erwartetes Ergebnis:** Benutzer*in wird erfolgreich registriert und wird automatisch auf die "Hilfe"-Seite weitergeleitet. Die Auswahl der Lehrveranstaltungen wurde in den Profildaten gespeichert.
 
 ---
 
